@@ -5,6 +5,9 @@ Django Yarr Changes
 Changelog
 =========
 
+0.1.2       2013-06-30
+            Feature:    Added j/k shortcut keys
+
 0.1.1       2013-06-30
             Bugfix:     When API URLs are not available, disable API
 

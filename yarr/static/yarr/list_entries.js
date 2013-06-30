@@ -424,14 +424,16 @@ $(function () {
     
     // Key presses
     var KEY_N = 'N'.charCodeAt(0),
-        KEY_P = 'P'.charCodeAt(0)
+        KEY_P = 'P'.charCodeAt(0),
+        KEY_J = 'J'.charCodeAt(0),
+        KEY_K = 'K'.charCodeAt(0)
     ;
     $('body').keydown(function (e) {
         /** Event handler for keypresses */
-        if (e.which == KEY_N) {
+        if (e.which == KEY_N || e.which == KEY_J) {
             selectNext();
             
-        } else if (e.which == KEY_P) {
+        } else if (e.which == KEY_P || e.which == KEY_K) {
             selectPrevious();
         }
     });

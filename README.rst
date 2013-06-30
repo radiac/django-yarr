@@ -16,7 +16,7 @@ Features
 * Manage subscriptions through admin site
 * No social nonsense
 
-Version 0.1.1 - see CHANGES for full changelog and roadmap.
+Version 0.1.2 - see CHANGES for full changelog and roadmap.
 
 Example: http://radiac.net/projects/django-yarr/example/
 
