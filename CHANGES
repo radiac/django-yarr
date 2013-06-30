@@ -5,6 +5,9 @@ Django Yarr Changes
 Changelog
 =========
 
+0.1.1       2013-06-30
+            Bugfix:     When API URLs are not available, disable API
+
 0.1.0       2013-06-29
             Feature:    Initial release
 

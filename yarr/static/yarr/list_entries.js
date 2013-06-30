@@ -178,6 +178,11 @@ $(function () {
     }
     
     function apiCall(url, data, successFn, failFn) {
+        if (!url) {
+            setStatus('API disabled');
+            return;
+        }
+        
         /** Make a call to the API */
         $.getJSON(url, data)
             .done(function(json) {
