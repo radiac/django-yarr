@@ -1,0 +1,31 @@
+===================
+Django Yarr Changes
+===================
+
+Changelog
+=========
+
+0.1.0       2013-06-29
+            Feature:    Initial release
+
+
+Roadmap
+=======
+
+Target
+0.1.x       Views to manage subscriptions
+            Display times according to user timezone, not server
+            De-dupe multiple feeds with the same URL before checking
+            Ajax mark all read
+0.2.x       Improve render time
+            Delay image loading
+0.3.x       Feed categorisation and entry tags
+            View by feed, sort by newest/oldest
+0.4.x       List mode
+0.5.x       Drop support for Django 1.3
+            Introduce timezone support for Django 1.4 and later
+1.0.0       Stable release, make available on PyPI
+1.1.x       Adaptive feed check frequency, with smarter spacing to spread load
+
+The roadmap is subject to change; if a lot of people let me know that something
+is a priority, I will try to move it up the list.

@@ -1,0 +1,89 @@
+{% extends "yarr/base.html" %}
+
+{% load url from future %}
+
+{% block js %}
+{{ block.super }}
+{% if yarr_settings.add_jquery %}
+    <script src="{{ STATIC_URL }}yarr/jquery-1.10.1.min.js"></script>
+{% endif %}
+<script src="{{ STATIC_URL }}yarr/list_entries.js"></script>
+{% endblock %}
+
+{% block title %}Unread items{% endblock %}
+
+{% block content %}
+
+<div id="yarr_con"
+    data-api-entry="{% url 'yarr-api_entry' %}"
+    data-api-list="{% url 'yarr-api_list' %}"
+    data-q-feedpk="{{ feed.pk }}"
+    data-q-saved="{{ saved|lower }}"
+    data-q-unread="{{ unread|lower }}"
+>
+    <div class="yarr_control" data-fixed="{{ yarr_settings.control_fixed|lower }}">
+        <ul class="yarr_menu">
+            <li><a href="{% url 'yarr-list_all' %}"{% if not unread and not saved %} class="yarr_selected"{% endif %}>All</a></li>
+            <li><a href="{% url 'yarr-list_unread' %}"{% if unread %} class="yarr_selected"{% endif %}>Unread</a></li>
+            <li><a href="{% url 'yarr-list_saved' %}"{% if saved %} class="yarr_selected"{% endif %}>Saved</a></li>
+        </ul>
+        <ul>
+            <li><a href="{% url 'yarr-mark_all_read' %}">Mark all read</a></li>
+        </ul>
+        
+        {% if entries.paginator.num_pages > 1 %}
+            <ul class="yarr_paginated">
+                {% if pagination.has_previous %}
+                    <li><a href="?p={{ pagination.previous }}">&laquo;</a></li>
+                {% endif %}
+
+                {% if pagination.show_first %}
+                    <li><a href="?p=1">1</a></li>
+                    <li><span>...</span></li>
+                {% endif %}
+                
+                {% for linkpage in pagination.page_numbers %}
+                    {% ifequal linkpage pagination.current %}
+                        <li><span>{{ pagination.current }}</span></li>
+                    {% else %}
+                        <li><a href="?p={{ linkpage }}">{{ linkpage }}</a></li>
+                    {% endifequal %}
+                {% endfor %}
+                
+                {% if pagination.show_last %}
+                    <li><span>...</span></li>
+                    <li><a href="?p=last">{{ pagination.total }}</a></li>
+                {% endif %}
+                
+                {% if pagination.has_next %}
+                    <li><a href="?p={{ pagination.next }}">&raquo;</a></li>
+                {% endif %}
+            </ul>
+        {% endif %}
+    </div>
+    
+    
+    <div id="yarr_content">
+        {% if entries.object_list|length == 0 %}
+            {% if saved %}
+                <p>No saved items</p>
+            {% else %}
+                {% if unread %}
+                    <p>No unread items</p>
+                {% else %}
+                    <p>No items</p>
+                {% endif %}
+            {% endif %}
+            
+        {% else %}
+        
+            {% for entry in entries.object_list %}
+                {% include "yarr/include/entry.html" %}
+            {% endfor %}
+            
+        {% endif %}
+    </div>
+    
+</div>
+
+{% endblock %}

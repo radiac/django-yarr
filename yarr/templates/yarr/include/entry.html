@@ -1,0 +1,43 @@
+{% load url from future %}
+
+<div class="yarr_entry{% if entry.read %} yarr_read{% endif %}"
+    data-yarr-pk="{{ entry.pk }}"
+    data-yarr-read="{{ entry.read|lower }}"
+    data-yarr-saved="{{ entry.saved|lower }}"
+>
+
+    <div class="yarr_entry_content">
+        <h1>
+            {% if entry.url %}<a href="{{ entry.url }}">{% endif %}
+            {{ entry.title|default:"Untitled" }}
+            {% if entry.url %}</a>{% endif %}
+        </h1>
+        <p class="yarr_date">{{ entry.date|date:"M d Y, H:i" }}</p>
+        <p class="yarr_feed">from
+            {% if entry.feed.site_url %}<a href="{{ entry.feed.site_url }}">{% endif %}
+            {{ entry.feed.title }}
+            {% if entry.feed.site_url %}</a>{% endif %}
+            {% if entry.author %}by <span class="yarr_author">{{ entry.author }}</span>{% endif %}
+        </p>
+
+        {{ entry.content|safe }}
+
+        {% if entry.tags %}<p class="yarr_tags">{{ entry.tags }}</p>{% endif %}
+        {% if entry.comments_url %}<p class="yarr_comments"><a href="{{ entry.comments_url }}">Comments</a></p>{% endif %}
+    </div>
+    
+    <ul class="yarr_entry_control">
+        {% if entry.read %}
+            <li><a href="{% url 'yarr-mark_unread' entry_pk=entry.pk %}">Mark as unread</a></li>
+        {% else %}
+            <li><a href="{% url 'yarr-mark_read' entry_pk=entry.pk %}">Mark as read</a></li>
+        {% endif %}
+        
+        {% if entry.saved %}
+            <li><a href="{% url 'yarr-mark_unsaved' entry_pk=entry.pk %}">Unmark as saved</a></li>
+        {% else %}
+            <li><a href="{% url 'yarr-mark_saved' entry_pk=entry.pk %}">Mark as saved</a></li>
+        {% endif %}
+    </ul>
+
+</div>

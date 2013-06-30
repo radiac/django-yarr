@@ -1,0 +1,22 @@
+{% extends "yarr/base.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+
+<form action="." method="POST">
+{% csrf_token %}
+
+{% if entry %}
+    <h2>{{ entry.title }}</h2>
+{% endif %}
+
+{{ message }}
+
+<div>
+    <input type="submit" value="{{ submit_label }}">
+</div>
+
+</form>
+
+{% endblock %}
