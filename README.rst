@@ -222,6 +222,9 @@ Only tested with the OPML from a Google Reader takeaway, but should work with
 any OPML file where the feeds are specified using the attribute ``xmlUrl``.
 
 
+.. image:: http://radiac.net/projects/django-yarr/logo-large.png
+
+
 Credits
 -------
 
@@ -232,3 +235,6 @@ pitfalls:
 * https://bitbucket.org/tghw/django-feedreader
 
 The arrow icons are from Iconic, http://somerandomdude.com/work/iconic/
+
+The pirate pony started life on http://www.mylittledjango.com/ before putting
+on clipart from clker.com and openclipart.org
