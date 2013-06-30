@@ -100,30 +100,30 @@ Add these settings to your ``settings.py`` file to override the defaults.
 
 To manage the web interface:
 
-:``YARR_HOME``:
+``YARR_HOME``:
     Page to open at the Yarr root url
 
     This setting will probably be removed in a future version.
 
     Default: ``yarr-list_unread``
 
-:``YARR_PAGINATION``:
+``YARR_PAGINATION``:
     The maximum number of entries to show on one page
     
     Default: ``25``
 
-:``YARR_AJAX_PAGINATION``:
+``YARR_AJAX_PAGINATION``:
     The maximum number of entries to return when infinite scrolling with AJAX
     
     Default: ``5``
 
-:``YARR_CONTROL_FIXED``:
+``YARR_CONTROL_FIXED``:
     If True, the control bar will switch to ``position: fixed`` when scrolling
     down moves it off the page
 
     Default: ``True``
   
-:``YARR_ADD_JQUERY``:
+``YARR_ADD_JQUERY``:
     If True, adds the bundled version of jQuery when required
 
     Default: ``True``
@@ -131,7 +131,7 @@ To manage the web interface:
 
 To control feed updates:
 
-:``YARR_FREQUENCY``:
+``YARR_FREQUENCY``:
     The default frequency to check a feed, in minutes
 
     The default value is set to just under 24 hours (23:45) to avoid issues
@@ -142,9 +142,14 @@ To control feed updates:
 
 The bleach settings can also be customised - see bleach docs for details:
 
-:``YARR_ALLOWED_TAGS``:         Allowed HTML tags
-:``YARR_ALLOWED_ATTRIBUTES``:   Allowed HTML tag attributes
-:``YARR_ALLOWED_STYLES``:       Allowed styles
+``YARR_ALLOWED_TAGS``:
+    Allowed HTML tags
+
+``YARR_ALLOWED_ATTRIBUTES``:
+    Allowed HTML tag attributes
+
+``YARR_ALLOWED_STYLES``:
+    Allowed styles
 
 
 Templates
