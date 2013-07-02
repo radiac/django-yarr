@@ -487,7 +487,7 @@ class Entry(models.Model):
     )
     
     # Optional data fields
-    author = models.CharField(max_length=255, blank=True)
+    author = models.TextField(blank=True)
     url = models.URLField(
         blank=True,
         help_text="URL for the HTML for this entry",
@@ -496,8 +496,8 @@ class Entry(models.Model):
         blank=True,
         help_text="URL for HTML comment submission page",
     )
-    guid = models.CharField(
-        max_length=255, blank=True,
+    guid = models.TextField(
+        blank=True,
         help_text="GUID for the entry, according to the feed",
     )
     # ++ TODO: tags
