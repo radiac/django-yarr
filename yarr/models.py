@@ -83,7 +83,7 @@ class Feed(models.Model):
         ttl
     """
     # Compulsory data fields
-    title = models.CharField(max_length=255, help_text="Name for the feed")
+    title = models.TextField(help_text="Name for the feed")
     feed_url = models.URLField(help_text="URL of the RSS feed")
     
     # Optional data fields
@@ -130,6 +130,9 @@ class Feed(models.Model):
         """
         # Request and parse the feed, and get status
         d = feedparser.parse(self.feed_url)
+        if d.get('bozo') == 1:
+            #feedparser threw some sort of error. Could be DNS lookup or net fail
+            raise FeedError('Feed has gone')
         status = d.get('status', 200)
         
         # Accepted status:
@@ -154,7 +157,7 @@ class Feed(models.Model):
             # Log url
             if url_history is None:
                 url_history = []
-            url_history.push(self.feed_url)
+            url_history.append(self.feed_url)
             
             # Avoid circular redirection
             self.feed_url = d.get('href', self.feed_url)
@@ -163,7 +166,7 @@ class Feed(models.Model):
             
             # Update feed and try again
             self.save()
-            return self._parse_feed(url_history)
+            return self._fetch_feed(url_history)
         
         # Feed gone
         if status == 410:
@@ -477,14 +480,14 @@ class Entry(models.Model):
     saved = models.BooleanField(default=False)
     
     # Compulsory data fields
-    title = models.CharField(max_length=255, blank=True)
+    title = models.TextField(blank=True)
     content = models.TextField(blank=True)
     date = models.DateTimeField(
         help_text="When this entry says it was published",
     )
     
     # Optional data fields
-    author = models.CharField(max_length=255, blank=True)
+    author = models.TextField(blank=True)
     url = models.URLField(
         blank=True,
         help_text="URL for the HTML for this entry",
@@ -493,8 +496,8 @@ class Entry(models.Model):
         blank=True,
         help_text="URL for HTML comment submission page",
     )
-    guid = models.CharField(
-        max_length=255, blank=True,
+    guid = models.TextField(
+        blank=True,
         help_text="GUID for the entry, according to the feed",
     )
     # ++ TODO: tags
