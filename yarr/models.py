@@ -130,6 +130,9 @@ class Feed(models.Model):
         """
         # Request and parse the feed, and get status
         d = feedparser.parse(self.feed_url)
+        if d.get('bozo') == 1:
+            #feedparser threw some sort of error. Could be DNS lookup or net fail
+            raise FeedError('Feed has gone')
         status = d.get('status', 200)
         
         # Accepted status:
@@ -154,7 +157,7 @@ class Feed(models.Model):
             # Log url
             if url_history is None:
                 url_history = []
-            url_history.push(self.feed_url)
+            url_history.append(self.feed_url)
             
             # Avoid circular redirection
             self.feed_url = d.get('href', self.feed_url)
@@ -163,7 +166,7 @@ class Feed(models.Model):
             
             # Update feed and try again
             self.save()
-            return self._parse_feed(url_history)
+            return self._fetch_feed(url_history)
         
         # Feed gone
         if status == 410:
