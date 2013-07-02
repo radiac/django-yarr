@@ -83,7 +83,7 @@ class Feed(models.Model):
         ttl
     """
     # Compulsory data fields
-    title = models.CharField(max_length=255, help_text="Name for the feed")
+    title = models.TextField(help_text="Name for the feed")
     feed_url = models.URLField(help_text="URL of the RSS feed")
     
     # Optional data fields
@@ -477,7 +477,7 @@ class Entry(models.Model):
     saved = models.BooleanField(default=False)
     
     # Compulsory data fields
-    title = models.CharField(max_length=255, blank=True)
+    title = models.TextField(blank=True)
     content = models.TextField(blank=True)
     date = models.DateTimeField(
         help_text="When this entry says it was published",
