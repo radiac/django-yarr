@@ -2,7 +2,6 @@ import datetime
 import time
 import urllib2
 
-from django.core.mail import mail_admins
 from django.db import models
 
 import bleach
