@@ -203,10 +203,7 @@ class Feed(models.Model):
             return
         
         # Try to find the updated time
-        updated = feed.get(
-            'updated_parsed',
-            feed.get('published_parsed', None),
-        )
+        updated = feed.get('published_parsed', None)
         if updated:
             updated = datetime.datetime.fromtimestamp(
                 time.mktime(updated)
@@ -432,10 +429,8 @@ class EntryManager(models.Manager):
         # If not provided, needs to be None for update comparison
         # Will default to current time when saved
         date = raw.get(
-            'updated_parsed', raw.get(
-                'published_parsed', raw.get(
-                    'created_parsed', None
-                )
+            'published_parsed', raw.get(
+                'created_parsed', None
             )
         )
         if date is not None:
