@@ -2,3 +2,4 @@ include README.rst
 include LICENSE
 recursive-include yarr/static *
 recursive-include yarr/templates *
+include yarr/tests/*.xml

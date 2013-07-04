@@ -1,0 +1,19 @@
+<rss version="2.0">
+<channel>
+<title>Well-formed</title>
+<link>http://example.com/wellformed</link>
+<pubDate>Tue, 02 Jul 2013 02:02:02 GMT</pubDate>  
+<item>
+    <title>Item 1</title>  
+    <description>Content 1</description>  
+    <link>http://example.com/?item=1</link>
+    <pubDate>Mon, 01 Jul 2013 01:01:01 GMT</pubDate>  
+</item>
+<item>
+    <title>Item 2</title>  
+    <description>Content 2</description>  
+    <link>http://example.com/?item=2</link>
+    <pubDate>Tue, 02 Jul 2013 02:02:02 GMT</pubDate>  
+</item>
+</channel>
+</rss>
