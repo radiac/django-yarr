@@ -3,7 +3,7 @@ from optparse import make_option
 from django.core.management.base import BaseCommand
 
 from yarr import models
-from yarr.decorators import @with_socket_timeout
+from yarr.decorators import with_socket_timeout
 
 
 class Command(BaseCommand):
