@@ -1,5 +1,6 @@
 import datetime
 import time
+import urllib2
 
 from django.core.mail import mail_admins
 from django.db import models
@@ -11,8 +12,21 @@ import feedparser
 from yarr import settings
 
 
-class FeedError(Exception): pass
-class FatalFeedError(FeedError): pass
+class FeedError(Exception):
+    """
+    An error occurred when fetching the feed
+    
+    If it was parsed despite the error, the feed and entries will be available:
+        e.feed      None if not parsed
+        e.entries   Empty list if not parsed
+    """
+    def __init__(self, *args, **kwargs):
+        self.feed = kwargs.pop('feed', None)
+        self.entries = kwargs.pop('entries', [])
+        super(FeedError, self).__init__(*args, **kwargs)
+
+class InactiveFeedError(FeedError):
+    pass
 
 
 class FeedQuerySet(models.query.QuerySet):
@@ -129,20 +143,45 @@ class Feed(models.Model):
         Raises:
             FetchError  Feed fetch suffered permanent failure
         """
-        # Request and parse the feed, and get status
+        # Request and parse the feed, and get status, feed and entries
         d = feedparser.parse(self.feed_url)
-        if d.get('bozo') == 1:
-            #feedparser threw some sort of error. Could be DNS lookup or net fail
-            raise FeedError('Malformed feed')
-        status = d.get('status', 200)
+        status  = d.get('status', 200)
+        feed    = d.get('feed', None)
+        entries = d.get('entries', [])
         
+        # Handle certain feedparser exceptions (bozo):
+        #   URLError    The server wasn't found
+        # Other exceptions will raise a FeedError, but the feed may have been
+        # parsed anyway, so feed and entries will be available on the exception
+        if d.get('bozo') == 1:
+            bozo = d['bozo_exception']
+            if isinstance(bozo, urllib2.URLError):
+                raise FeedError('URL error: %s' % bozo)
+                
+            # Unrecognised exception
+            # Most of these will be SAXParseException, which doesn't convert
+            # to a string cleanly, so explicitly mention the exception class
+            raise FeedError(
+                'Feed error: %s - %s' % (bozo.__class__.__name__, bozo),
+                feed=feed, entries=entries,
+            )
+            
         # Accepted status:
         #   200 OK
         #   302 Temporary redirect
         #   304 Not Modified
         #   307 Temporary redirect
         if status in (200, 302, 304, 307):
-            return d['feed'], d['entries']
+            # Check for valid feed
+            if (
+                feed is None
+                or 'title' not in feed
+                or 'link' not in feed
+            ):
+                raise FeedError('Feed parsed but with invalid contents')
+            
+            # OK
+            return feed, entries
         
         # Temporary errors:
         #   404 Not Found
@@ -163,7 +202,7 @@ class Feed(models.Model):
             # Avoid circular redirection
             self.feed_url = d.get('href', self.feed_url)
             if self.feed_url in url_history:
-                raise FatalFeedError('Circular redirection found')
+                raise InactiveFeedError('Circular redirection found')
             
             # Update feed and try again
             self.save()
@@ -171,10 +210,10 @@ class Feed(models.Model):
         
         # Feed gone
         if status == 410:
-            raise FatalFeedError('Feed has gone')
+            raise InactiveFeedError('Feed has gone')
         
         # Unknown status
-        raise FatalFeedError('Unrecognised HTTP status %s' % status)
+        raise FeedError('Unrecognised HTTP status %s' % status)
     
     def check(self, force=False, read=False):
         """
@@ -195,11 +234,18 @@ class Feed(models.Model):
         try:
             feed, entries = self._fetch_feed()
         except FeedError, e:
-            if isinstance(e, FatalFeedError):
+            # Update model to reflect the error
+            if isinstance(e, InactiveFeedError):
                 self.is_active = False
             self.error = str(e)
             self.save()
-            return
+            
+            # Check for a valid feed despite error
+            if e.feed is None:
+                return
+            feed = e.feed
+            entries = e.entries
+            
         else:
             # Success, clear error if necessary
             if self.error != '':
@@ -226,8 +272,8 @@ class Feed(models.Model):
             
         # Update any feed fields
         changed = self._update_attrs(
-            title       = feed['title'],
-            site_url    = feed['link'],
+            title       = feed.get('title', 'Unknown'),
+            site_url    = feed.get('link', ''),
             last_updated = updated,
         )
         if changed:

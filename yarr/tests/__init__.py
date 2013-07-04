@@ -1,9 +1,18 @@
 import os
 
-from django.test import TestCase
 from django.contrib.auth.models import User
+from django.test import TestCase
+from django.utils.unittest import skipIf
 
 from yarr.models import Feed
+
+try:
+    from xml.sax import SAXParseException
+except ImportError:
+    XML_AVAILABLE = False
+    SAXParseException = None
+else:
+    XML_AVAILABLE = True
 
 
 class FeedTest(TestCase):
@@ -21,6 +30,12 @@ class FeedTest(TestCase):
             title="Feed: malformed",
             user=user,
             feed_url=os.path.join(test_path, 'feed2-malformed.xml')
+        )
+        
+        self.feed_missing_server = Feed.objects.create(
+            title="Feed: missing server",
+            user=user,
+            feed_url='http://missing.example.com/',
         )
         
     def test_feed_wellformed(self):
@@ -58,5 +73,22 @@ class FeedTest(TestCase):
         # Check the feed data
         self.assertEqual(self.feed_malformed.site_url, '')
         self.assertEqual(self.feed_malformed.is_active, True)
-        self.assertEqual(self.feed_malformed.error, 'Malformed feed')
+        self.assertRegexpMatches(
+            self.feed_malformed.error,
+            r'^Feed error: SAXParseException - '
+        )
+    
+    def test_http_error(self):
+        """
+        Test HTTP errors
+        """
+        # Update the feed
+        self.feed_missing_server.check()
+        
+        # Check the feed object
+        self.assertEqual(self.feed_missing_server.is_active, True)
+        self.assertRegexpMatches(
+            self.feed_missing_server.error,
+            r'^URL error: .+?Name or service not known',
+        )
         
