@@ -6,7 +6,7 @@ A lightweight customisable RSS reader for Django.
 
 
 Features
---------
+========
 
 * Import list of feeds from a Google Reader takeaway
 * View all, just unread or saved items
@@ -16,13 +16,16 @@ Features
 * Manage subscriptions through admin site
 * No social nonsense
 
-Version 0.1.2 - see CHANGES for full changelog and roadmap.
+Version 0.1.3
+
+* see `CHANGES <CHANGES>`_ for full changelog and roadmap
+* see `UPGRADE <UPGRADE.rst>`_ for how to upgrade from earlier releases
 
 Example: http://radiac.net/projects/django-yarr/example/
 
 
 Requirements
-------------
+============
 
 These packages are required:
 
@@ -39,7 +42,9 @@ cron.
 
 
 Installation
-------------
+============
+
+* See 
 
 1. Install ``django-yarr`` (currently only on github)::
 
@@ -96,7 +101,7 @@ Installation
 
 
 Settings
-~~~~~~~~
+--------
 
 Add these settings to your ``settings.py`` file to override the defaults.
 
@@ -133,6 +138,13 @@ To manage the web interface:
 
 To control feed updates:
 
+``YARR_SOCKET_TIMEOUT``:
+    The default socket timeout, in seconds
+    
+    Highly recommended that this is **not** set to ``None``, which would block
+    
+    Default: ``30``
+    
 ``YARR_FREQUENCY``:
     The default frequency to check a feed, in minutes
 
@@ -155,7 +167,7 @@ The bleach settings can also be customised - see bleach docs for details:
 
 
 Templates
-~~~~~~~~~
+---------
 
 The Yarr templates extend ``yarr/base.html``, which in turn extends
 ``base.html``.
@@ -164,7 +176,7 @@ They will expect the following blocks:
 
 * ``js`` for inserting JavaScript
 * ``css`` for inserting CSS
-* ``title`` for inserting the title (plain text)
+* ``title`` for inserting the title (plain text) - or ``{{ title }}`` instead
 * ``content`` for the body content
 
 You will need to add these to your base.html template. Alternatively, if you
@@ -186,10 +198,10 @@ in your stylesheet if your static url is different.
 
 
 Management Commands
--------------------
+===================
 
 Check feeds
-~~~~~~~~~~~
+-----------
 
 Sees which feeds are due to be checked, and checks them for updates.
 
@@ -208,7 +220,7 @@ you want a feed to be checked every 15 minutes, set your cron job to run every
 
 
 Import OPML
-~~~~~~~~~~~
+-----------
 
 Imports feeds from an OPML file into the specified username.
 
@@ -228,7 +240,9 @@ any OPML file where the feeds are specified using the attribute ``xmlUrl``.
 
 
 Credits
--------
+=======
+
+Thanks to all contributors, who are listed in CHANGES.
 
 Thanks to existing projects which have been used as references to avoid common
 pitfalls:

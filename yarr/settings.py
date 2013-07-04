@@ -26,7 +26,7 @@ ADD_JQUERY = getattr(settings, 'YARR_ADD_JQUERY', True)
 #
 
 # Socket timeout, in seconds
-# Highly recommended that this is **not** set to ``None``
+# Highly recommended that this is **not** set to ``None``, which would block
 # Note: this sets the global socket timeout, which is not thread-safe; it is
 # therefore set explicitly when checking feeds, and reset after feeds have been
 # updated (see ``yarr.decorators.with_socket_timeout`` for more details).
