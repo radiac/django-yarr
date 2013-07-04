@@ -12,6 +12,7 @@ from yarr import settings
 
 
 class FeedError(Exception): pass
+class FatalFeedError(FeedError): pass
 
 
 class FeedQuerySet(models.query.QuerySet):
@@ -132,7 +133,7 @@ class Feed(models.Model):
         d = feedparser.parse(self.feed_url)
         if d.get('bozo') == 1:
             #feedparser threw some sort of error. Could be DNS lookup or net fail
-            raise FeedError('Feed has gone')
+            raise FeedError('Malformed feed')
         status = d.get('status', 200)
         
         # Accepted status:
@@ -150,7 +151,7 @@ class Feed(models.Model):
         #   503 Service Unavailable
         #   504 Gateway Timeout
         if status in (404, 500, 502, 503, 504):
-            return None, None
+            raise FeedError('Temporary error %s' % status)
         
         # Follow permanent redirection
         if status == 301:
@@ -162,7 +163,7 @@ class Feed(models.Model):
             # Avoid circular redirection
             self.feed_url = d.get('href', self.feed_url)
             if self.feed_url in url_history:
-                raise FeedError('Circular redirection found')
+                raise FatalFeedError('Circular redirection found')
             
             # Update feed and try again
             self.save()
@@ -170,10 +171,10 @@ class Feed(models.Model):
         
         # Feed gone
         if status == 410:
-            raise FeedError('Feed has gone')
+            raise FatalFeedError('Feed has gone')
         
         # Unknown status
-        raise FeedError('Unrecognised HTTP status %s' % status)
+        raise FatalFeedError('Unrecognised HTTP status %s' % status)
     
     def check(self, force=False, read=False):
         """
@@ -194,13 +195,16 @@ class Feed(models.Model):
         try:
             feed, entries = self._fetch_feed()
         except FeedError, e:
-            self.is_active = False
+            if isinstance(e, FatalFeedError):
+                self.is_active = False
             self.error = str(e)
             self.save()
             return
-        
-        if feed is None:
-            return
+        else:
+            # Success, clear error if necessary
+            if self.error != '':
+                self.error = ''
+                self.save()
         
         # Try to find the updated time
         updated = feed.get('published_parsed', None)
