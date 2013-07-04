@@ -3,6 +3,7 @@ from optparse import make_option
 from django.core.management.base import BaseCommand
 
 from yarr import models
+from yarr.decorators import @with_socket_timeout
 
 
 class Command(BaseCommand):
@@ -30,7 +31,8 @@ class Command(BaseCommand):
             help='Purge current entries and reset feed counters',
         ),
     )
-
+    
+    @with_socket_timeout
     def handle(self, *args, **options):
         # Purge current entries
         if options['purge']:
@@ -40,7 +42,7 @@ class Command(BaseCommand):
                 last_checked=None,
                 next_check=None,
             )
-            
+        
         # Check all feeds for updates
         models.Feed.objects.check(
             force=options['force'],

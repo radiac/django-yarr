@@ -218,6 +218,20 @@ class Feed(models.Model):
     def check(self, force=False, read=False):
         """
         Check the feed for updates
+        
+        Note: because feedparser refuses to support timeouts, this method could
+        block on an unresponsive connection.
+        
+        The official feedparser solution is to set the global socket timeout,
+        but that is not thread safe, so has not been done here in case it
+        affects the use of sockets in other installed django applications.
+        
+        New code which calls this method directly must use the decorator
+        ``yarr.decorators.with_socket_timeout`` to avoid blocking requests.
+        
+        For this reason, and the fact that it could take a relatively long time
+        to parse a feed, this method should never be called as a direct result
+        of a web request.
         """
         # Check it's due for a check
         now = datetime.datetime.now()

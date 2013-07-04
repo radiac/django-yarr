@@ -5,6 +5,7 @@ from django.test import TestCase
 from django.utils.unittest import skipIf
 
 from yarr.models import Feed
+from yarr.decorators import with_socket_timeout
 
 try:
     from xml.sax import SAXParseException
@@ -78,6 +79,7 @@ class FeedTest(TestCase):
             r'^Feed error: SAXParseException - '
         )
     
+    @with_socket_timeout
     def test_http_error(self):
         """
         Test HTTP errors
