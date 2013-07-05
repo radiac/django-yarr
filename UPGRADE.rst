@@ -11,7 +11,8 @@ Upgrading to 0.2.0
 
 (from == 0.1.5)
 
-Settings (if you have set them):
+Change the following settings, if you have overridden the defaults:
+
 * Rename ``YARR_PAGINATION`` to ``YARR_PAGE_LENGTH``
 * Rename ``YARR_API_PAGINATION`` to ``YARR_API_PAGE_LENGTH``
 
