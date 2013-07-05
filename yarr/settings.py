@@ -11,8 +11,8 @@ import bleach
 HOME = getattr(settings, 'YARR_HOME', 'yarr-list_unread')
 
 # Pagination limits
-PAGINATION = getattr(settings, 'YARR_PAGINATION', 25)
-AJAX_PAGINATION = getattr(settings, 'YARR_AJAX_PAGINATION', 5)
+PAGE_LENGTH = getattr(settings, 'YARR_PAGE_LENGTH', 25)
+API_PAGE_LENGTH = getattr(settings, 'YARR_API_PAGE_LENGTH', 5)
 
 # If true, fix the control bar at the top of the screen when scrolling down
 CONTROL_FIXED = getattr(settings, 'YARR_CONTROL_FIXED', True)
@@ -30,7 +30,7 @@ ADD_JQUERY = getattr(settings, 'YARR_ADD_JQUERY', True)
 # Note: this sets the global socket timeout, which is not thread-safe; it is
 # therefore set explicitly when checking feeds, and reset after feeds have been
 # updated (see ``yarr.decorators.with_socket_timeout`` for more details).
-SOCKET_TIMEOUT = 15
+SOCKET_TIMEOUT = getattr(settings, 'YARR_SOCKET_TIMEOUT', 15)
 
 # Default frequency to check a feed, in minutes
 # Defaults to just under 24 hours (23:45) to avoid issues with slow responses

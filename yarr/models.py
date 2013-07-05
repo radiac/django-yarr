@@ -295,7 +295,7 @@ class Feed(models.Model):
             
         # Update any feed fields
         changed = self._update_attrs(
-            title       = feed.get('title', 'Unknown'),
+            title       = feed.get('title', None) or self.title,
             site_url    = feed.get('link', ''),
             last_updated = updated,
         )

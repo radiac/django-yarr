@@ -60,7 +60,10 @@ def list_entries(
     """
     # Get entries queryset
     qs, feed = get_entries(request, feed_pk, unread, saved)
-   
+    
+    # Make list of available pks for this page
+    available_pks = qs.values_list('pk', flat=True)
+    
     # Paginate
     entries, pagination = utils.paginate(request, qs)
     
@@ -79,6 +82,7 @@ def list_entries(
     return render_to_response(template, RequestContext(request, {
         'title':    title,
         'entries':  entries,
+        'available_pks': available_pks,
         'pagination': pagination,
         'feed':     feed,
         'saved':    saved,
@@ -86,6 +90,7 @@ def list_entries(
         'yarr_settings': {
             'control_fixed':    settings.CONTROL_FIXED,
             'add_jquery':       settings.ADD_JQUERY,
+            'api_page_length':  settings.API_PAGE_LENGTH,
         },
     }))
     
@@ -188,26 +193,28 @@ def mark_saved(
     }))
     
 
+    
+
 @login_required
-def api_list(request, template="yarr/include/entry.html"):
+def api_entry_get(request, template="yarr/include/entry.html"):
     """
-    JSON API for getting entries
+    JSON API to get entry data
+    
+    Arguments passed on GET:
+        entry_pks   List of entries to get
     """
     # Get entries queryset
-    feed_pk = request.GET.get('feed_pk', None) or None
-    unread = request.GET.get('unread', True) == 'true'
-    saved = request.GET.get('saved', False) == 'true'
-    qs, feed = get_entries(request, feed_pk, unread, saved)
-    
-    # Exclude pks already there
-    pks = request.GET.get('pks', '')
+    pks = request.GET.get('entry_pks', '').split(',')
     if pks:
-        qs = qs.exclude(pk__in=pks.split(','))
-        entries = qs[:settings.AJAX_PAGINATION]
+        success = True
+        entries = models.Entry.objects.filter(
+            feed__user=request.user, pk__in=pks,
+        )
     else:
-        entries = []
+        success = False
+        entries = models.Entry.objects.none()
     
-    # Paginate and render
+    # Render
     rendered = []
     compiled = loader.get_template(template)
     for entry in entries:
@@ -220,52 +227,68 @@ def api_list(request, template="yarr/include/entry.html"):
     # Respond
     return HttpResponse(
         simplejson.dumps({
-            'status':   True,
+            'success':  success,
             'entries':  rendered,
         }), mimetype='application/json'
     )
     
 
 @login_required
-def api_entry(request):
+def api_entry_set(request):
     """
-    JSON API for an entry
+    JSON API to set entry data
+    
+    Arguments passed on GET:
+        entry_pks   List of entries to update
+        op          Operation to perform
+                    ``read``    Change read flag
+                    ``saved``   Change saved flag
+        is_read     New value of read flag, if ``op=read`` (else ignored)
+                    Format: ``is_read=true`` or ``is_read==false``
+        is_saved    New value of saved flag, if ``op=saved`` (else ignored)
+                    Format: ``is_saved=true`` or ``is_saved==false``
     """
-    # Look up entry
-    entry_pk = request.GET['entry_pk']
-    entry = get_object_or_404(
-        models.Entry, pk=entry_pk, feed__user=request.user,
-    )
+    # Start assuming the worst
+    success = False
+    msg = 'Unknown operation'
+    
+    # Get entries queryset
+    pks = request.GET.get('entry_pks', '').split(',')
+    if pks:
+        success = True
+        entries = models.Entry.objects.filter(
+            feed__user=request.user, pk__in=pks,
+        )
+    else:
+        success = False
+        entries = models.Entry.objects.none()
     
     # Get operation
     op = request.GET.get('op', None)
     
-    # Report
-    status = False
-    msg = 'Unknown operation'
-    
     # Update flags
     if op == 'read':
         is_read = request.GET.get('is_read', 'true') == 'true'
-        entry.read = is_read
-        entry.saved = False
-        status = True
+        entries.update(
+            read    = is_read,
+            saved   = False,
+        )
+        success = True
         msg = 'Marked as %s' % ('read' if is_read else 'unread')
     
     elif op == 'saved':
         is_saved = request.GET.get('is_saved', 'true') == 'true'
-        entry.saved = is_saved
-        entry.read = False
-        status = True
-        msg = 'Item saved' if is_saved else 'Item no longer saved'
-    
-    # Save
-    entry.save()
+        entries.update(
+            saved   = is_saved,
+            read    = False,
+        )
+        success = True
+        msg = 'Saved' if is_saved else 'No longer saved'
     
     # Respond
     return HttpResponse(
         simplejson.dumps({
-            'status':   status,
+            'success':  success,
             'msg':      msg,
         }), mimetype='application/json'
     )

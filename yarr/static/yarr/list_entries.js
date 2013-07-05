@@ -18,13 +18,17 @@ $(function () {
             .appendTo($con)
             .hide()
         ,
-        apiEntry = $con.data('api-entry'),
-        apiList = $con.data('api-list'),
+        pkAvailable = $con.data('available-pks').split(','),
+        apiEntryGet = $con.data('api-entry-get'),
+        apiEntrySet = $con.data('api-entry-set'),
+        
+        
         statusTimeout,
         $controlFixed, controlTop, controlHeight,
         scrollCutoff, entryBottoms, scrollInfiniteTrigger,
         infiniteLoading = false,
         current, $current,
+        
         
         
         /*
@@ -36,6 +40,9 @@ $(function () {
         
         // Load more entries for infinite scroll when this many pixels left
         scrollInfiniteMargin = 300,
+        
+        // Page length for API requests
+        pageLength = $con.data('api-page-length'),
         
         // Whether or not the control bar should be fixed when scrolling
         controlFixed = $control.data('fixed', true)
@@ -135,14 +142,14 @@ $(function () {
                 
                 // Prep data
                 data = {
-                    'entry_pk': $entry.data('yarr-pk'),
+                    'entry_pks': [$entry.data('yarr-pk')].join(','),
+                    'op':   (op == OP_READ) ? 'read' : 'saved',
                     'is_read':  $read.prop('checked'),
-                    'is_saved': $saved.prop('checked'),
-                    'op':   (op == OP_READ) ? 'read' : 'saved'
+                    'is_saved': $saved.prop('checked')
                 }
                 
                 // Update the server
-                apiCall(apiEntry, data);
+                apiCall(apiEntrySet, data);
             })
         ;
         
@@ -186,16 +193,15 @@ $(function () {
         /** Make a call to the API */
         $.getJSON(url, data)
             .done(function(json) {
-                setStatus(json.msg, !json.status);
-                
+                setStatus(json.msg, !json.success);
                 if (successFn) {
                     successFn(json);
                 }
             })
             .fail(function(jqxhr, textStatus, error ) {
-                setStatus(textStatus + ', ' + error, true);
+                setStatus(textStatus + ': ' + error, true);
                 if (failFn) {
-                    failFn(json);
+                    failFn(textStatus);
                 }
             })
         ;
@@ -265,27 +271,41 @@ $(function () {
         /** Infinite scroll loader
             Called when it is time to load more entries
         */
-        
-        // Build list of visible PKs
-        var pks = [], $el;
-        for (var i=0, l=$entries.length; i<l; i++) {
-            $el = $($entries[i]);
-            pks.push($el.data('yarr-pk'));
-        }
+        // Don't do anything if we're already trying to load more
         if (infiniteLoading) {
             return;
         }
         infiniteLoading = true;
         
-        // Get a new list
+        
+        // Build list of visible PKs
+        // ++ move pk_lookup outside into cached global
+        var pkLookup = {}, $el;
+        for (var i=0, l=$entries.length; i<l; i++) {
+            $el = $($entries[i]);
+            pkLookup[$el.data('yarr-pk')] = $el;
+        }
+        
+        // Decide which pks to get next
+        // ++ can be smarter here - use pkUnloaded
+        var pkRequest = [];
+        for (
+            var i=0, l=pkAvailable.length;
+            i<l && pkRequest.length<pageLength;
+            i++
+        ) {
+            if (!pkLookup[pkAvailable[i]]) {
+                pkRequest.push(pkAvailable[i]);
+            }
+        }
+        
+        // Get data for entries
         setStatus('Loading...');
-        apiCall(apiList, {
-            'feed_pk':  $con.data('q-feedpk'),
-            'saved':    $con.data('q-saved'),
-            'unread':   $con.data('q-unread'),
-            'pks':      pks.join(',')
+        apiCall(apiEntryGet, {
+            'entry_pks':      pkRequest.join(',')
         }, function (json) {
             /** API list load: success */
+            infiniteLoading = false;
             
             // Catch no more entries
             var count = json.entries.length;
@@ -299,7 +319,6 @@ $(function () {
                 var $entry = $(json.entries[i]).appendTo($content);
                 setupEntry($entry);
             }
-            infiniteLoading = false;
             
             // Update $entries and recalc size
             $entries = $('.yarr_entry');
@@ -346,12 +365,14 @@ $(function () {
         .each(function () {
             setupEntry($(this));
         })
-        .find('.yarr_entry_content')
-            .click(function (e) {
-                selectEntry($(this).parent().index());
-                scrollCurrent();
-            })
     ;
+    $content
+        .on('click', '.yarr_entry_content', function (e) {
+            selectEntry($(this).parent().index());
+            scrollCurrent();
+        })
+    ;
+    
     
     
     

@@ -18,7 +18,7 @@ urlpatterns = patterns('yarr.views',
         name="yarr-list_saved",
     ),
     
-    # Non-ajax flag management
+    # Flag management without javascript
     url(r'^read/$', 'mark_read',
         name="yarr-mark_all_read",
     ),
@@ -37,14 +37,20 @@ urlpatterns = patterns('yarr.views',
         name="yarr-mark_unsaved",
     ),
     
-    # Ajax list
-    url(r'^api/list/$', 'api_list',
-        name="yarr-api_list",
+    
+    
+    #
+    # JSON API
+    #
+    
+    url(r'^api/entry/get/$', 'api_entry_get',
+        name="yarr-api_entry_get",
     ),
     
-    # Ajax flag management
-    url(r'^api/entry/$', 'api_entry',
-        name="yarr-api_entry",
+    url(r'^api/entry/set/$', 'api_entry_set',
+        name="yarr-api_entry_set",
     ),
+    
+    
 )
 

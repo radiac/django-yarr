@@ -115,12 +115,12 @@ To manage the web interface:
 
     Default: ``yarr-list_unread``
 
-``YARR_PAGINATION``:
+``YARR_PAGE_LENGTH``:
     The maximum number of entries to show on one page
     
     Default: ``25``
 
-``YARR_AJAX_PAGINATION``:
+``YARR_API_PAGE_LENGTH``:
     The maximum number of entries to return when infinite scrolling with AJAX
     
     Default: ``5``

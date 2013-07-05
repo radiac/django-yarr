@@ -14,7 +14,7 @@ def paginate(request, qs, adjacent_pages=3):
         paginated   Paginated items
         pagination  Info for template
     """
-    paginator = Paginator(qs, settings.PAGINATION)
+    paginator = Paginator(qs, settings.PAGE_LENGTH)
     try:
         page = int(request.GET.get('p', '1'))
     except ValueError:

@@ -5,6 +5,10 @@ Django Yarr Changes
 Changelog
 =========
 
+            Feature:    Replaced API with more sensible get/set model
+            Bugfix:     Changed feed check to keep feed title if none provided
+            Bugfix:     Fixed clicking on items in infinite scroll
+
 0.1.5       2013-07-05
             Bugfix:     Replaced checks for updated_parsed, suppress warnings
 
@@ -38,7 +42,6 @@ Roadmap
 Target
 0.2.0       List mode
 0.2.x       Ajax mark all read
-            Rewrite infinite scroll API
             Improve render time
             Delay image loading
 0.3.0       Views to manage subscriptions
