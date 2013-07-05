@@ -16,7 +16,7 @@ Features
 * Manage subscriptions through admin site
 * No social nonsense
 
-Version 0.1.3
+Version 0.1.4
 
 * see `CHANGES <CHANGES>`_ for full changelog and roadmap
 * see `UPGRADE <UPGRADE.rst>`_ for how to upgrade from earlier releases

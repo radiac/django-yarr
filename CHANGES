@@ -5,6 +5,9 @@ Django Yarr Changes
 Changelog
 =========
 
+0.1.4       2013-07-05
+            Bugfix:     Changed URLFields to TextFields with URL validator
+
 0.1.3       2013-07-04
             Feature:    Added tests
             Bugfix:     Changed title, guid and author fields to TextField

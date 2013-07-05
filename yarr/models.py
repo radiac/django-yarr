@@ -2,6 +2,7 @@ import datetime
 import time
 import urllib2
 
+from django.core.validators import URLValidator
 from django.db import models
 
 import bleach
@@ -98,10 +99,16 @@ class Feed(models.Model):
     """
     # Compulsory data fields
     title = models.TextField(help_text="Name for the feed")
-    feed_url = models.URLField(help_text="URL of the RSS feed")
+    feed_url = models.TextField(
+        validators=[URLValidator()],
+        help_text="URL of the RSS feed",
+    )
     
     # Optional data fields
-    site_url = models.URLField(blank=True, help_text="URL of the HTML site")
+    site_url = models.TextField(
+        validators=[URLValidator()],
+        help_text="URL of the HTML site",
+    )
     
     # Internal fields
     user = models.ForeignKey('auth.User')
@@ -546,12 +553,15 @@ class Entry(models.Model):
     
     # Optional data fields
     author = models.TextField(blank=True)
-    url = models.URLField(
+    url = models.TextField(
         blank=True,
+        validators=[URLValidator()],
         help_text="URL for the HTML for this entry",
     )
-    comments_url = models.URLField(
+    
+    comments_url = models.TextField(
         blank=True,
+        validators=[URLValidator()],
         help_text="URL for HTML comment submission page",
     )
     guid = models.TextField(
