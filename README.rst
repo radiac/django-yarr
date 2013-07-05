@@ -4,6 +4,8 @@ Django Yarr - Yet Another RSS Reader
 
 A lightweight customisable RSS reader for Django.
 
+Example: http://radiac.net/projects/django-yarr/example/
+
 
 Features
 ========
@@ -16,12 +18,11 @@ Features
 * Manage subscriptions through admin site
 * No social nonsense
 
-Version 0.1.4
 
-* see `CHANGES <CHANGES>`_ for full changelog and roadmap
-* see `UPGRADE <UPGRADE.rst>`_ for how to upgrade from earlier releases
+Version 0.1.5
 
-Example: http://radiac.net/projects/django-yarr/example/
+* See `CHANGES <CHANGES>`_ for full changelog and roadmap
+* See `UPGRADE <UPGRADE.rst>`_ for how to upgrade from earlier releases
 
 
 Requirements

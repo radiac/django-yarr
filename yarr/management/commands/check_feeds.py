@@ -1,9 +1,17 @@
 from optparse import make_option
 
+from django.conf import settings
 from django.core.management.base import BaseCommand
 
 from yarr import models
 from yarr.decorators import with_socket_timeout
+
+
+# Supress feedparser's DeprecationWarning in production environments - we don't
+# care about the changes to updated and published, we're already doing it right
+if not settings.DEBUG:
+    import warnings
+    warnings.filterwarnings("ignore", category=DeprecationWarning) 
 
 
 class Command(BaseCommand):

@@ -5,6 +5,9 @@ Django Yarr Changes
 Changelog
 =========
 
+0.1.5       2013-07-05
+            Bugfix:     Replaced checks for updated_parsed, suppress warnings
+
 0.1.4       2013-07-05
             Bugfix:     Changed URLFields to TextFields with URL validator
 
