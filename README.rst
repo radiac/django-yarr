@@ -11,7 +11,7 @@ Features
 ========
 
 * Import list of feeds from a Google Reader takeaway
-* View all, just unread or saved items
+* View all, just unread or saved items, in list or expanded layout
 * Mark items as read or saved
 * Infinite scrolling, with keyboard support and automatic mark as read
 * Support for multiple users
