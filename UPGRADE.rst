@@ -6,7 +6,7 @@ If a release isn't listed here, there are no special instructions for upgrading
 to that version.
 
 
-Upgrading to .....
+Upgrading to 0.2.0
 ==================
 
 (from == 0.1.5)

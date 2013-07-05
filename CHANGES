@@ -5,6 +5,8 @@ Django Yarr Changes
 Changelog
 =========
 
+0.2.0       2013-07-05
+            Feature:    Added list view
             Feature:    Replaced API with more sensible get/set model
             Bugfix:     Changed feed check to keep feed title if none provided
             Bugfix:     Fixed clicking on items in infinite scroll
@@ -40,7 +42,6 @@ Roadmap
 =======
 
 Target
-0.2.0       List mode
 0.2.x       Ajax mark all read
             Improve render time
             Delay image loading

@@ -19,7 +19,7 @@ Features
 * No social nonsense
 
 
-Version 0.1.5
+Version 0.2.0
 
 * See `CHANGES <CHANGES>`_ for full changelog and roadmap
 * See `UPGRADE <UPGRADE.rst>`_ for how to upgrade from earlier releases
