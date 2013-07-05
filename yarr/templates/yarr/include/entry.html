@@ -5,7 +5,14 @@
     data-yarr-read="{{ entry.read|lower }}"
     data-yarr-saved="{{ entry.saved|lower }}"
 >
-
+    <div class="yarr_entry_li">
+        <div class="yarr_li_feed">{{ entry.feed.title }}</div>
+        <div class="yarr_li_date">{{ entry.date|date:"M d Y, H:i" }}</div>
+        <div class="yarr_li_entry">
+            <span>{{ entry.title|default:"Untitled" }}</span>
+            - {{ entry.content|striptags|truncatechars:20|default:"..." }}
+        </div>
+    </div>
     <div class="yarr_entry_content">
         <h1>
             {% if entry.url %}<a href="{{ entry.url }}">{% endif %}

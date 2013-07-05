@@ -144,11 +144,17 @@ ul.yarr_entry_control li label input {
     line-height:    1.1em;
 }
 
+#yarr_content .yarr_read h1 a {
+    color:  #666;
+}
+
 #yarr_content h1 a,
+#yarr_content .yarr_active h1 a,
 .yarr_feed a {
     color:  #46a;
     text-decoration:    none;
 }
+
 
 #yarr_content h1 a:hover,
 .yarr_feed a:hover {
@@ -184,6 +190,82 @@ ul.yarr_entry_control li label input {
     float:  right;
 }
 .yarr_feed {
+}
+
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+**                                                              List display
+** Default to expanded mode
+*/
+
+.yarr_mode_list {
+    padding-top:    1em;
+    border-bottom:  1px solid #ccc;
+}
+
+.yarr_mode_list .yarr_entry {
+    margin: 0;
+    border-bottom: 0;
+}
+
+.yarr_entry_li,
+.yarr_mode_list .yarr_entry_content,
+.yarr_mode_list .yarr_entry_control {
+    display:    none;
+}
+.yarr_mode_list .yarr_entry_li {
+    display:    block;
+}
+
+
+.yarr_mode_list .yarr_open .yarr_entry_li,
+.yarr_mode_list .yarr_open .yarr_entry_content,
+.yarr_mode_list .yarr_open .yarr_entry_control {
+    display:    block;
+}
+
+
+/* Style list block */
+
+.yarr_read .yarr_entry_li {
+    background-color:   #eee;
+}
+.yarr_entry_li {
+    padding:    0 1em;
+}
+.yarr_mode_list .yarr_entry_content {
+    border-top:  1px solid #ccc;
+}
+
+.yarr_entry_li:hover {
+    background-color:   #f8f8f8;
+    cursor: pointer;
+    cursor: hand;
+}
+
+.yarr_entry_li div {
+    height:     1.8em;
+    line-height:    1.8em;
+    overflow:   hidden;
+    color:      #666;
+}
+
+.yarr_li_feed {
+    float:      left;
+    width:      15em;
+    margin-right: 1em;
+}
+.yarr_li_entry span {
+    color:      #000;
+    font-weight:    bold;
+}
+.yarr_read .yarr_li_entry span {
+    font-weight:    normal;
+}
+.yarr_li_date {
+    float:      right;
+    text-align: right;
+    width:      10em;
 }
 
 

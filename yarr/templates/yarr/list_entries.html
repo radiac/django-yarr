@@ -13,6 +13,7 @@
 {% block content %}
 
 <div id="yarr_con"
+    data-display-mode="expanded"
     data-available-pks="{{ available_pks|join:"," }}"
     data-api-page-length="{{ yarr_settings.api_page_length }}"
     data-api-entry-get="{% url 'yarr-api_entry_get' %}"
@@ -27,7 +28,7 @@
             <li><a href="{% url 'yarr-list_unread' %}"{% if unread %} class="yarr_selected"{% endif %}>Unread</a></li>
             <li><a href="{% url 'yarr-list_saved' %}"{% if saved %} class="yarr_selected"{% endif %}>Saved</a></li>
         </ul>
-        <ul>
+        <ul class="yarr_menu_op">
             <li><a href="{% url 'yarr-mark_all_read' %}">Mark all read</a></li>
         </ul>
         

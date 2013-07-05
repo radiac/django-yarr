@@ -7,8 +7,11 @@ $(function () {
         /*
         ** Internal vars
         */
-        OP_READ = 1,
-        OP_SAVED = 2,
+        OP_READ = 'read',
+        OP_SAVED = 'saved',
+        MODE_EXPANDED = 'expanded',
+        MODE_LIST = 'list',
+        
         $scroller = $(window),
         $con = $('#yarr_con'),
         $control = $('.yarr_control'),
@@ -30,10 +33,14 @@ $(function () {
         current, $current,
         
         
-        
         /*
         ** Settings
         */
+        
+        // Display mode; one of:
+        //      expanded    Traditional list of titles and bodies
+        //      list        List of titles, with expanding bodies
+        displayMode = $con.data('display-mode'),
         
         // Switch items when scrolling past this point
         scrollSwitchMargin = 100,
@@ -53,6 +60,14 @@ $(function () {
     **                                                          Functions
     */
     
+    function mkButton(txt, fn) {
+        return $('<a href="#" class="button">' + txt + '</a>')
+            .click(function (e) {
+                e.preventDefault();
+                fn();
+            })
+        ;
+    }
     function mkIconButton(className, fn) {
         return $('<a href="#" class="' + className + '">&nbsp;</a>')
             .click(function (e) {
@@ -62,25 +77,53 @@ $(function () {
         ;
     }
     
+    function switchMode(newMode) {
+        // Switch the mode
+        if (newMode == MODE_LIST) {
+            $content.addClass('yarr_mode_list');
+            $('.yarr_menu_mode a').text('Expanded view');
+        } else {
+            $content.removeClass('yarr_mode_list');
+            $('.yarr_menu_mode a').text('List view');
+        }
+        displayMode = newMode;
+        
+        // Scroll to the top
+        $scroller.scrollTop(0);
+        
+        // Ensure full screen
+        ensureFullScreen();
+    }
+    
     function setupControl() {
         /** Remove pagination links, add scroll buttons, and clone fixed bar */
         
         // Infinite scroll support, so disable pagination links
         $control.find('.yarr_paginated').remove();
         
+        // Add mode switch and initialise
+        $('<ul class="yarr_menu_mode" />')
+            .append($('<li/>').append(
+                mkButton('Mode', function () {
+                    switchMode(
+                        (displayMode == MODE_LIST)
+                        ? MODE_EXPANDED : MODE_LIST
+                    );
+                })
+            ))
+            .insertAfter($control.find('.yarr_menu_op'))
+        ;
+        switchMode(displayMode);
+        
         // Add next/prev buttons
         $('<ul class="yarr_nav"/>')
-            .append(
-                $('<li/>').append(
-                    mkIconButton('yarr_previous', selectPrevious)
-                )
-            )
+            .append($('<li/>').append(
+                mkIconButton('yarr_previous', selectPrevious)
+            ))
             .append(' ')
-            .append(
-                $('<li/>').append(
-                    mkIconButton('yarr_next', selectNext)
-                )
-            )
+            .append($('<li/>').append(
+                mkIconButton('yarr_next', selectNext)
+            ))
             .appendTo($control)
         ;
     
@@ -143,7 +186,7 @@ $(function () {
                 // Prep data
                 data = {
                     'entry_pks': [$entry.data('yarr-pk')].join(','),
-                    'op':   (op == OP_READ) ? 'read' : 'saved',
+                    'op':       op,
                     'is_read':  $read.prop('checked'),
                     'is_saved': $saved.prop('checked')
                 }
@@ -220,17 +263,9 @@ $(function () {
         $current = $($entries.get(current))
             .addClass('yarr_active')
         ;
-        var $read = $current.find('input[name="read"]'),
-            $saved = $current.find('input[name="saved"]')
-        ;
         
-        // Try to mark as read
-        if (!$saved.prop('checked') && !$read.prop('checked')) {
-            $read
-                .prop('checked', true)
-                .change()
-            ;
-        }
+        // Open the selected item
+        openCurrent();
         
         // If this is the last entry, try to load more
         if (index == $entries.length - 1) {
@@ -266,11 +301,59 @@ $(function () {
         );
     }
     
+    function openCurrent() {
+        /** Open the specified entry, marking it as read */
+        var $read = $current.find('input[name="read"]'),
+            $saved = $current.find('input[name="saved"]')
+        ;
+        if (!$saved.prop('checked') && !$read.prop('checked')) {
+            $read
+                .prop('checked', true)
+                .change()
+            ;
+        }
+        
+        if (displayMode == MODE_LIST) {
+            $entries.removeClass('yarr_open');
+            $current.addClass('yarr_open');
+            entriesResized();
+        }
+    }
     
-    function loadInfiniteScroll() {
+    function ensureFullScreen() {
+        /** Ensure that enough entries have loaded to fill the screen, if more
+            are available.
+            
+            Infinite scroll can't trigger without a full screen to scroll.
+        */
+        
+        // Only in list mode
+        if (displayMode != MODE_LIST) {
+            return;
+        }
+        
+        // Get the height from the bottom of the loaded entries to the bottom
+        // of the viewport, plus the infinite scroll margin
+        var gap = (
+            ($scroller.innerHeight() + scrollInfiniteMargin)
+            - ($content.offset().top + $content.outerHeight())
+        );
+        
+        // If there's already no gap or no entries at all, nothing more to do
+        if (gap < 0 || $entries.length == 0) {
+            return;
+        }
+        
+        // Tell loadInfiniteScroll to load enough entries to exceed the
+        // infinite scroll margin
+        loadInfiniteScroll(Math.ceil(gap / $entries.outerHeight()));
+    }
+    
+    function loadInfiniteScroll(loadNumber) {
         /** Infinite scroll loader
             Called when it is time to load more entries
         */
+        
         // Don't do anything if we're already trying to load more
         if (infiniteLoading) {
             return;
@@ -286,17 +369,28 @@ $(function () {
             pkLookup[$el.data('yarr-pk')] = $el;
         }
         
+        // Default loadNumber to pageLength - may be higher in list mdoe
+        if (!loadNumber) {
+            loadNumber = pageLength;
+        }
+        
         // Decide which pks to get next
         // ++ can be smarter here - use pkUnloaded
         var pkRequest = [];
         for (
             var i=0, l=pkAvailable.length;
-            i<l && pkRequest.length<pageLength;
+            i<l && pkRequest.length<loadNumber;
             i++
         ) {
             if (!pkLookup[pkAvailable[i]]) {
                 pkRequest.push(pkAvailable[i]);
             }
+        }
+        
+        if (pkRequest.length == 0) {
+            setStatus('No more entries to load');
+            infiniteLoading = false;
+            return;
         }
         
         // Get data for entries
@@ -315,7 +409,7 @@ $(function () {
             }
             
             // Add entries
-            for (var i=0; i<json.entries.length; i++) {
+            for (var i=0; i<count; i++) {
                 var $entry = $(json.entries[i]).appendTo($content);
                 setupEntry($entry);
             }
@@ -366,12 +460,6 @@ $(function () {
             setupEntry($(this));
         })
     ;
-    $content
-        .on('click', '.yarr_entry_content', function (e) {
-            selectEntry($(this).parent().index());
-            scrollCurrent();
-        })
-    ;
     
     
     
@@ -379,6 +467,23 @@ $(function () {
     /**************************************************************************
     **                                                     Bind event handlers
     */
+    
+    // Handle entry clicks
+    $content
+        .on('click', '.yarr_entry_content', function (e) {
+            selectEntry($(this).parent().index());
+            scrollCurrent();
+        })
+        .on('click', '.yarr_entry_li', function (e) {
+            var $entry = $(this).parent();
+            if ($entry.hasClass('yarr_open')) {
+                $entry.removeClass('yarr_open');
+            } else {
+                selectEntry($entry.index());
+            }
+        })
+    ;
+    
     
     // Handle screen resizes
     $scroller.resize(function () {
@@ -403,6 +508,7 @@ $(function () {
         
         // The entries will have resized
         entriesResized();
+        ensureFullScreen();
     }).resize();
     
     // Handle scrolling
@@ -425,16 +531,17 @@ $(function () {
             }
         }
         
-        // Update selection
-        for (var i=0, l=$entries.length; i<l; i++) {
-            if (entryBottoms[i] > topCutoff) {
-                newCurrent = i;
-                break;
+        // Update selection if in expanded mode
+        if (displayMode == MODE_EXPANDED) {
+            for (var i=0, l=$entries.length; i<l; i++) {
+                if (entryBottoms[i] > topCutoff) {
+                    newCurrent = i;
+                    break;
+                }
             }
-        }
-        if (newCurrent >= 0 && newCurrent != current) {
-            selectEntry(newCurrent);
-            
+            if (newCurrent >= 0 && newCurrent != current) {
+                selectEntry(newCurrent);
+            }
         }
         
         // Infinite scroll
