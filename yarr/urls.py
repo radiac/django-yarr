@@ -18,6 +18,19 @@ urlpatterns = patterns('yarr.views',
         name="yarr-list_saved",
     ),
     
+    # Feed views
+    url(r'^unread/(?P<feed_pk>\d+)/$', 'list_entries',
+        name="yarr-list_unread"
+    ),
+    url(r'^all/(?P<feed_pk>\d+)/$', 'list_entries',
+        {'unread': False},
+        name="yarr-list_all",
+    ),
+    url(r'^saved/(?P<feed_pk>\d+)/$', 'list_entries',
+        {'saved': True},
+        name="yarr-list_saved",
+    ),
+    
     # Flag management without javascript
     url(r'^read/$', 'mark_read',
         name="yarr-mark_all_read",

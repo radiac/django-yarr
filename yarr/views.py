@@ -75,9 +75,19 @@ def list_entries(
     else:
         title = 'All items'
         
-    # Tag feed to title
+    # Add tag feed to title
     if feed:
-        title = '%s: %s' % (feed.title, title)
+        title = '%s - %s' % (feed.title, title)
+    
+    # Get list of feeds for feed list
+    feeds = models.Feed.objects.filter(user=request.user)
+    
+    # Determine current view for reverse
+    current_view = 'yarr-list_unread'
+    if saved:
+        current_view = 'yarr-list_saved'
+    elif not unread:
+        current_view = 'yarr-list_all'
     
     return render_to_response(template, RequestContext(request, {
         'title':    title,
@@ -85,10 +95,12 @@ def list_entries(
         'available_pks': available_pks,
         'pagination': pagination,
         'feed':     feed,
+        'feeds':    feeds,
         'saved':    saved,
         'unread':   unread,
+        'current_view': current_view,
         'yarr_settings': {
-            'control_fixed':    settings.CONTROL_FIXED,
+            'control_fixed':    settings.LAYOUT_FIXED,
             'add_jquery':       settings.ADD_JQUERY,
             'api_page_length':  settings.API_PAGE_LENGTH,
         },
@@ -204,11 +216,11 @@ def api_entry_get(request, template="yarr/include/entry.html"):
         entry_pks   List of entries to get
     """
     # Get entries queryset
-    pks = request.GET.get('entry_pks', '').split(',')
+    pks = request.GET.get('entry_pks', '')
     if pks:
         success = True
         entries = models.Entry.objects.filter(
-            feed__user=request.user, pk__in=pks,
+            feed__user=request.user, pk__in=pks.split(','),
         )
     else:
         success = False

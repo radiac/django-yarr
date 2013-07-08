@@ -14,8 +14,9 @@ HOME = getattr(settings, 'YARR_HOME', 'yarr-list_unread')
 PAGE_LENGTH = getattr(settings, 'YARR_PAGE_LENGTH', 25)
 API_PAGE_LENGTH = getattr(settings, 'YARR_API_PAGE_LENGTH', 5)
 
-# If true, fix the control bar at the top of the screen when scrolling down
-CONTROL_FIXED = getattr(settings, 'YARR_CONTROL_FIXED', True)
+# If true, fix the layout elements at the top of the screen when scrolling down
+# Disable if using a custom layout
+LAYOUT_FIXED = getattr(settings, 'YARR_LAYOUT_FIXED', True)
 
 # If true, add jQuery to the page when required
 ADD_JQUERY = getattr(settings, 'YARR_ADD_JQUERY', True)

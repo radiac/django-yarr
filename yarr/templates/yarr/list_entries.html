@@ -13,7 +13,6 @@
 {% block content %}
 
 <div id="yarr_con"
-    data-display-mode="expanded"
     data-available-pks="{{ available_pks|join:"," }}"
     data-api-page-length="{{ yarr_settings.api_page_length }}"
     data-api-entry-get="{% url 'yarr-api_entry_get' %}"
@@ -21,9 +20,12 @@
     data-q-feedpk="{{ feed.pk }}"
     data-q-saved="{{ saved|lower }}"
     data-q-unread="{{ unread|lower }}"
+    data-layout-fixed="{{ yarr_settings.layout_fixed|lower }}"
 >
-    <div class="yarr_control" data-fixed="{{ yarr_settings.control_fixed|lower }}">
-        <ul class="yarr_menu">
+
+{% block yarr_control %}
+    <div class="yarr_control">
+        <ul class="yarr_menu_filter">
             <li><a href="{% url 'yarr-list_all' %}"{% if not unread and not saved %} class="yarr_selected"{% endif %}>All</a></li>
             <li><a href="{% url 'yarr-list_unread' %}"{% if unread %} class="yarr_selected"{% endif %}>Unread</a></li>
             <li><a href="{% url 'yarr-list_saved' %}"{% if saved %} class="yarr_selected"{% endif %}>Saved</a></li>
@@ -62,9 +64,28 @@
             </ul>
         {% endif %}
     </div>
-    
-    
-    <div id="yarr_content">
+{% endblock %}
+
+{% block yarr_feed_list %}
+    <div class="yarr_feed_list">
+        <ul>
+            {% if feed %}
+                <li><a href="{% url current_view %}">All feeds</a></li>
+            {% endif %}
+            {% for feed in feeds %}
+                <li><a href="{% url current_view feed_pk=feed.pk %}">{{ feed.title }}</a></li>
+                <li><a href="{% url current_view feed_pk=feed.pk %}">{{ feed.title }}</a></li>
+                <li><a href="{% url current_view feed_pk=feed.pk %}">{{ feed.title }}</a></li>
+                <li><a href="{% url current_view feed_pk=feed.pk %}">{{ feed.title }}</a></li>
+                <li><a href="{% url current_view feed_pk=feed.pk %}">{{ feed.title }}</a></li>
+                <li><a href="{% url current_view feed_pk=feed.pk %}">{{ feed.title }}</a></li>
+            {% endfor %}
+        </ul>
+    </div>
+{% endblock %}
+
+{% block yarr_content %}
+    <div class="yarr_content">
         {% if entries.object_list|length == 0 %}
             {% if saved %}
                 <p>No saved items</p>
@@ -86,5 +107,6 @@
     </div>
     
 </div>
+{% endblock %}
 
 {% endblock %}

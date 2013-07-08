@@ -15,21 +15,22 @@ $(function () {
         $scroller = $(window),
         $con = $('#yarr_con'),
         $control = $('.yarr_control'),
-        $content = $('#yarr_content'),
+        $content = $('.yarr_content'),
         $entries = $('.yarr_entry'),
         $status = $('<div id="yarr_status" />')
             .appendTo($con)
             .hide()
         ,
-        pkAvailable = $con.data('available-pks').split(','),
+        $feedList = $('.yarr_feed_list'),
+        pkAvailable = $con.data('available-pks'),
         apiEntryGet = $con.data('api-entry-get'),
         apiEntrySet = $con.data('api-entry-set'),
         
-        
         statusTimeout,
-        $controlFixed, controlTop, controlHeight,
-        scrollCutoff, entryBottoms, scrollInfiniteTrigger,
-        infiniteLoading = false,
+        $controlFixed, controlIsFixed = false,
+        controlTop, controlHeight, controlBottom,
+        scrollCutoff, entryBottoms, entryMargin, scrollInfiniteTrigger,
+        infiniteLoading = false, infiniteFinished = false,
         current, $current,
         
         
@@ -40,7 +41,7 @@ $(function () {
         // Display mode; one of:
         //      expanded    Traditional list of titles and bodies
         //      list        List of titles, with expanding bodies
-        displayMode = $con.data('display-mode'),
+        displayMode = getCookie('yarr-displayMode', MODE_EXPANDED),
         
         // Switch items when scrolling past this point
         scrollSwitchMargin = 100,
@@ -51,14 +52,42 @@ $(function () {
         // Page length for API requests
         pageLength = $con.data('api-page-length'),
         
-        // Whether or not the control bar should be fixed when scrolling
-        controlFixed = $control.data('fixed', true)
+        // Whether or not the control bar and feed list should be fixed
+        layoutFixed = $con.data('layout-fixed', true)
     ;
+    
+    // Split pkAvailable
+    if (pkAvailable == '') {
+        pkAvailable = []
+    } else {
+        pkAvailable = pkAvailable.split(',');
+    }
     
     
     /**************************************************************************
     **                                                          Functions
     */
+    
+    function setCookie(key, value) {
+        /** Set the cookie */
+        var expires = new Date;
+        expires.setDate(expires.getDate() + 3650);
+        document.cookie = [
+            encodeURIComponent(key), '=', value,
+            '; expires=' + expires.toUTCString(),
+            '; path=/',
+            (window.location.protocol == 'https:') ? '; secure' : ''
+        ].join('');
+    }
+    
+    function getCookie(key, defaultValue) {
+        /** Get all cookies */
+        var pairs = document.cookie.split('; ');
+        for (var i = 0, pair; pair = pairs[i] && pairs[i].split('='); i++) {
+            if (decodeURIComponent(pair[0]) === key) return pair[1];
+        }
+        return defaultValue;
+    }
     
     function mkButton(txt, fn) {
         return $('<a href="#" class="button">' + txt + '</a>')
@@ -78,6 +107,8 @@ $(function () {
     }
     
     function switchMode(newMode) {
+        /** Switch display mode between expanded and list view */
+        
         // Switch the mode
         if (newMode == MODE_LIST) {
             $content.addClass('yarr_mode_list');
@@ -86,13 +117,63 @@ $(function () {
             $content.removeClass('yarr_mode_list');
             $('.yarr_menu_mode a').text('List view');
         }
+        
+        // Update var and cookie
         displayMode = newMode;
+        setCookie('yarr-displayMode', displayMode);
         
         // Scroll to the top
         $scroller.scrollTop(0);
         
         // Ensure full screen
         ensureFullScreen();
+    }
+    
+    function toggleFeed() {
+        /** Toggle the visibility of the feed; only available if layoutFixed */
+        var speed = 'fast',
+            isOpen = $feedList.is(":visible"),
+            
+            // Add dummy element to get true CSS values
+            $dummyList = $('<div class="yarr_feed_list">&nbsp;</div>')
+        ;
+        
+        // Special action for mobile layout
+        if ($dummyList.css('float') == 'none') {
+            if (isOpen) {
+                $feedList.slideUp(speed, function () {
+                    $feedList.removeAttr('style');
+                });
+            } else {
+                $feedList.slideDown(speed);
+            }
+            return;
+        }
+        
+        // Normal sidebar layout
+        if (isOpen) {
+            $feedList.animate({'width': 0}, speed, function () {
+                $feedList.hide();
+            });
+            $content.animate({'margin-left': 0}, speed);
+            
+        } else {
+            var $dummyContent = $('<div class="yarr_content">&nbsp;</div>');
+            
+            $feedList
+                .show()
+                .animate({'width': $dummyList.width()}, function () {
+                    $feedList.removeAttr('style');
+                })
+            ;
+            $content
+                .animate(
+                    {'margin-left': $dummyContent.css('margin-left')},
+                    function () {
+                        $content.removeAttr('style');
+                    }
+                );
+        }
     }
     
     function setupControl() {
@@ -126,10 +207,22 @@ $(function () {
             ))
             .appendTo($control)
         ;
-    
-        // Clone control bar ready for fixed position
-        // Need to clone so the original can stay in position
-        if (controlFixed) {
+        
+        // Calculate entry margin for autoscrolling
+        controlBottom = $control.offset().top + $control.outerHeight();
+        entryMargin = $feedList.offset().top - controlBottom;
+        
+        // Prepare fixed layout
+        if (layoutFixed) {
+            // Add feed switch and initialise
+            $feedToggle = mkButton('Feeds', toggleFeed);
+            $('<ul class="yarr_menu_feed"/ >')
+                .append($('<li/>').append($feedToggle))
+                .insertBefore($control.find('.yarr_menu_filter'))
+            ;
+            
+            // Clone control bar ready for fixed position
+            // Need to clone so the original can stay in position
             $controlFixed = $control
                 .clone(true)
                 .insertAfter($control)
@@ -139,6 +232,14 @@ $(function () {
                 })
                 .hide()
             ;
+            
+            // Prepare the fixed feedList
+            $feedList.css({
+                'position': 'fixed',
+                'top':      controlBottom,
+                'bottom':   $feedList.css('margin-top'),
+                'overflow-y':   'scroll'
+            });
         }
     }
     
@@ -297,7 +398,8 @@ $(function () {
     function scrollCurrent() {
         /** Scroll to the current entry */
         $scroller.scrollTop(
-            $($entries.get(current)).offset().top - $control.outerHeight()
+            ($($entries.get(current)).offset().top - $control.outerHeight())
+            - entryMargin
         );
     }
     
@@ -354,8 +456,9 @@ $(function () {
             Called when it is time to load more entries
         */
         
-        // Don't do anything if we're already trying to load more
-        if (infiniteLoading) {
+        // Don't do anything if we're already trying to load more, or there is
+        // no more to load
+        if (infiniteLoading || infiniteFinished) {
             return;
         }
         infiniteLoading = true;
@@ -390,6 +493,7 @@ $(function () {
         if (pkRequest.length == 0) {
             setStatus('No more entries to load');
             infiniteLoading = false;
+            infiniteFinished = true;
             return;
         }
         
@@ -405,6 +509,7 @@ $(function () {
             var count = json.entries.length;
             if (count == 0) {
                 setStatus('No more entries to load');
+                infiniteFinished = true;
                 return;
             }
             
@@ -499,7 +604,7 @@ $(function () {
         scrollCutoff = controlHeight + scrollSwitchMargin;
         
         // Move $controlFixed to occupy same horizontal position as $control
-        if (controlFixed) {
+        if (layoutFixed) {
             $controlFixed.css({
                 left:   controlOffset.left,
                 width:  $control.width()
@@ -516,18 +621,35 @@ $(function () {
         /** Event handler for scrolling */
         var scrollTop = $scroller.scrollTop(),
             newCurrent = -1,
-            topCutoff = scrollTop + scrollCutoff
+            topCutoff = scrollTop + scrollCutoff,
+            topMoved = false
         ;
         
         // Switch control bar between fixed and relative position
-        if (controlFixed) {
+        if (layoutFixed) {
             if (scrollTop > controlTop) {
-                // Fixed position
-                $controlFixed.show();
+                // Fixed layout
+                // Only change if changed
+                if (!controlIsFixed) {
+                    // Switch control bar to fixed position
+                    $controlFixed.show();
+                    controlIsFixed = true;
+                    
+                    // Move feed list to bottom of fixed bar
+                    $feedList.css('top', $controlFixed.outerHeight());
+                }
                 
             } else {
-                // Relative position
-                $controlFixed.hide();
+                // Relative layout
+                // Only switch bars if changed
+                if (controlIsFixed) {
+                    // Switch control bar to relative position
+                    $controlFixed.hide();
+                    controlIsFixed = false;
+                }
+                
+                // Always move feed list to bottom of relative bar
+                $feedList.css('top', controlBottom - scrollTop);
             }
         }
         
