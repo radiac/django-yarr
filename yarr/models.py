@@ -204,6 +204,12 @@ class Feed(models.Model):
         """
         Check the feed for updates
         
+        It will update if:
+        * ``force==True``
+        * it has never been updated
+        * it was due for an update in the past
+        * it is due for an update in the next ``MINIMUM_INTERVAL`` minutes
+        
         Note: because feedparser refuses to support timeouts, this method could
         block on an unresponsive connection.
         
@@ -220,7 +226,13 @@ class Feed(models.Model):
         """
         # Check it's due for a check
         now = datetime.datetime.now()
-        if not force and self.next_check is not None and self.next_check > now:
+        next_poll = now + datetime.timedelta(minutes=settings.MINIMUM_INTERVAL)
+        if (
+            not force
+            and self.next_check is not None
+            and self.next_check >= now
+            and self.next_check < next_poll
+        ):
             return
         
         # We're about to check, update the counters
