@@ -14,11 +14,11 @@
         </div>
     </div>
     <div class="yarr_entry_content">
-        <h1>
+        <h2>
             {% if entry.url %}<a href="{{ entry.url }}" target="_blank">{% endif %}
             {{ entry.title|default:"Untitled" }}
             {% if entry.url %}</a>{% endif %}
-        </h1>
+        </h2>
         <p class="yarr_date">{{ entry.date|date:"M d Y, H:i" }}</p>
         <p class="yarr_feed">from
             {% if entry.feed.site_url %}<a href="{{ entry.feed.site_url }}" target="_blank">{% endif %}

@@ -140,26 +140,26 @@ ul.yarr_entry_control li label input {
     z-index:        2;
 }
 
-.yarr_content h1 {
+.yarr_content h2 {
     margin:     0;
     padding:    0;
     font-size:  1.8em;
     line-height:    1.1em;
 }
 
-.yarr_content .yarr_read h1 a {
+.yarr_content .yarr_read h2 a {
     color:  #666;
 }
 
-.yarr_content h1 a,
-.yarr_content .yarr_active h1 a,
+.yarr_content h2 a,
+.yarr_content .yarr_active h2 a,
 .yarr_feed a {
     color:  #46a;
     text-decoration:    none;
 }
 
 
-.yarr_content h1 a:hover,
+.yarr_content h2 a:hover,
 .yarr_feed a:hover {
     text-decoration:    underline;
 }

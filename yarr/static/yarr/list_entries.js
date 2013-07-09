@@ -293,6 +293,13 @@ $(function () {
                     'is_saved': $saved.prop('checked')
                 }
                 
+                // Update class
+                if ($read.prop('checked')) {
+                    $entry.addClass('yarr_read');
+                } else {
+                    $entry.removeClass('yarr_read');
+                }
+                
                 // Update the server
                 apiCall(apiEntrySet, data);
             })
