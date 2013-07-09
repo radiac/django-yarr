@@ -5,13 +5,14 @@ Django Yarr Changes
 Changelog
 =========
 
-0.3.0       2013-
+0.3.0       2013-07-09
             Feature:    Added feed list, browse by feed
             Feature:    Added feed manager
-            Feature:    Added more keyboard shortcuts
             Feature:    Added cookie-based memory of expanded/list view
-            Bugfix:     Infinite scroll stops attempting at end of scroll
-            Internal:   Moved all global HTML data attributes to yarr_con
+            Bugfix:     Changed check_feeds to check any due in the next period
+            Bugfix:     Fixed infinite scroll still loading at end of scroll
+            Bugfix:     Fixed mark as read to change item style without reload
+            Bugfix:     Fixed double parsing by disabling feedparser sanitizer
             Note:       Changed roadmap
             
 0.2.0       2013-07-05

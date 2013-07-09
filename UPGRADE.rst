@@ -11,14 +11,17 @@ Upgrading to 0.3.0
 
 (from == 0.2.0)
 
+Changes to templates:
+
+* Entries now render titles as ``<h2>`` instead of ``<h1>``, for valid HTML4.
+* Some elements have had their selectors changes (notably ``#yarr_content`` to
+  ``.yarr_content``).
+
 Changes to settings, if you have overridden the defaults:
 
-* Note default for ``YARR_FREQUENCY`` has changed to 24 hours
 * Rename ``YARR_CONTROL_FIXED`` to ``YARR_LAYOUT_FIXED``
-
-There have also been several changes to the templates, css and javascript, and
-some elements have had their selectors changes (notably ``#yarr_content`` to
-``.yarr_content``).
+* Note that default for ``YARR_FREQUENCY`` has changed to 24 hours now that
+  feeds are checked before they are next due instead of after.
 
 
 Upgrading to 0.2.0

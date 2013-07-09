@@ -20,7 +20,7 @@ Features
 * No social nonsense
 
 
-Version 0.2.0
+Version 0.3.0
 
 * See `CHANGES <CHANGES>`_ for full changelog and roadmap
 * See `UPGRADE <UPGRADE.rst>`_ for how to upgrade from earlier releases
@@ -32,8 +32,8 @@ Requirements
 These packages are required:
 
 * Django >= 1.3
-* bleach >= 1.2.1
 * feedparser >= 5.1.3
+* bleach >= 1.2.1
 
 
 It is recommended that you use ``South`` to manage schema migrations, as future
@@ -82,8 +82,9 @@ Installation
    Feeds can currently only be managed through the admin section - see CHANGES
    for full roadmap.
 
-6. Schedule the ``check_feeds`` management command. You could use one of these
-   cron examples::
+6. Schedule the ``check_feeds`` management command. By default Yarr expects it
+   to be run once an hour, but you can change the ``YARR_MINIMUM_INTERVAL``
+   setting to alter this. You could use one of these cron examples::
 
     # Once a day (at 8am)
     * 8 * * * /usr/bin/python /path/to/project/manage.py check_feeds
@@ -153,13 +154,25 @@ To control feed updates:
     
     Default: ``30``
     
+
+``YARR_MINIMUM_INTERVAL``:
+    The minimum interval for checking a feed, in minutes.
+    
+    This should match the interval that the cron job runs at, to ensure all
+    feeds are checked on time.
+    
+    Default: ``60``
+
+``YARR_MAXIMUM_INTERVAL``:
+    The maximum interval for checking a feed, in minutes - no feeds should go
+    longer than this without a check.
+    
+    Default: ``24 * 60``
+
 ``YARR_FREQUENCY``:
     The default frequency to check a feed, in minutes
 
-    The default value is set to just under 24 hours (23:45) to avoid issues
-    with slow responses
-
-    Default: ``(60 * 24) + 45``
+    Default: ``24 * 60``
 
 
 The bleach settings can also be customised - see bleach docs for details:
