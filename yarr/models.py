@@ -1,3 +1,7 @@
+"""
+Yarr models
+"""
+
 import datetime
 import time
 import urllib2
@@ -5,12 +9,15 @@ import urllib2
 from django.core.validators import URLValidator
 from django.db import models
 
-import bleach
 import feedparser
 # ++ TODO: tags
 
-from yarr import settings
+from yarr import settings, managers
 
+
+
+###############################################################################
+#                                                               Exceptions
 
 class FeedError(Exception):
     """
@@ -29,40 +36,9 @@ class InactiveFeedError(FeedError):
     pass
 
 
-class FeedQuerySet(models.query.QuerySet):
-    def active(self):
-        """
-        Filter to active feeds
-        """
-        return self.filter(is_active=True)
-        
-    def check(self, force=False, read=False):
-        """
-        Check active feeds for updates
-        """
-        for feed in self.active():
-            feed.check(force, read)
-        
-    
-class FeedManager(models.Manager):
-    def active(self):
-        """
-        Active feeds
-        """
-        return self.get_query_set().active()
-        
-    def check(self, force=False, read=False):
-        """
-        Check all active feeds for updates
-        """
-        return self.get_query_set().check(force, read)
 
-    def get_query_set(self):
-        """
-        Return a FeedQuerySet
-        """
-        return FeedQuerySet(self.model)
-
+###############################################################################
+#                                                               Feed model
 
 class Feed(models.Model):
     """
@@ -100,14 +76,12 @@ class Feed(models.Model):
     # Compulsory data fields
     title = models.TextField(help_text="Name for the feed")
     feed_url = models.TextField(
-        validators=[URLValidator()],
-        help_text="URL of the RSS feed",
+        validators=[URLValidator()], help_text="URL of the RSS feed",
     )
     
     # Optional data fields
     site_url = models.TextField(
-        validators=[URLValidator()],
-        help_text="URL of the HTML site",
+        validators=[URLValidator()], help_text="URL of the HTML site",
     )
     
     # Internal fields
@@ -116,10 +90,12 @@ class Feed(models.Model):
         auto_now_add=True, help_text="Date this feed was added",
     )
     is_active = models.BooleanField(
-        default=True, help_text="A feed may go inactive when an error occurs",
+        default=True,
+        help_text="A feed will become inactive when a permanent error occurs",
     )
     check_frequency = models.IntegerField(
-        blank=True, null=True, help_text="Check frequency, in minutes",
+        blank=True, null=True,
+        help_text="How often to check the feed for changes, in minutes",
     )
     last_updated = models.DateTimeField(
         blank=True, null=True, help_text="Last time the feed says it changed",
@@ -134,7 +110,7 @@ class Feed(models.Model):
         blank=True, max_length=255, help_text="When a problem occurs",
     )
     
-    objects = FeedManager()
+    objects = managers.FeedManager()
     
     def __unicode__(self):
         return self.title
@@ -375,166 +351,15 @@ class Feed(models.Model):
         cleaning.delete()
         
         return latest
-        
+    
     class Meta:
         ordering = ('title', 'added',)
 
 
-class EntryQuerySet(models.query.QuerySet):
-    def user(self, user):
-        """
-        Filter by user
-        """
-        return self.filter(feed__user=user)
-        
-    def read(self):
-        """
-        Filter to read entries
-        """
-        return self.filter(read=True)
-        
-    def unread(self):
-        """
-        Filter to unread entries
-        """
-        return self.filter(read=False)
-        
-    def saved(self):
-        """
-        Filter to saved entries
-        """
-        return self.filter(saved=True)
-        
-    def unsaved(self):
-        """
-        Filter to unsaved entries
-        """
-        return self.filter(saved=False)
-        
-    
-class EntryManager(models.Manager):
-    def user(self, user):
-        """
-        Filter by user
-        """
-        return self.get_query_set().user(user)
-    
-    def read(self):
-        """
-        Get read entries
-        """
-        return self.get_query_set().read()
-        
-    def unread(self):
-        """
-        Get unread entries
-        """
-        return self.get_query_set().unread()
-        
-    def saved(self):
-        """
-        Get saved entries
-        """
-        return self.get_query_set().saved()
-        
-    def unsaved(self):
-        """
-        Get unsaved entries
-        """
-        return self.get_query_set().unsaved()
-        
-    def from_feedparser(self, raw):
-        """
-        Create an Entry object from a raw feedparser entry
-        
-        Arguments:
-            raw         The raw feedparser entry
-        
-        Returns:
-            entry       An Entry instance (not saved)
-        
-        # ++ TODO: tags
-        Any tags will be stored on _tags, to be moved to tags field after save
-        
-        The content field must be sanitised HTML of the entry's content, or
-        failing that its sanitised summary or description.
-        
-        The date field should use the entry's updated date, then its published
-        date, then its created date. If none of those are present, it will fall
-        back to the current datetime when it is first saved.
-        
-        The guid is either the guid according to the feed, or the entry link.
-    
-        Currently ignoring the following feedparser attributes:
-            author_detail
-            contributors
-            created
-            enclosures
-            expired
-            license
-            links
-            publisher
-            source
-            summary_detail
-            title_detail
-            vcard
-            xfn
-        """
-        # Create a new entry
-        entry = Entry()
-        
-        # Get the title and content
-        entry.title = raw.get('title', '')
-        content = raw.get('content', [{'value': ''}])[0]['value']
-        if not content:
-            content = raw.get('description', '')
-        
-        # Sanitise the content
-        entry.content = bleach.clean(
-            content,
-            tags=settings.ALLOWED_TAGS,
-            attributes=settings.ALLOWED_ATTRIBUTES,
-            styles=settings.ALLOWED_STYLES,
-            strip=True,
-        )
-        
-        # Order: updated, published, created
-        # If not provided, needs to be None for update comparison
-        # Will default to current time when saved
-        date = raw.get(
-            'updated_parsed', raw.get(
-                'published_parsed', raw.get(
-                    'created_parsed', None
-                )
-            )
-        )
-        if date is not None:
-            entry.date = datetime.datetime.fromtimestamp(
-                time.mktime(date)
-            )
-        
-        entry.url = raw.get('link', '')
-        entry.guid = raw.get('guid', entry.url)
-        
-        entry.author = raw.get('author', '')
-        entry.comments_url = raw.get('comments', '')
-        
-        # ++ TODO: tags
-        """
-        tags = raw.get('tags', None)
-        if tags is not None:
-            entry._tags = tags
-        """
-        
-        return entry
-        
-    def get_query_set(self):
-        """
-        Return an EntryQuerySet
-        """
-        return EntryQuerySet(self.model)
 
-        
+###############################################################################
+#                                                               Entry model
+
 class Entry(models.Model):
     """
     A cached entry
@@ -575,7 +400,7 @@ class Entry(models.Model):
     )
     # ++ TODO: tags
     
-    objects = EntryManager()
+    objects = managers.EntryManager()
     
     def __unicode__(self):
         return self.title
