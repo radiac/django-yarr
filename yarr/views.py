@@ -20,12 +20,7 @@ def home(request):
 def get_entries(request, feed_pk, unread, saved):
     """
     Internal function to filter the entries
-    Used by list_entries, api_list_entries
     """
-    # Give priority to saved
-    if saved:
-        unread = False
-    
     # Start building querystring
     qs = models.Entry.objects.select_related()
     
@@ -58,6 +53,10 @@ def list_entries(
         saved       If true, show only saved entries; priority over unread
     Note: an entry can only either be unread or saved, not both
     """
+    # Saved has priority over unread
+    if saved:
+        unread = False
+    
     # Get entries queryset
     qs, feed = get_entries(request, feed_pk, unread, saved)
     
