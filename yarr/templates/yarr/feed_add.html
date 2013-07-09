@@ -1,8 +1,10 @@
-{% extends "yarr/base.html" %}
+{% extends "yarr/base_manage.html" %}
 
 {% load url from future %}
 
 {% block content %}
+
+{{ block.super }}
 
 {% include "yarr/include/form_feed_add.html" %}
 

@@ -1,0 +1,16 @@
+{% extends "yarr/base.html" %}
+
+{% load url from future %}
+
+{% block content %}
+
+<div class="yarr_control">
+    <ul>
+        <li><a href="{% url "yarr-home" %}">Read items</a></li>
+        {% if not feeds %}
+            <li><a href="{% url "yarr-feeds" %}">Manage feeds</a></li>
+        {% endif %}
+    </ul>
+</div>
+
+{% endblock %}
