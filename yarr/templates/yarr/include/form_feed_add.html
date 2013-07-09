@@ -1,0 +1,11 @@
+{% load url from future %}
+
+<form action="{% url "yarr-feed_add" %}" method="POST" class="yarr_form">
+{% csrf_token %}
+
+<table>
+{{ feed_form.as_table }}
+<tr><td></td><td><input type="submit" value="Add feed" /></td></tr>
+</table>
+
+</form>

@@ -7,7 +7,7 @@ from django.shortcuts import get_object_or_404, render_to_response
 from django.template import RequestContext, loader, Context
 from django.utils import simplejson
 
-from yarr import models, utils, settings
+from yarr import settings, utils, models, forms
 
 
 @login_required
@@ -205,8 +205,87 @@ def mark_saved(
     }))
     
 
+@login_required
+def feeds(request, template="yarr/feeds.html"):
+    """
+    Mark entries as saved
+    Arguments:
+        entry_pk    Primary key for an Entry (required)
+        is_saved    If True, mark as saved
+                    If False, unmark as saved
+    """
+    # Get list of feeds for feed list
+    feeds = models.Feed.objects.filter(user=request.user)
+    
+    add_form = forms.AddFeedForm()
+    
+    return render_to_response(template, RequestContext(request, {
+        'title':    'Manage feeds',
+        'feed_form': add_form,
+        'feeds':    feeds,
+    }))
     
 
+@login_required
+def feed_form(
+    request, feed_pk=None, template_add="yarr/feed_add.html",
+    template_edit="yarr/feed_edit.html", success_url=None,
+):
+    """
+    Add or edit a feed
+    """
+    # Detect whether it's add or edit
+    if feed_pk is None:
+        is_add = True
+        form_class = forms.AddFeedForm
+        feed = models.Feed()
+        title = "Add feed"
+        template = template_add
+    else:
+        is_add = False
+        form_class = forms.EditFeedForm
+        feed = get_object_or_404(models.Feed, user=request.user, pk=feed_pk)
+        title = "Edit feed"
+        template = template_edit
+    
+    # Process request
+    if request.POST:
+        feed_form = form_class(request.POST, instance=feed)
+        
+        if feed_form.is_valid():
+            # Save changes
+            if is_add:
+                # Save feed
+                # ++ Really we would like to get the feed at this point, to
+                # ++ fill out the name and other feed details, and grab initial
+                # ++ entries. However, feedparser isn't thread-safe yet, so for
+                # ++ now we just have to wait for the next scheduled check
+                feed = feed_form.save(commit=False)
+                feed.title = feed.feed_url
+                feed.user = request.user
+                feed.save()
+            else:
+                feed = feed_form.save()
+            
+            # Report and redirect
+            if success_url is None:
+                messages.success(
+                    request,
+                    'Feed added.' if is_add else 'Changes saved',
+                )
+            return HttpResponseRedirect(
+                reverse('yarr-feeds') if success_url is None else success_url
+            )
+    else:
+        feed_form = form_class(instance=feed)
+    
+    return render_to_response(template, RequestContext(request, {
+        'title':    title,
+        'feed_form': feed_form,
+        'feed':     feed,
+    }))
+    
+    
 @login_required
 def api_entry_get(request, template="yarr/include/entry.html"):
     """

@@ -43,8 +43,8 @@
     background:     #fff;
     z-index:        2;
     -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
-    -moz-box-sizing: border-box;    /* Firefox, other Gecko */
-    box-sizing: border-box;         /* Opera/IE 8+ */
+    -moz-box-sizing:    border-box; /* Firefox, other Gecko */
+    box-sizing:         border-box; /* Opera/IE 8+ */
 }
 
 .yarr_control ul {
@@ -326,3 +326,64 @@ ul.yarr_entry_control li label input {
 }
 
 
+/******************************************************************************
+**                                                       Feed management table
+*/
+
+table.yarr_feed_manage {
+    border-collapse: collapse;
+    border:         0;
+    width:          100%;
+}
+
+table.yarr_feed_manage th {
+    text-align: left;
+    background: #ccc;
+}
+
+table.yarr_feed_manage th,
+table.yarr_feed_manage td {
+    padding:    0.1em 0.6em;
+    border:     1px solid #ccc;
+    height:     1.6em;
+    line-height:    1.6em;
+    white-space:    nowrap;
+    overflow:       hidden;
+    text-overflow:  ellipsis;
+}
+
+table.yarr_feed_manage tr:hover td {
+    background: #f8f8f8;
+}
+
+
+/******************************************************************************
+**                                                              Forms
+*/
+
+form.yarr_form table {
+    width:  100%;
+}
+
+form.yarr_form table tr *:first-child {
+    width:      8em;
+}
+
+form.yarr_form table th,
+form.yarr_form table td {
+    vertical-align: top;
+}
+
+form.yarr_form table th {
+    text-align:     left;
+}
+
+form.yarr_form table input[type="text"] {
+    width:  100%;
+}
+
+form.yarr_form table span.helptext {
+    display:    block;
+    font-style: italic;
+    font-size:  0.8em;
+}

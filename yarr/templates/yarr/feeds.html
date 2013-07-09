@@ -1,0 +1,29 @@
+{% extends "yarr/base.html" %}
+
+{% load url from future %}
+
+{% block content %}
+
+<h2>Add feed</h2>
+{% include "yarr/include/form_feed_add.html" %}
+
+<h2>Manage feeds</h2>
+
+<table class="yarr_feed_manage">
+    <tr>
+        <th>Feed</th>
+        <th>Status</th>
+        <th>Last checked</th>
+        <th>Next check</th>
+    </tr>
+    {% for feed in feeds %}
+        <tr>
+            <td><a href="{% url "yarr-feed_edit" feed_pk=feed.pk %}">{{ feed.title }}</a></td>
+            <td><img src="{{ STATIC_URL }}yarr/bool_{{ feed.is_active|lower }}.png" title="{% if feed.is_active %}Active{% else %}Inactive{% endif %}"></td>
+            <td>{{ feed.last_checked|default:"Not checked yet" }}</td>
+            <td>{{ feed.next_check|default:"As soon as possible" }}</td>
+        </tr>
+    {% endfor %}
+</table>
+
+{% endblock %}

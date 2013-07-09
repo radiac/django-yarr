@@ -35,7 +35,13 @@ SOCKET_TIMEOUT = getattr(settings, 'YARR_SOCKET_TIMEOUT', 15)
 
 # Default frequency to check a feed, in minutes
 # Defaults to just under 24 hours (23:45) to avoid issues with slow responses
+# Note: this will be removed in a future version
 FREQUENCY = getattr(settings, 'YARR_FREQUENCY', (60 * 23) + 45)
+
+# Minimum and maximum interval for checking a feed, in minutes
+MINIMUM_INTERVAL = getattr(settings, 'YARR_MINIMUM_INTERVAL', 60)
+MAXIMUM_INTERVAL = getattr(settings, 'YARR_MAXIMUM_INTERVAL', 24 * 60)
+
 
 
 #

@@ -215,9 +215,10 @@ $(function () {
         // Prepare fixed layout
         if (layoutFixed) {
             // Add feed switch and initialise
-            $feedToggle = mkButton('Feeds', toggleFeed);
             $('<ul class="yarr_menu_feed"/ >')
-                .append($('<li/>').append($feedToggle))
+                .append($('<li/>').append(
+                    mkButton('Feeds', toggleFeed)
+                ))
                 .insertBefore($control.find('.yarr_menu_filter'))
             ;
             

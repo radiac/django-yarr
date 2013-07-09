@@ -31,6 +31,17 @@ urlpatterns = patterns('yarr.views',
         name="yarr-list_saved",
     ),
     
+    # Feed management
+    url(r'^feeds/$', 'feeds',
+        name="yarr-feeds"
+    ),
+    url(r'^feeds/add/$', 'feed_form',
+        name="yarr-feed_add",
+    ),
+    url(r'^feeds/(?P<feed_pk>\d+)/$', 'feed_form',
+        name="yarr-feed_edit",
+    ),
+    
     # Flag management without javascript
     url(r'^read/$', 'mark_read',
         name="yarr-mark_all_read",
