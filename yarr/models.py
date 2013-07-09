@@ -15,6 +15,9 @@ import feedparser
 from yarr import settings, managers
 
 
+# Disable feedparser's sanitizer
+feedparser.SANITIZE_HTML = 0
+
 
 ###############################################################################
 #                                                               Exceptions
