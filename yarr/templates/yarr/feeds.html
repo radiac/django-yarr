@@ -21,9 +21,24 @@
     {% for feed in feeds %}
         <tr>
             <td><a href="{% url "yarr-feed_edit" feed_pk=feed.pk %}">{{ feed.title }}</a></td>
-            <td><img src="{{ STATIC_URL }}yarr/bool_{{ feed.is_active|lower }}.png" title="{% if feed.is_active %}Active{% else %}Inactive{% endif %}"></td>
+            
+            {% if feed.is_active %}
+                {% if feed.error %}
+                    <td><img src="{{ STATIC_URL }}yarr/warning.png" alt="Problem" title="Problem"></td>
+                {% else %}
+                    <td><img src="{{ STATIC_URL }}yarr/success.png" alt="Active" title="Active"></td>
+                {% endif %}
+            {% else %}
+                <td><img src="{{ STATIC_URL }}yarr/error.png" alt="Inactive" title="Inactive"></td>
+            {% endif %}
+            
             <td>{{ feed.last_checked|default:"Not checked yet" }}</td>
-            <td>{{ feed.next_check|default:"As soon as possible" }}</td>
+            
+            {% if feed.is_active %}
+                <td>{{ feed.next_check|default:"As soon as possible" }}</td>
+            {% else %}
+                <td>Never</td>
+            {% endif %}
         </tr>
     {% endfor %}
 </table>

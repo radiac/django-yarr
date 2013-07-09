@@ -5,6 +5,9 @@ Django Yarr Changes
 Changelog
 =========
 
+0.3.1       2013-07-09
+            Feature:    Added 'Problem' status to feed manager
+
 0.3.0       2013-07-09
             Feature:    Added feed list, browse by feed
             Feature:    Added feed manager

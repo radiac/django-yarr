@@ -20,7 +20,7 @@ Features
 * No social nonsense
 
 
-Version 0.3.0
+Version 0.3.1
 
 * See `CHANGES <CHANGES>`_ for full changelog and roadmap
 * See `UPGRADE <UPGRADE.rst>`_ for how to upgrade from earlier releases
@@ -286,7 +286,7 @@ pitfalls:
 * http://code.google.com/p/django-reader
 * https://bitbucket.org/tghw/django-feedreader
 
-The arrow icons are from Iconic, http://somerandomdude.com/work/iconic/
+The icons are from Iconic, http://somerandomdude.com/work/iconic/
 
 The pirate pony started life on http://www.mylittledjango.com/ before putting
 on clipart from clker.com and openclipart.org
