@@ -15,13 +15,13 @@
     </div>
     <div class="yarr_entry_content">
         <h1>
-            {% if entry.url %}<a href="{{ entry.url }}">{% endif %}
+            {% if entry.url %}<a href="{{ entry.url }}" target="_blank">{% endif %}
             {{ entry.title|default:"Untitled" }}
             {% if entry.url %}</a>{% endif %}
         </h1>
         <p class="yarr_date">{{ entry.date|date:"M d Y, H:i" }}</p>
         <p class="yarr_feed">from
-            {% if entry.feed.site_url %}<a href="{{ entry.feed.site_url }}">{% endif %}
+            {% if entry.feed.site_url %}<a href="{{ entry.feed.site_url }}" target="_blank">{% endif %}
             {{ entry.feed.title }}
             {% if entry.feed.site_url %}</a>{% endif %}
             {% if entry.author %}by <span class="yarr_author">{{ entry.author }}</span>{% endif %}
@@ -30,7 +30,7 @@
         {{ entry.content|safe }}
 
         {% if entry.tags %}<p class="yarr_tags">{{ entry.tags }}</p>{% endif %}
-        {% if entry.comments_url %}<p class="yarr_comments"><a href="{{ entry.comments_url }}">Comments</a></p>{% endif %}
+        {% if entry.comments_url %}<p class="yarr_comments"><a href="{{ entry.comments_url }}" target="_blank">Comments</a></p>{% endif %}
     </div>
     
     <ul class="yarr_entry_control">
