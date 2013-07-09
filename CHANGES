@@ -5,6 +5,15 @@ Django Yarr Changes
 Changelog
 =========
 
+0.3.0       2013-
+            Feature:    Added feed list, browse by feed
+            Feature:    Added feed manager
+            Feature:    Added more keyboard shortcuts
+            Feature:    Added cookie-based memory of expanded/list view
+            Bugfix:     Infinite scroll stops attempting at end of scroll
+            Internal:   Moved all global HTML data attributes to yarr_con
+            Note:       Changed roadmap
+            
 0.2.0       2013-07-05
             Feature:    Added list view
             Feature:    Replaced API with more sensible get/set model
@@ -42,16 +51,16 @@ Roadmap
 =======
 
 Target
-0.2.x       Ajax mark all read
+0.3.x       Ajax mark all read
             Improve render time
             Delay image loading
-0.3.0       Views to manage subscriptions
+            Support whitelist of embedded media (eg youtube)
             De-dupe multiple feeds with the same URL before checking
+            Sort by newest/oldest
 0.4.0       Drop support for Django 1.3
             Introduce timezone support for Django 1.4 and later
             Display times according to user timezone, not server
 0.5.0       Feed categorisation and entry tags
-            View by feed, sort by newest/oldest
 1.0.0       Stable release, make available on PyPI
 1.1.0       Adaptive feed check frequency, with smarter spacing to spread load
 

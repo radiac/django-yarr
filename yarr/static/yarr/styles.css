@@ -210,6 +210,9 @@ ul.yarr_entry_control li label input {
     margin-left:    16em;
 }
 
+.yarr_feed_list ul + ul {
+    border-top: 1px solid #ccc;
+}
 
 .yarr_feed_list ul {
     list-style: none;

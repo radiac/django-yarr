@@ -11,11 +11,12 @@ Features
 ========
 
 * Import list of feeds from a Google Reader takeaway
-* View all, just unread or saved items, in list or expanded layout
+* View all, by feed, just unread or saved items
+* List or expanded layout
 * Mark items as read or saved
 * Infinite scrolling, with keyboard support and automatic mark as read
 * Support for multiple users
-* Manage subscriptions through admin site
+* Manage subscriptions through user views or admin site
 * No social nonsense
 
 
@@ -125,10 +126,16 @@ To manage the web interface:
     
     Default: ``5``
 
-``YARR_CONTROL_FIXED``:
-    If True, the control bar will switch to ``position: fixed`` when scrolling
-    down moves it off the page
-
+``YARR_LAYOUT_FIXED``:
+    If True, use the default fixed layout - control bar at the top, feed list
+    on the left, and content to the right.
+    
+    The control bar and will switch to ``position: fixed`` when scrolling down
+    moves it off the page, the feed list will grow to take up the full
+    available height, and a button will be added to the control bar to slide
+    the feed list on or off to the left (changing the width of
+    ``yarr_feed_list`` and the left margin of ``#yarr_content``.
+    
     Default: ``True``
   
 ``YARR_ADD_JQUERY``:
@@ -171,7 +178,8 @@ Templates
 ---------
 
 The Yarr templates extend ``yarr/base.html``, which in turn extends
-``base.html``.
+``base.html``. To minimise the risk of interfering with your site templates,
+they use HTML4.
 
 They will expect the following blocks:
 
@@ -190,12 +198,26 @@ own templates folder and map them; for example::
     {% endblock %}
 
 Once you have mapped these blocks, the default settings and templates should
-work out of the box with most designs. You should be able to further customise
-most aspects of the layout and design with reasonable ease.
+work out of the box with most designs.
+
+The ``content`` block in ``list_entries.html`` template contains three further
+blocks for you to override:
+
+* ``yarr_control`` for the control bar
+* ``yarr_feed_list`` for the feed list
+* ``yarr_content`` for the list of entries
 
 Note: the url to the arrow sprite is hard-coded in styles.css for the default
 static url, ``/static/yarr/arrows.png``. Override ``.yarr_control .yarr_nav a``
 in your stylesheet if your static url is different.
+
+Forms are given basic styling using the selector ``form.yarr_form``; override
+the files in ``templates/yarr/include`` to display them in the same way you do
+elsewhere on your site.
+
+Form success messages use the messages framework by default, so you should
+display the ``messages`` list somewhere in your template, or override the urls
+to add a ``success_url`` view argument to redirect to a custom page.
 
 
 Management Commands
