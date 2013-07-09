@@ -22,7 +22,7 @@ $(function () {
             .hide()
         ,
         $feedList = $('.yarr_feed_list'),
-        pkAvailable = $con.data('available-pks'),
+        pkAvailable = String($con.data('available-pks')),
         apiEntryGet = $con.data('api-entry-get'),
         apiEntrySet = $con.data('api-entry-set'),
         
