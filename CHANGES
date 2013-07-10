@@ -5,6 +5,10 @@ Django Yarr Changes
 Changelog
 =========
 
+0.3.2       2013-07-10
+            Feature:    Added ``--verbose`` option to ``feed_check`` command
+            Bugfix:     Feed last_checked value now always updated
+
 0.3.1       2013-07-09
             Feature:    Added 'Problem' status to feed manager
 

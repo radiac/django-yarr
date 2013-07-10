@@ -38,6 +38,13 @@ class Command(BaseCommand):
             default=False,
             help='Purge current entries and reset feed counters',
         ),
+        make_option(
+            '--verbose',
+            action='store_true',
+            dest='verbose',
+            default=False,
+            help='Print information to the console',
+        ),
     )
     
     @with_socket_timeout
@@ -55,4 +62,5 @@ class Command(BaseCommand):
         models.Feed.objects.check(
             force=options['force'],
             read=options['read'],
+            logfile=self.stdout if options['verbose'] else None,
         )

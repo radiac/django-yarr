@@ -15,8 +15,17 @@ import feedparser
 from yarr import settings, managers
 
 
+###############################################################################
+#                                                               Setup
+
 # Disable feedparser's sanitizer
 feedparser.SANITIZE_HTML = 0
+
+class NullFile(object):
+    """Fake file object for disabling logging in Feed.check"""
+    def write(self, str):
+        pass
+nullfile = NullFile()
 
 
 ###############################################################################
@@ -200,9 +209,14 @@ class Feed(models.Model):
         # Unknown status
         raise FeedError('Unrecognised HTTP status %s' % status)
     
-    def check(self, force=False, read=False):
+    def check(self, force=False, read=False, logfile=None):
         """
         Check the feed for updates
+        
+        Optional arguments:
+            force       Force an update
+            read        Mark new entries as read
+            logfile     Logfile to print report data
         
         It will update if:
         * ``force==True``
@@ -224,6 +238,25 @@ class Feed(models.Model):
         to parse a feed, this method should never be called as a direct result
         of a web request.
         """
+        # Call _do_check and save if anything has changed
+        changed = self._do_check(force, read, logfile)
+        if changed:
+            self.save()
+        
+    def _do_check(self, force, read, logfile):
+        """
+        Perform the actual check from ``check``
+        
+        Takes the same arguments as ``check``, but returns True if something
+        in the Feed object has changed, and False if it has not.
+        """
+        # Ensure logfile is valid
+        if logfile is None:
+            logfile = nullfile
+        
+        # Report
+        logfile.write("[%s] %s" % (self.pk, self.feed_url))
+        
         # Check it's due for a check
         now = datetime.datetime.now()
         next_poll = now + datetime.timedelta(minutes=settings.MINIMUM_INTERVAL)
@@ -233,35 +266,45 @@ class Feed(models.Model):
             and self.next_check >= now
             and self.next_check < next_poll
         ):
-            return
+            logfile.write('Not due yet')
+            # Return False, because nothing has changed yet
+            return False
         
         # We're about to check, update the counters
         self.last_checked = now
         self.next_check = now + datetime.timedelta(
             minutes=self.check_frequency or settings.FREQUENCY,
         )
+        # Note: from now on always return True, because something has changed
         
         # Fetch feed
+        logfile.write('Fetching...')
         try:
             feed, entries = self._fetch_feed()
         except FeedError, e:
+            logfile.write('Error: %s' % e)
+                
             # Update model to reflect the error
             if isinstance(e, InactiveFeedError):
+                logfile.write('Deactivating feed')
                 self.is_active = False
             self.error = str(e)
-            self.save()
             
             # Check for a valid feed despite error
             if e.feed is None:
-                return
+                logfile.write('No valid feed')
+                return True
+            logfile.write('Valid feed found')
             feed = e.feed
             entries = e.entries
             
         else:
-            # Success, clear error if necessary
+            # Success
+            logfile.write('Feed fetched')
+                
+            # Clear error if necessary
             if self.error != '':
                 self.error = ''
-                self.save()
         
         # Try to find the updated time
         updated = feed.get(
@@ -275,38 +318,29 @@ class Feed(models.Model):
         
         # Stop if we now know it hasn't updated recently
         if updated and self.last_updated and updated <= self.last_updated:
-            return
-        
+            logfile.write('Has not updated')
+            return True
+            
         # Add or update any entries, and get latest timestamp
         latest = self._update_entries(entries, read)
         
-        # If no feed pub date found, use latest entry
+        # Update last_updated
         if not updated:
+            # If no feed pub date found, use latest entry
             updated = latest
+        self.last_updated = updated
             
-        # Update any feed fields
-        changed = self._update_attrs(
-            title       = feed.get('title', None) or self.title,
-            site_url    = feed.get('link', ''),
-            last_updated = updated,
-        )
-        if changed:
-            self.save()
-    
-    def _update_attrs(self, **attrs):
-        """
-        Wrapper to update a set of attributes if their values have changed
-        Returns a boolean reporting whether changes have occurred or not
-        """
-        changed = False
-        for attr, val in attrs.items():
-            if getattr(self, attr) == val:
-                continue
-                
-            setattr(self, attr, val)
-            changed = True
-            
-        return changed
+        # Update feed fields
+        title = feed.get('title', None)
+        site_url = feed.get('link', None)
+        if title:
+            self.title = title
+        if site_url:
+            self.site_url = site_url
+        
+        logfile.write('Feed updated')
+        
+        return True
     
     def _update_entries(self, entries, read):
         """
