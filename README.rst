@@ -248,6 +248,7 @@ Usage::
 * ``--force`` forces updates even when not due
 * ``--read`` marks new items as read (useful when first importing feeds)
 * ``--purge`` purges all existing entries
+* ``--verbose`` displays information about feeds as they are being checked
 
 Individual feeds can be given a custom checking frequency (default is 24
 hours), so ``check_feeds`` needs to run at least as frequently as that; i.e. if
