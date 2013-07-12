@@ -257,14 +257,13 @@ class Feed(models.Model):
         # Report
         logfile.write("[%s] %s" % (self.pk, self.feed_url))
         
-        # Check it's due for a check
+        # Check it's due for a check before the next poll
         now = datetime.datetime.now()
         next_poll = now + datetime.timedelta(minutes=settings.MINIMUM_INTERVAL)
         if (
             not force
             and self.next_check is not None
-            and self.next_check >= now
-            and self.next_check < next_poll
+            and self.next_check >= next_poll
         ):
             logfile.write('Not due yet')
             # Return False, because nothing has changed yet
