@@ -11,6 +11,8 @@ $(function () {
         OP_SAVED = 'saved',
         MODE_EXPANDED = 'expanded',
         MODE_LIST = 'list',
+        FEEDS_VISIBLE = 'visible',
+        FEEDS_HIDDEN = 'hidden',
         
         $scroller = $(window),
         $con = $('#yarr_con'),
@@ -42,6 +44,9 @@ $(function () {
         //      expanded    Traditional list of titles and bodies
         //      list        List of titles, with expanding bodies
         displayMode = getCookie('yarr-displayMode', MODE_EXPANDED),
+
+        // Feeds mode; either visible or hidden
+        feedsMode = getCookie('yarr-feedsMode', FEEDS_VISIBLE),
         
         // Switch items when scrolling past this point
         scrollSwitchMargin = 100,
@@ -174,6 +179,13 @@ $(function () {
                     }
                 );
         }
+        // save the current display configuration in a cookie
+        var cookieText = FEEDS_VISIBLE;
+        if (isOpen) {
+          cookieText = FEEDS_HIDDEN;
+        }
+        setCookie('yarr-feedsMode', cookieText);
+        feedsMode = cookieText;
     }
     
     function setupControl() {
@@ -241,6 +253,10 @@ $(function () {
                 'bottom':   $feedList.css('margin-top'),
                 'overflow-y':   'scroll'
             });
+            // Toggle the feedList if needed
+            if (getCookie('yarr-feedsMode',FEEDS_VISIBLE)==FEEDS_HIDDEN) {
+              toggleFeed();
+            }
         }
     }
     
