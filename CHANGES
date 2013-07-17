@@ -5,12 +5,18 @@ Django Yarr Changes
 Changelog
 =========
 
+0.3.4       2013-07-17
+            Feature:    Added cookie-based memory of visible/hidden feed list
+            Bugfix:     Fixed detection of initial feed list visiblity
+            Thanks to:  Aleksandr Pasechnik (russkey)
+
 0.3.3       2013-07-12
             Bugfix:     Fixed bug in feed check that caused it to trigger early
 
 0.3.2       2013-07-10
             Feature:    Added ``--verbose`` option to ``feed_check`` command
             Bugfix:     Feed last_checked value now always updated
+            Thanks to:  chanshik: Idea for ``feed_check`` verbosity
 
 0.3.1       2013-07-09
             Feature:    Added 'Problem' status to feed manager
@@ -45,8 +51,8 @@ Changelog
             Bugfix:     Added socket timeout
             Bugfix:     Fixed title field in template
             Note:       Changed roadmap
-            Thanks to:  Andrew Rowson for model change and other bugfixes
-                        chanshik for raising socket timeout issue
+            Thanks to:  Andrew Rowson (growse): Model change and other bugfixes
+                        chanshik: Raising socket timeout issue
 
 0.1.2       2013-06-30
             Feature:    Added j/k shortcut keys
