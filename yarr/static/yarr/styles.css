@@ -202,9 +202,10 @@ ul.yarr_entry_control li label input {
 
 .yarr_feed_list {
     width: 15em;
-    float:  left;
+    position: fixed;
     border: 1px solid #ccc;
     margin: 1em 0 0 0;
+    overflow-y:   scroll;
 }
 .yarr_content {
     margin-left:    16em;
@@ -236,12 +237,17 @@ ul.yarr_entry_control li label input {
     }
 }
 
-/* Mobile layout; toggleFeed() will detect by checking for float: none */
+/* Mobile layout
+** Unlike normal layout, hidden by default
+** toggleFeed() will detect by checking for position: relative
+*/
 @media all and (max-width: 40em) {
     .yarr_feed_list {
         display:    none;
-        float:      none;
+        position:   relative;
         width:      auto;
+        overflow-y: auto;
+        top:        0 !important;
     }
     .yarr_content {
         margin-left: 0;
