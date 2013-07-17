@@ -45,8 +45,8 @@ $(function () {
         //      list        List of titles, with expanding bodies
         displayMode = getCookie('yarr-displayMode', MODE_EXPANDED),
 
-        // Feeds mode; either visible or hidden
-        feedsMode = getCookie('yarr-feedsMode', FEEDS_VISIBLE),
+        // Feed list visiblity; either visible or hidden, or undefined for CSS
+        feedListShow = getCookie('yarr-feedListShow', undefined),
         
         // Switch items when scrolling past this point
         scrollSwitchMargin = 100,
@@ -134,8 +134,10 @@ $(function () {
         ensureFullScreen();
     }
     
-    function toggleFeed() {
+    function toggleFeed(to) {
         /** Toggle the visibility of the feed; only available if layoutFixed */
+        // Current state is determined by checking for element visibility
+        // This allows the CSS to decide the default status with media rules
         var speed = 'fast',
             isOpen = $feedList.is(":visible"),
             
@@ -143,8 +145,15 @@ $(function () {
             $dummyList = $('<div class="yarr_feed_list">&nbsp;</div>')
         ;
         
+        // Check if the switch isn't needed
+        if ((to == FEEDS_VISIBLE && isOpen)
+            || (to == FEEDS_HIDDEN && !isOpen)
+        ) {
+            return;
+        }
+        
         // Special action for mobile layout
-        if ($dummyList.css('float') == 'none') {
+        if ($dummyList.css('position') == 'relative') {
             if (isOpen) {
                 $feedList.slideUp(speed, function () {
                     $feedList.removeAttr('style');
@@ -179,13 +188,11 @@ $(function () {
                     }
                 );
         }
-        // save the current display configuration in a cookie
-        var cookieText = FEEDS_VISIBLE;
-        if (isOpen) {
-          cookieText = FEEDS_HIDDEN;
-        }
-        setCookie('yarr-feedsMode', cookieText);
-        feedsMode = cookieText;
+        
+        // Save the current display configuration in a cookie
+        // This will disable initial auto-sensing between screen sizes,
+        feedListShow = isOpen ? FEEDS_HIDDEN : FEEDS_VISIBLE;
+        setCookie('yarr-feedListShow', feedListShow);
     }
     
     function setupControl() {
@@ -248,14 +255,13 @@ $(function () {
             
             // Prepare the fixed feedList
             $feedList.css({
-                'position': 'fixed',
                 'top':      controlBottom,
                 'bottom':   $feedList.css('margin-top'),
-                'overflow-y':   'scroll'
             });
-            // Toggle the feedList if needed
-            if (getCookie('yarr-feedsMode',FEEDS_VISIBLE)==FEEDS_HIDDEN) {
-              toggleFeed();
+            
+            // Toggle the feed list visibility, if preference in cookies
+            if (feedListShow) {
+                toggleFeed(feedListShow);
             }
         }
     }
