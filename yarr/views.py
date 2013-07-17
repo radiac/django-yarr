@@ -108,55 +108,63 @@ def list_entries(
     
 @login_required
 def mark_read(
-    request, entry_pk=None, is_read=True,
+    request, feed_pk=None, entry_pk=None, is_read=True,
     template="yarr/confirm.html",
 ):
     """
     Mark entries as read
     Arguments:
-        entry_pk    Primary key for an Entry
-                    If None, all unread unsaved entries will be marked as read
-        is_read     If True, mark as read
-                    If False, mark as unread - but only if entry_pk is set
+        entry_pk    Primary key for the Entry to change
+                    If None, will try feed_pk
+        feed_pk     Primary key for the Feed to change
+                    If None, all unread unsaved entries will be selected
+        is_read     If True, mark selection as read
+                    If False, mark selection as unread
     """
-    # Operation
-    op = 'read' if is_read else 'unread'
-    
-    # Look up entry
-    entry = None
+    # Select entries to update
     if entry_pk is not None:
-        entry = get_object_or_404(
-            models.Entry, pk=entry_pk, feed__user=request.user,
-        )
+        qs = models.Entry.objects.filter(pk=entry_pk, feed__user=request.user)
+        
+    elif feed_pk is not None:
+        qs = models.Entry.objects.filter(feed__pk=feed_pk, feed__user=request.user)
+        
+    elif is_read:
+        qs = models.Entry.objects.user(request.user).unread().unsaved()
+        
+    else:
+        qs = models.Entry.objects.user(request.user).unsaved()
     
+    count = qs.count()
+    
+    # Prepare the op for display
+    display_op = 'read' if is_read else 'unread'
+    
+    # Check there's something to change
+    if count == 0:
+        messages.error(request, 'Nothing to mark as %s' % display_op)
+        return HttpResponseRedirect(reverse(home))
+    
+    # Process
     if request.POST:
-        # Mark as read
-        if entry is None:
-            if is_read:
-                # Mark all as read
-                unread = models.Entry.objects.user(request.user).unread().unsaved()
-                unread.update(read=True)
-            else:
-                messages.error(request, 'Cannot mark all as unread')
-        else:
-            entry.read = is_read
-            entry.save()
-            
-        messages.success(request, 'Marked as %s' % op)
+        qs.update(read=is_read)
+        messages.success(request, 'Marked as %s' % display_op)
         return HttpResponseRedirect(reverse(home))
     
     # Prep messages
-    title = 'Mark as %s' % op
-    if entry is None:
-        msg = 'Are you sure you want to mark all items as %s?' % op
+    if entry_pk:
+        title = 'Mark item as %s'
+        msg = 'Are you sure you want to mark this item as %s?'
+    elif feed_pk:
+        title = 'Mark feed as %s'
+        msg = 'Are you sure you want to mark all items in the feed as %s?'
     else:
-        msg = 'Are you sure you want to mark this item as %s?' % op
+        title = 'Mark all as %s'
+        msg = 'Are you sure you want to mark all items in every feed as %s?'
     
     return render_to_response(template, RequestContext(request, {
-        'title':    title,
-        'message':  msg,
-        'entry':    entry,
-        'submit_label': title,
+        'title':    title % display_op,
+        'message':  msg % display_op,
+        'submit_label': title % display_op,
     }))
     
     

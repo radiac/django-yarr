@@ -5,6 +5,9 @@ Django Yarr Changes
 Changelog
 =========
 
+0.3.5       2013-07-17
+            Bugfix:     Changed "Mark as read" to mark a feed if selected (#4)
+
 0.3.4       2013-07-17
             Feature:    Added cookie-based memory of visible/hidden feed list
             Bugfix:     Fixed detection of initial feed list visiblity

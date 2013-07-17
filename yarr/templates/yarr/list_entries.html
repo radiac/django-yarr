@@ -31,7 +31,11 @@
             <li><a href="{% url 'yarr-list_saved' %}"{% if saved %} class="yarr_selected"{% endif %}>Saved</a></li>
         </ul>
         <ul class="yarr_menu_op">
-            <li><a href="{% url 'yarr-mark_all_read' %}">Mark all read</a></li>
+            {% if feed %}
+                <li><a href="{% url 'yarr-mark_feed_read' feed_pk=feed.pk %}">Mark feed read</a></li>
+            {% else %}
+                <li><a href="{% url 'yarr-mark_all_read' %}">Mark all read</a></li>
+            {% endif %}
         </ul>
         
         {% if entries.paginator.num_pages > 1 %}
