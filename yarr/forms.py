@@ -42,8 +42,6 @@ def _build_frequency_choices():
         if mm > 0:
             parts.append('%s minute%s' % (mm, 's' if mm > 1 else ''))
         
-        print "parts", parts
-        
         if len(parts) == 3:
             human = '%s, %s and %s' % tuple(parts)
         elif len(parts) == 2:
