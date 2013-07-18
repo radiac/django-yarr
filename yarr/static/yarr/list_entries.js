@@ -451,6 +451,24 @@ $(function () {
             entriesResized();
         }
     }
+
+    function clickCurrent() {
+        /** Clicks the link of the current entry to open it in a new tab */
+        if (current == undefined) {
+            return;
+        }
+        if (!$current.hasClass('yarr_active')) {
+            return;
+        }
+        if (displayMode == MODE_LIST && !$current.hasClass('yarr_open')) {
+            return;
+        }
+        var $lnk = $current.find('a[class="yarr-link"]')[0];
+        console.log($lnk);
+        $lnk.click();
+    }
+
+        
     
     function ensureFullScreen() {
         /** Ensure that enough entries have loaded to fill the screen, if more
@@ -706,7 +724,8 @@ $(function () {
     var KEY_N = 'N'.charCodeAt(0),
         KEY_P = 'P'.charCodeAt(0),
         KEY_J = 'J'.charCodeAt(0),
-        KEY_K = 'K'.charCodeAt(0)
+        KEY_K = 'K'.charCodeAt(0),
+        KEY_RET = 13
     ;
     $('body').keydown(function (e) {
         /** Event handler for keypresses */
@@ -715,6 +734,8 @@ $(function () {
             
         } else if (e.which == KEY_P || e.which == KEY_K) {
             selectPrevious();
+        } else if (e.which == KEY_RET) {
+            clickCurrent();
         }
     });
 });
