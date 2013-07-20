@@ -232,6 +232,8 @@ Form success messages use the messages framework by default, so you should
 display the ``messages`` list somewhere in your template, or override the urls
 to add a ``success_url`` view argument to redirect to a custom page.
 
+Yarr also uses the global javascript variables ``YARR`` and ``YARR_CONFIG``.
+
 
 Management Commands
 ===================

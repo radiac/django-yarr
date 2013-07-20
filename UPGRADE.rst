@@ -5,6 +5,24 @@ Upgrading Django Yarr
 If a release isn't listed here, there are no special instructions for upgrading
 to that version.
 
+Upgrading to 0.3.
+==================
+
+(from == 0.3.0)
+
+Update the yarr package, then run::
+
+    ./manage migrate yarr
+
+Changes to templates and static:
+
+* The old ``yarr/base.html`` has moved to ``yarr/base_all.html``, and the new
+  ``yarr/base.html`` is empty. This will make it simpler to override the Yarr
+  base template without needing to copy the cs and js blocks, which will change
+  in future versions.
+* New global javascript variables ``YARR`` and ``YARR_CONFIG``
+* Paths to static resources have changed
+
 
 Upgrading to 0.3.0
 ==================

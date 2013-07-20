@@ -340,6 +340,7 @@ ul.yarr_entry_control li label input {
 */
 
 table.yarr_feed_manage {
+    table-layout: fixed;
     border-collapse: collapse;
     border:         0;
     width:          100%;
@@ -356,13 +357,43 @@ table.yarr_feed_manage td {
     border:     1px solid #ccc;
     height:     1.6em;
     line-height:    1.6em;
+}
+
+table.yarr_feed_manage tr[data-yarr-pk] td {
     white-space:    nowrap;
     overflow:       hidden;
     text-overflow:  ellipsis;
 }
 
-table.yarr_feed_manage tr:hover td {
+table.yarr_feed_manage tr[data-yarr-pk]:hover td {
     background: #f8f8f8;
+}
+
+col.yarr_unread,
+col.yarr_status {
+    width: 6em;
+}
+
+col.yarr_next_check {
+    width: 12em;
+}
+
+tr.yarr_feed_info td {
+    height: 0;
+    padding-left:   2em;
+};
+
+
+tr.yarr_feed_info dl {
+    position:   relative;
+}
+tr.yarr_feed_info dt {
+    float:      left;
+    width:      7em;
+}
+tr.yarr_feed_info dd {
+    padding-left: 8em;
+    margin: 0;
 }
 
 

@@ -3,6 +3,9 @@ Utils for yarr
 """
 
 from django.core.paginator import Paginator, EmptyPage, InvalidPage
+from django.core.serializers.json import DjangoJSONEncoder
+from django.http import HttpResponse
+from django.utils import simplejson
 
 from yarr import settings
 
@@ -53,3 +56,13 @@ def paginate(request, qs, adjacent_pages=3):
     }
     
     return paginated, pagination
+
+
+def jsonResponse(data):
+    """
+    Return a JSON HttpResponse
+    """
+    return HttpResponse(
+        simplejson.dumps(data, cls=DjangoJSONEncoder),
+        mimetype='application/json',
+    )
