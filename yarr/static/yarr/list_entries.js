@@ -463,9 +463,7 @@ $(function () {
         if (displayMode == MODE_LIST && !$current.hasClass('yarr_open')) {
             return;
         }
-        var $lnk = $current.find('a[class="yarr-link"]')[0];
-        console.log($lnk);
-        $lnk.click();
+        $current.find('a[class="yarr-link"]')[0].click();
     }
 
         
@@ -721,21 +719,23 @@ $(function () {
     });
     
     // Key presses
-    var KEY_N = 'N'.charCodeAt(0),
-        KEY_P = 'P'.charCodeAt(0),
-        KEY_J = 'J'.charCodeAt(0),
-        KEY_K = 'K'.charCodeAt(0),
+    var KEY_N = 78,
+        KEY_P = 80,
+        KEY_J = 74,
+        KEY_K = 75,
         KEY_RET = 13
     ;
     $('body').keydown(function (e) {
         /** Event handler for keypresses */
         if (e.which == KEY_N || e.which == KEY_J) {
             selectNext();
-            
         } else if (e.which == KEY_P || e.which == KEY_K) {
             selectPrevious();
         } else if (e.which == KEY_RET) {
             clickCurrent();
+        } else {
+            return;
         }
+        e.preventDefault();
     });
 });
