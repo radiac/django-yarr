@@ -20,7 +20,7 @@ Features
 * No social nonsense
 
 
-Version 0.3.5
+Version 0.3.6
 
 * See `CHANGES <CHANGES>`_ for full changelog and roadmap
 * See `UPGRADE <UPGRADE.rst>`_ for how to upgrade from earlier releases
@@ -174,7 +174,7 @@ To control feed updates:
 
     Default: ``24 * 60``
     
-``ITEM_EXPIRY``:
+``YARR_ITEM_EXPIRY``:
     The number of days to keep a read item which is no longer in the feed.
     
     Set this to ``0`` to expire immediately, ``-1`` to never expire.

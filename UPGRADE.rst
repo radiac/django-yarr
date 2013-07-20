@@ -5,7 +5,7 @@ Upgrading Django Yarr
 If a release isn't listed here, there are no special instructions for upgrading
 to that version.
 
-Upgrading to 0.3.
+Upgrading to 0.3.6
 ==================
 
 (from == 0.3.0)
