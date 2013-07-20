@@ -17,36 +17,36 @@ from yarr import settings
 
 class FeedQuerySet(models.query.QuerySet):
     def active(self):
-        """
-        Filter to active feeds
-        """
+        "Filter to active feeds"
         return self.filter(is_active=True)
         
     def check(self, force=False, read=False, logfile=None):
-        """
-        Check active feeds for updates
-        """
+        "Check active feeds for updates"
         for feed in self.active():
             feed.check(force, read, logfile)
-        
+    
+    def update_count_unread(self):
+        "Update the cached unread counts"
+        for feed in self:
+            feed.update_count_unread()
+            feed.save()
+    
     
 class FeedManager(models.Manager):
     def active(self):
-        """
-        Active feeds
-        """
+        "Active feeds"
         return self.get_query_set().active()
         
     def check(self, force=False, read=False, logfile=None):
-        """
-        Check all active feeds for updates
-        """
+        "Check all active feeds for updates"
         return self.get_query_set().check(force, read, logfile)
-
+        
+    def update_count_unread(self):
+        "Update the cached unread counts"
+        return self.get_query_set().update_count_unread()
+        
     def get_query_set(self):
-        """
-        Return a FeedQuerySet
-        """
+        "Return a FeedQuerySet"
         return FeedQuerySet(self.model)
 
 
@@ -56,66 +56,56 @@ class FeedManager(models.Manager):
 
 class EntryQuerySet(models.query.QuerySet):
     def user(self, user):
-        """
-        Filter by user
-        """
+        "Filter by user"
         return self.filter(feed__user=user)
         
     def read(self):
-        """
-        Filter to read entries
-        """
+        "Filter to read entries"
         return self.filter(read=True)
         
     def unread(self):
-        """
-        Filter to unread entries
-        """
+        "Filter to unread entries"
         return self.filter(read=False)
         
     def saved(self):
-        """
-        Filter to saved entries
-        """
+        "Filter to saved entries"
         return self.filter(saved=True)
         
     def unsaved(self):
-        """
-        Filter to unsaved entries
-        """
+        "Filter to unsaved entries"
         return self.filter(saved=False)
         
+    def update_feed_unread(self):
+        "Update feed read count cache"
+        models.loading.get_model('yarr', 'Feed').objects.filter(
+            id__in=self.values_list('feed_id', flat=True).distinct(),
+        ).update_count_unread()
+
     
 class EntryManager(models.Manager):
     def user(self, user):
-        """
-        Filter by user
-        """
+        "Filter by user"
         return self.get_query_set().user(user)
     
     def read(self):
-        """
-        Get read entries
-        """
+        "Get read entries"
         return self.get_query_set().read()
         
     def unread(self):
-        """
-        Get unread entries
-        """
+        "Get unread entries"
         return self.get_query_set().unread()
         
     def saved(self):
-        """
-        Get saved entries
-        """
+        "Get saved entries"
         return self.get_query_set().saved()
         
     def unsaved(self):
-        """
-        Get unsaved entries
-        """
+        "Get unsaved entries"
         return self.get_query_set().unsaved()
+        
+    def update_feed_unread(self):
+        "Update feed read count cache"
+        return self.get_query_set().update_feed_unread()
         
     def from_feedparser(self, raw):
         """

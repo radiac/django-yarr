@@ -5,12 +5,11 @@ Django Yarr Changes
 Changelog
 =========
 
-To do:
-            Feature:    Added setting to control how long old entries remain
-            Internal:   Added cache item counts to Feed
-            
 0.3.        2013-07-
             Feature:    Added expandable info to feed manager list
+            Feature:    Added shortcut key to open source URL in new window
+            Feature:    Added setting to control how long old entries remain
+            Internal:   Added cached item counts to Feed
             Internal:   Restructured template inheritance to simplify overrides
             Internal:   Started refactor of javascript code
             Bugfix:     Added missing code to update an item that has changed

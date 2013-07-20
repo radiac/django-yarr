@@ -128,15 +128,26 @@ class Feed(models.Model):
         blank=True, max_length=255, help_text="When a problem occurs",
     )
     
+    # Cached data
+    count_unread = models.IntegerField(
+        blank=True, null=True, help_text="Cache of number of unread items",
+    )
+    count_total = models.IntegerField(
+        blank=True, null=True, help_text="Cache of total number of items",
+    )
+    
     objects = managers.FeedManager()
     
     def __unicode__(self):
         return self.title
     
-    def count_unread(self):
-        return self.entries.unread().count()
-    def count_total(self):
-        return self.entries.count()
+    def update_count_unread(self):
+        """Update the cached unread count"""
+        self.count_unread = self.entries.unread().count()
+        
+    def update_count_total(self):
+        """Update the cached total item count"""
+        self.count_total = self.entries.count()
     
     def _fetch_feed(self, url_history=None):
         """
@@ -252,7 +263,12 @@ class Feed(models.Model):
         # Call _do_check and save if anything has changed
         changed = self._do_check(force, read, logfile)
         if changed:
+            self.update_count_unread()
+            self.update_count_total()
             self.save()
+        
+        # Remove expired entries
+        self.entries.filter(expires__lte=datetime.datetime.now()).delete()
         
     def _do_check(self, force, read, logfile):
         """
@@ -414,10 +430,21 @@ class Feed(models.Model):
             ):
                 latest = entry.date
         
-        # Clean out any expired entries which have been read but not saved
-        cleaning = self.entries.exclude(pk__in=found).read().unsaved()
-        cleaning.delete()
-        
+        # Mark any entries which weren't found and have been read but not saved
+        # for expiry
+        if settings.ITEM_EXPIRY >= 0:
+            self.entries.exclude(
+                pk__in=found
+            ).read(
+            ).unsaved(
+            ).exclude(
+                expires__isnull=True
+            ).update(
+                expires=datetime.datetime.now() + datetime.timedelta(
+                    days=settings.ITEM_EXPIRY,
+                )
+            )
+            
         return latest
     
     class Meta:
@@ -442,6 +469,9 @@ class Entry(models.Model):
     feed = models.ForeignKey(Feed, related_name='entries')
     read = models.BooleanField(default=False)
     saved = models.BooleanField(default=False)
+    expires = models.DateTimeField(
+        blank=True, null=True, help_text="When the entry should expire",
+    )
     
     # Compulsory data fields
     title = models.TextField(blank=True)
@@ -467,6 +497,7 @@ class Entry(models.Model):
         blank=True,
         help_text="GUID for the entry, according to the feed",
     )
+    
     # ++ TODO: tags
     
     objects = managers.EntryManager()

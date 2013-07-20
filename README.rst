@@ -173,6 +173,14 @@ To control feed updates:
     The default frequency to check a feed, in minutes
 
     Default: ``24 * 60``
+    
+``ITEM_EXPIRY``:
+    The number of days to keep a read item which is no longer in the feed.
+    
+    Set this to ``0`` to expire immediately, ``-1`` to never expire.
+    
+    Default: ``1``
+
 
 
 The bleach settings can also be customised - see bleach docs for details:

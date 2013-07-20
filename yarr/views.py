@@ -146,6 +146,7 @@ def mark_read(
     # Process
     if request.POST:
         qs.update(read=is_read)
+        qs.update_feed_unread()
         messages.success(request, 'Marked as %s' % display_op)
         return HttpResponseRedirect(reverse(home))
     
@@ -434,6 +435,8 @@ def api_entry_set(request):
             read    = is_read,
             saved   = False,
         )
+        entries.update_feed_unread()
+        
         success = True
         msg = 'Marked as %s' % ('read' if is_read else 'unread')
     
