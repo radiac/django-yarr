@@ -2,9 +2,11 @@ from django import views
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
+from django.db import models as django_models
 from django.http import HttpResponseRedirect, Http404, HttpResponse
 from django.shortcuts import get_object_or_404, render_to_response
 from django.template import RequestContext, loader, Context
+from django.utils.html import escape
 
 from yarr import settings, utils, models, forms
 
@@ -370,10 +372,25 @@ def api_feed_get(request):
     else:
         fields = fields_available
     
-    # Prep data
+    # Prep list of safe fields which don't need to be escaped
+    safe_fields = [
+        field.name for field in models.Feed._meta.fields if (
+            field.name in fields
+            and isinstance(field, (
+                django_models.DateTimeField,
+                django_models.IntegerField,
+            ))
+        )
+    ]
+    
+    # Get data
     data = {}
     for feed in feeds.values('pk', *fields):
-        data[feed.pop('pk')] = feed
+        # Escape values as necessary, and add to the response dict under the pk
+        data[feed.pop('pk')] = dict([
+            (key, val if key in safe_fields else escape(val))
+            for key, val in feed.items()
+        ])
     
     # Respond
     return utils.jsonResponse({
