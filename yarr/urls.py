@@ -41,6 +41,9 @@ urlpatterns = patterns('yarr.views',
     url(r'^feeds/(?P<feed_pk>\d+)/$', 'feed_form',
         name="yarr-feed_edit",
     ),
+    url(r'^feeds/(?P<feed_pk>\d+)/delete/$', 'feed_delete',
+        name="yarr-feed_delete",
+    ),
     
     # Flag management without javascript
     url(r'^read/$', 'mark_read',

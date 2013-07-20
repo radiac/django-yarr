@@ -299,6 +299,28 @@ def feed_form(
     }))
     
     
+@login_required
+def feed_delete(request, feed_pk, template="yarr/confirm.html"):
+    """
+    Delete a feed (and its entries)
+    Arguments:
+        feed_pk     Primary key for the Feed (required)
+    """
+    # Look up entry
+    feed = get_object_or_404(models.Feed, pk=feed_pk, user=request.user)
+    
+    # Update entry
+    if request.POST:
+        feed.delete()
+        messages.success(request, 'Feed deleted')
+        return HttpResponseRedirect(reverse(home))
+    
+    return render_to_response(template, RequestContext(request, {
+        'title':    'Delete feed',
+        'message':  'Are you sure you want to delete the feed "%s"?' % feed.title,
+        'submit_label': 'Delete feed',
+    }))
+
 
 @login_required
 def api_base(request):
