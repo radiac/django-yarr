@@ -5,6 +5,16 @@ Django Yarr Changes
 Changelog
 =========
 
+0.3.        2013-07-
+            Feature:    Added expandable info to feed manager list
+            Feature:    Added shortcut key to open source URL in new window
+            Feature:    Added setting to control how long old entries remain
+            Internal:   Added cached item counts to Feed
+            Internal:   Restructured template inheritance to simplify overrides
+            Internal:   Started refactor of javascript code
+            Bugfix:     Added missing code to update an item that has changed
+            Bugfix:     Fixed check_feeds so it doesn't remove unread items
+
 0.3.5       2013-07-17
             Bugfix:     Changed "Mark as read" to mark a feed if selected (#4)
 

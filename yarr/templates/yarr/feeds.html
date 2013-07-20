@@ -2,8 +2,12 @@
 
 {% load url from future %}
 
-{% block content %}
+{% block js %}
+{{ block.super }}
+<script src="{{ STATIC_URL }}yarr/feeds.js"></script>
+{% endblock %}
 
+{% block content %}
 {{ block.super }}
 
 <h2>Add feed</h2>
@@ -12,15 +16,30 @@
 <h2>Manage feeds</h2>
 
 <table class="yarr_feed_manage">
+    
+    <colgroup>
+        <col class="yarr_name">
+        <col class="yarr_unread">
+        <col class="yarr_status">
+        <col class="yarr_next_check">
+    </colgroup>
+    
     <tr>
         <th>Feed</th>
+        <th>Unread</th>
         <th>Status</th>
-        <th>Last checked</th>
         <th>Next check</th>
     </tr>
     {% for feed in feeds %}
-        <tr>
+        <tr
+            data-yarr-pk="{{ feed.pk }}"
+            data-yarr-error="{{ feed.error }}"
+            data-yarr-last-checked="{{ feed.last_checked|default:"Not checked yet" }}"
+            data-yarr-is-active="{{ feed.is_active|lower }}"
+        >
             <td><a href="{% url "yarr-feed_edit" feed_pk=feed.pk %}">{{ feed.title }}</a></td>
+            
+            <td>{{ feed.count_unread }}/{{ feed.count_total }}</td>
             
             {% if feed.is_active %}
                 {% if feed.error %}
@@ -31,8 +50,6 @@
             {% else %}
                 <td><img src="{{ STATIC_URL }}yarr/error.png" alt="Inactive" title="Inactive"></td>
             {% endif %}
-            
-            <td>{{ feed.last_checked|default:"Not checked yet" }}</td>
             
             {% if feed.is_active %}
                 <td>{{ feed.next_check|default:"As soon as possible" }}</td>

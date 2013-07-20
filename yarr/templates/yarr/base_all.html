@@ -1,0 +1,17 @@
+{% extends "yarr/base.html" %}
+
+{% block css %}
+<link rel="stylesheet" href="{{ STATIC_URL }}yarr/styles.css" type="text/css" />
+{{ block.super }}
+{% endblock %}
+
+{% block js %}
+{{ block.super }}
+{% if yarr_settings.add_jquery %}
+<script src="{{ STATIC_URL }}yarr/jquery-1.10.1.min.js"></script>
+{% endif %}
+<script>YARR_CONFIG={
+{% if yarr_settings.api_base %}api:"{{ yarr_settings.api_base }}"{% endif %}};</script>
+{% endblock %}
+
+{% block title %}{{ title }}{% endblock %}

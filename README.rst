@@ -173,6 +173,14 @@ To control feed updates:
     The default frequency to check a feed, in minutes
 
     Default: ``24 * 60``
+    
+``ITEM_EXPIRY``:
+    The number of days to keep a read item which is no longer in the feed.
+    
+    Set this to ``0`` to expire immediately, ``-1`` to never expire.
+    
+    Default: ``1``
+
 
 
 The bleach settings can also be customised - see bleach docs for details:
@@ -231,6 +239,8 @@ elsewhere on your site.
 Form success messages use the messages framework by default, so you should
 display the ``messages`` list somewhere in your template, or override the urls
 to add a ``success_url`` view argument to redirect to a custom page.
+
+Yarr also uses the global javascript variables ``YARR`` and ``YARR_CONFIG``.
 
 
 Management Commands

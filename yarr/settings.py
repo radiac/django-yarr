@@ -44,6 +44,9 @@ MAXIMUM_INTERVAL = getattr(settings, 'YARR_MAXIMUM_INTERVAL', 24 * 60)
 # Note: this will be removed in a future version
 FREQUENCY = getattr(settings, 'YARR_FREQUENCY', 24 * 60)
 
+# Number of days to keep a read item which is no longer in the feed
+# Set this to 0 to expire immediately, -1 to never expire
+ITEM_EXPIRY = getattr(settings, 'YARR_ITEM_EXPIRY', 1)
 
 
 #

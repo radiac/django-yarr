@@ -5,7 +5,6 @@ from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect, Http404, HttpResponse
 from django.shortcuts import get_object_or_404, render_to_response
 from django.template import RequestContext, loader, Context
-from django.utils import simplejson
 
 from yarr import settings, utils, models, forms
 
@@ -13,7 +12,7 @@ from yarr import settings, utils, models, forms
 @login_required
 def home(request):
     if settings.HOME == 'yarr-home':
-        return Http404
+        raise Http404
     return HttpResponseRedirect(reverse(settings.HOME))
 
 
@@ -147,6 +146,7 @@ def mark_read(
     # Process
     if request.POST:
         qs.update(read=is_read)
+        qs.update_feed_unread()
         messages.success(request, 'Marked as %s' % display_op)
         return HttpResponseRedirect(reverse(home))
     
@@ -230,6 +230,10 @@ def feeds(request, template="yarr/feeds.html"):
         'title':    'Manage feeds',
         'feed_form': add_form,
         'feeds':    feeds,
+        'yarr_settings': {
+            'add_jquery':       settings.ADD_JQUERY,
+            'api_base':         reverse('yarr-api_base'),
+        },
     }))
     
 
@@ -293,10 +297,72 @@ def feed_form(
     }))
     
     
+
+@login_required
+def api_base(request):
+    """
+    Base API URL
+    Currently just used to reverse for JavaScript
+    """
+    raise Http404
+
+
+@login_required
+def api_feed_get(request):
+    """
+    JSON API to get feed data
+    
+    Arguments passed on GET:
+        feed_pks    List of feeds to get information about
+        fields      List of model fields to get
+                    If not provided, returns all fields
+                    Excluded fields: id, user, all related fields
+                    The pk (id) is provided as the key
+    """
+    # Get feeds queryset
+    pks = request.GET.get('feed_pks', '')
+    if pks:
+        success = True
+        feeds = models.Feed.objects.filter(
+            user=request.user, pk__in=pks.split(','),
+        )
+    else:
+        success = False
+        feeds = models.Feed.objects.none()
+    
+    # Get safe list of attributes
+    fields_available = [
+        field.name for field in models.Feed._meta.fields
+        if field.name not in [
+            'id', 'user'
+        ]
+    ]
+    fields_request = request.GET.get('fields', '')
+    if fields_request:
+        fields = [
+            field_name for field_name in fields_request.split(',')
+            if field_name in fields_available
+        ]
+    else:
+        fields = fields_available
+    
+    # Prep data
+    data = {}
+    for feed in feeds.values('pk', *fields):
+        data[feed.pop('pk')] = feed
+    
+    # Respond
+    return utils.jsonResponse({
+        'success':  success,
+        'feeds':    data,
+    })
+    
 @login_required
 def api_entry_get(request, template="yarr/include/entry.html"):
     """
     JSON API to get entry data
+    
+    Returns pre-rendered data using the entry template
     
     Arguments passed on GET:
         entry_pks   List of entries to get
@@ -323,12 +389,10 @@ def api_entry_get(request, template="yarr/include/entry.html"):
         )
     
     # Respond
-    return HttpResponse(
-        simplejson.dumps({
-            'success':  success,
-            'entries':  rendered,
-        }), mimetype='application/json'
-    )
+    return utils.jsonResponse({
+        'success':  success,
+        'entries':  rendered,
+    })
     
 
 @login_required
@@ -371,6 +435,8 @@ def api_entry_set(request):
             read    = is_read,
             saved   = False,
         )
+        entries.update_feed_unread()
+        
         success = True
         msg = 'Marked as %s' % ('read' if is_read else 'unread')
     
@@ -384,10 +450,7 @@ def api_entry_set(request):
         msg = 'Saved' if is_saved else 'No longer saved'
     
     # Respond
-    return HttpResponse(
-        simplejson.dumps({
-            'success':  success,
-            'msg':      msg,
-        }), mimetype='application/json'
-    )
-    
+    return utils.jsonResponse({
+        'success':  success,
+        'msg':      msg,
+    })

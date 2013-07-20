@@ -46,6 +46,12 @@ class FeedError(Exception):
 
 class InactiveFeedError(FeedError):
     pass
+    
+class EntryError(Exception):
+    """
+    An error occurred when processing an entry
+    """
+    pass
 
 
 
@@ -122,10 +128,26 @@ class Feed(models.Model):
         blank=True, max_length=255, help_text="When a problem occurs",
     )
     
+    # Cached data
+    count_unread = models.IntegerField(
+        blank=True, null=True, help_text="Cache of number of unread items",
+    )
+    count_total = models.IntegerField(
+        blank=True, null=True, help_text="Cache of total number of items",
+    )
+    
     objects = managers.FeedManager()
     
     def __unicode__(self):
         return self.title
+    
+    def update_count_unread(self):
+        """Update the cached unread count"""
+        self.count_unread = self.entries.unread().count()
+        
+    def update_count_total(self):
+        """Update the cached total item count"""
+        self.count_total = self.entries.count()
     
     def _fetch_feed(self, url_history=None):
         """
@@ -241,7 +263,12 @@ class Feed(models.Model):
         # Call _do_check and save if anything has changed
         changed = self._do_check(force, read, logfile)
         if changed:
+            self.update_count_unread()
+            self.update_count_total()
             self.save()
+        
+        # Remove expired entries
+        self.entries.filter(expires__lte=datetime.datetime.now()).delete()
         
     def _do_check(self, force, read, logfile):
         """
@@ -290,7 +317,7 @@ class Feed(models.Model):
             self.error = str(e)
             
             # Check for a valid feed despite error
-            if e.feed is None:
+            if e.feed is None or len(e.entries) == 0:
                 logfile.write('No valid feed')
                 return True
             logfile.write('Valid feed found')
@@ -321,7 +348,13 @@ class Feed(models.Model):
             return True
             
         # Add or update any entries, and get latest timestamp
-        latest = self._update_entries(entries, read)
+        try:
+            latest = self._update_entries(entries, read)
+        except EntryError, e:
+            if self.error:
+                self.error += '. '
+            self.error += "Entry error: %s" % e
+            return True
         
         # Update last_updated
         if not updated:
@@ -370,8 +403,11 @@ class Feed(models.Model):
                 }
             else:
                 # No guid, no link, no title and date - no way to match
-                # Rather than spam the database every check, give up
-                continue
+                # Can never de-dupe this entry, so to avoid the risk of adding
+                # it more than once, declare this feed invalid
+                raise EntryError(
+                    'No guid, link, and title or date; cannot import'
+                )
                 
             # Update existing, or delete old
             try:
@@ -394,10 +430,21 @@ class Feed(models.Model):
             ):
                 latest = entry.date
         
-        # Clean out any expired entries which haven't been saved
-        cleaning = self.entries.exclude(pk__in=found).filter(saved=False)
-        cleaning.delete()
-        
+        # Mark any entries which weren't found and have been read but not saved
+        # for expiry
+        if settings.ITEM_EXPIRY >= 0:
+            self.entries.exclude(
+                pk__in=found
+            ).read(
+            ).unsaved(
+            ).exclude(
+                expires__isnull=True
+            ).update(
+                expires=datetime.datetime.now() + datetime.timedelta(
+                    days=settings.ITEM_EXPIRY,
+                )
+            )
+            
         return latest
     
     class Meta:
@@ -414,6 +461,7 @@ class Entry(models.Model):
     
     If creating from a feedparser entry, use Entry.objects.from_feedparser()
     
+    # ++ TODO: tags
     To add tags for an entry before saving, add them to _tags, and they will be
     set by save().
     """
@@ -421,6 +469,9 @@ class Entry(models.Model):
     feed = models.ForeignKey(Feed, related_name='entries')
     read = models.BooleanField(default=False)
     saved = models.BooleanField(default=False)
+    expires = models.DateTimeField(
+        blank=True, null=True, help_text="When the entry should expire",
+    )
     
     # Compulsory data fields
     title = models.TextField(blank=True)
@@ -446,6 +497,7 @@ class Entry(models.Model):
         blank=True,
         help_text="GUID for the entry, according to the feed",
     )
+    
     # ++ TODO: tags
     
     objects = managers.EntryManager()
@@ -455,8 +507,16 @@ class Entry(models.Model):
         
     def update(self, entry):
         """
-        Update this entry with data from a corresponding entry
+        An old entry has been re-published; update with new data
         """
+        fields = [
+            'title', 'content', 'date', 'author', 'url', 'comments_url',
+            'guid',
+        ]
+        for field in fields:
+            setattr(self, field, getattr(entry, field))
+        # ++ Should we mark as unread? Leaving it as is for now.
+        self.save()
         
     def save(self, *args, **kwargs):
         # Default the date
