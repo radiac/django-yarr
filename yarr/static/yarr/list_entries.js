@@ -723,6 +723,7 @@ $(function () {
         KEY_P = 80,
         KEY_J = 74,
         KEY_K = 75,
+        KEY_V = 86,
         KEY_RET = 13
     ;
     $('body').keydown(function (e) {
@@ -731,7 +732,7 @@ $(function () {
             selectNext();
         } else if (e.which == KEY_P || e.which == KEY_K) {
             selectPrevious();
-        } else if (e.which == KEY_RET) {
+        } else if (e.which == KEY_V || e.which == KEY_RET) {
             clickCurrent();
         } else {
             return;
