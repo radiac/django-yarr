@@ -287,6 +287,8 @@ def feed_form(
             return HttpResponseRedirect(
                 reverse('yarr-feeds') if success_url is None else success_url
             )
+    elif 'feed_url' in request.GET:
+        feed_form = form_class(request.GET, instance=feed)
     else:
         feed_form = form_class(instance=feed)
     

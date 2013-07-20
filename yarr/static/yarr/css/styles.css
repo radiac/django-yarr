@@ -92,7 +92,7 @@ ul.yarr_entry_control li {
     padding:    0.4em 0;
     background-repeat:  no-repeat;
     background-position: 0 50%;
-    background-image: url('/static/yarr/arrows.png');
+    background-image: url('/static/yarr/images/arrows.png');
 }
 
 .yarr_control .yarr_nav a.yarr_next {

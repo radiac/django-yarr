@@ -1,6 +1,6 @@
 {% load url from future %}
 
-<form action="{% url "yarr-feed_add" %}" method="POST" class="yarr_form">
+<form action="{% url "yarr-feed_add" %}" method="POST" class="yarr_form" id="yarr_feed_add">
 {% csrf_token %}
 
 <table>

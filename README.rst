@@ -229,8 +229,9 @@ blocks for you to override:
 * ``yarr_content`` for the list of entries
 
 Note: the url to the arrow sprite is hard-coded in styles.css for the default
-static url, ``/static/yarr/arrows.png``. Override ``.yarr_control .yarr_nav a``
-in your stylesheet if your static url is different.
+static url, ``/static/yarr/images/arrows.png``. Override 
+``.yarr_control .yarr_nav a`` in your stylesheet if your static url is
+different.
 
 Forms are given basic styling using the selector ``form.yarr_form``; override
 the files in ``templates/yarr/include`` to display them in the same way you do

@@ -4,7 +4,7 @@
 
 {% block js %}
 {{ block.super }}
-<script src="{{ STATIC_URL }}yarr/feeds.js"></script>
+<script src="{{ STATIC_URL }}yarr/js/feeds.js"></script>
 {% endblock %}
 
 {% block content %}
@@ -12,6 +12,7 @@
 
 <h2>Add feed</h2>
 {% include "yarr/include/form_feed_add.html" %}
+
 
 <h2>Manage feeds</h2>
 
@@ -43,12 +44,12 @@
             
             {% if feed.is_active %}
                 {% if feed.error %}
-                    <td><img src="{{ STATIC_URL }}yarr/warning.png" alt="Problem" title="Problem"></td>
+                    <td><img src="{{ STATIC_URL }}yarr/images/warning.png" alt="Problem" title="Problem"></td>
                 {% else %}
-                    <td><img src="{{ STATIC_URL }}yarr/success.png" alt="Active" title="Active"></td>
+                    <td><img src="{{ STATIC_URL }}yarr/images/success.png" alt="Active" title="Active"></td>
                 {% endif %}
             {% else %}
-                <td><img src="{{ STATIC_URL }}yarr/error.png" alt="Inactive" title="Inactive"></td>
+                <td><img src="{{ STATIC_URL }}yarr/images/error.png" alt="Inactive" title="Inactive"></td>
             {% endif %}
             
             {% if feed.is_active %}

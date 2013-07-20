@@ -244,4 +244,29 @@ $(function () {
         });
     ;
     
+    // Add firefox loader
+    (function () {
+        var $feed_add = $('#yarr_feed_add');
+        if (!navigator.registerContentHandler || $feed_add.length == 0) {
+            return;
+        }
+        
+        $('<p/>').append(
+            $('<a href="#">Register with your browser</a>')
+                .click(function (e) {
+                    e.preventDefault();
+                    url = window.location.origin
+                            + $('#yarr_feed_add').attr('action')
+                            + '?feed_url=%s'
+                    ;
+                    console.log('url', url);
+                    navigator.registerContentHandler(
+                        "application/vnd.mozilla.maybe.feed",
+                        url,
+                        "Yarr"
+                    );
+                })
+        ).insertAfter($feed_add);
+    })();
+    
 });

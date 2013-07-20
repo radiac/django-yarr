@@ -14,6 +14,7 @@ Changelog
             Internal:   Started refactor of javascript code
             Bugfix:     Added missing code to update an item that has changed
             Bugfix:     Fixed check_feeds so it doesn't remove unread items
+            Thanks to:  Aleksandr Pasechnik (russkey): keypress opens source
 
 0.3.5       2013-07-17
             Bugfix:     Changed "Mark as read" to mark a feed if selected (#4)
