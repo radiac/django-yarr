@@ -91,5 +91,5 @@ class FeedTest(TestCase):
         self.assertEqual(self.feed_missing_server.is_active, True)
         self.assertRegexpMatches(
             self.feed_missing_server.error,
-            r'^URL error: .+?No such file or directory',
+            r'^URL error: .+?Name or service not known',
         )
