@@ -1,2 +1,3 @@
 *.pyc
 django_yarr.egg-info
+.tox
