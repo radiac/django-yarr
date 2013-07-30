@@ -6,6 +6,7 @@ from xml.dom import minidom
 
 from django.core.paginator import Paginator, EmptyPage, InvalidPage
 from django.core.serializers.json import DjangoJSONEncoder
+from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse
 from django.utils import simplejson
 
@@ -77,23 +78,34 @@ def import_opml(file_path, user, purge=False):
 
     xmldoc = minidom.parse(file_path)
 
-    count = 0
+    new = []
+    existing = []
     for node in xmldoc.getElementsByTagName('outline'):
-        xml_url = node.attributes.get('xmlUrl', None)
-        if xml_url is None:
+        url_node = node.attributes.get('xmlUrl', None)
+        if url_node is None:
             continue
-        xml_url = xml_url.value
+        url = url_node.value
 
         title_node = node.attributes.get('title', None)
-        title = title_node.value if title_node else xml_url
-        site_url = node.attributes.get('htmlUrl', '')
+        title = title_node.value if title_node else url
+        site_node = node.attributes.get('htmlUrl', None)
+        site_url = site_node.value if site_node else ''
 
-        models.Feed.objects.create(
-                title=title,
-                feed_url=xml_url,
+        try:
+            feed = models.Feed.objects.get(
+                feed_url=url,
                 site_url=site_url,
-                user=user,
-                )
-        count += 1
+                user=user
+            )
+            existing.append(feed)
+        except ObjectDoesNotExist:
+            feed = models.Feed(
+                title=title,
+                feed_url=url,
+                site_url=site_url,
+                user=user
+            )
+            new.append(feed)
 
-    return count
+    models.Feed.objects.bulk_create(new)
+    return len(new), len(existing)

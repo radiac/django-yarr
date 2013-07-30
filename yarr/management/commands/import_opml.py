@@ -41,10 +41,11 @@ class Command(BaseCommand):
 
         # Parse subscription
         print "Importing feeds..."
-        count = import_opml(
-                subscription_file,
-                user,
-                options['purge']
-                )
+        new_count, old_count = import_opml(
+            subscription_file,
+            user,
+            options['purge']
+        )
 
-        print "Imported %s feeds for %s" % (count, user)
+        print "Imported %s new feeds for %s" % (new_count, user)
+        print "%s feeds already existed for %s" % (old_count, user)
