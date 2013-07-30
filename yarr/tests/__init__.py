@@ -79,18 +79,18 @@ class FeedTest(TestCase):
             r'^Feed error: SAXParseException - '
         )
 
-#    @with_socket_timeout
-#    def test_http_error(self):
-#        """
-#        Test HTTP errors
-#        """
-#        # Update the feed
-#        self.feed_missing_server.check()
-#
-#        # Check the feed object
-#        self.assertEqual(self.feed_missing_server.is_active, True)
-#        self.assertRegexpMatches(
-#            self.feed_missing_server.error,
-#            r'^URL error: .+?Name or service not known',
-#        )
+    @with_socket_timeout
+    def test_http_error(self):
+        """
+        Test HTTP errors
+        """
+        # Update the feed
+        self.feed_missing_server.check()
 
+        print self.feed_missing_server.feed_url
+        # Check the feed object
+        self.assertEqual(self.feed_missing_server.is_active, True)
+        self.assertRegexpMatches(
+            self.feed_missing_server.error,
+            r'^URL error: .+?No such file or directory',
+        )
