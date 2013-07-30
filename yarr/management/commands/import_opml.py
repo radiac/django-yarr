@@ -47,5 +47,4 @@ class Command(BaseCommand):
             options['purge']
         )
 
-        print "Imported %s new feeds for %s" % (new_count, user)
-        print "%s feeds already existed for %s" % (old_count, user)
+        print("Imported %s new feeds and %s already existed for %s" % (new_count, old_count, user))

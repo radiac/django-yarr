@@ -93,6 +93,7 @@ def import_opml(file_path, user, purge=False):
 
         try:
             feed = models.Feed.objects.get(
+                title=title,
                 feed_url=url,
                 site_url=site_url,
                 user=user
