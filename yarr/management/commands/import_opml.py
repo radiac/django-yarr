@@ -36,15 +36,15 @@ class Command(BaseCommand):
 
         # Purge current entries
         if options['purge']:
-            print "Purging feeds for %s..." % user
+            print(("Purging feeds for %s..." % user))
             models.Feed.objects.filter(user=user).delete()
 
         # Parse subscription
-        print "Importing feeds..."
+        print("Importing feeds...")
         new_count, old_count = import_opml(
             subscription_file,
             user,
             options['purge']
         )
 
-        print("Imported %s new feeds and %s already existed for %s" % (new_count, old_count, user))
+        print(("Imported %s new feeds and %s already existed for %s" % (new_count, old_count, user)))
