@@ -87,7 +87,6 @@ class FeedTest(TestCase):
         # Update the feed
         self.feed_missing_server.check()
 
-        print self.feed_missing_server.feed_url
         # Check the feed object
         self.assertEqual(self.feed_missing_server.is_active, True)
         self.assertRegexpMatches(
