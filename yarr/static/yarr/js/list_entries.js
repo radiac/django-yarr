@@ -1,8 +1,15 @@
 $(function () {
+    var Yarr = window.YARR;
+    if (!Yarr) {
+        return;
+    }
     
     /**************************************************************************
     **                                                          Declare vars
     */
+    
+    var $con = Yarr.$con;
+    
     var 
         /*
         ** Internal vars
@@ -15,20 +22,13 @@ $(function () {
         FEEDS_HIDDEN = 'hidden',
         
         $scroller = $(window),
-        $con = $('#yarr_con'),
         $control = $('.yarr_control'),
         $content = $('.yarr_content'),
         $entries = $('.yarr_entry'),
-        $status = $('<div id="yarr_status" />')
-            .appendTo($con)
-            .hide()
-        ,
         $feedList = $('.yarr_feed_list'),
         pkAvailable = String($con.data('available-pks')),
-        apiEntryGet = $con.data('api-entry-get'),
         apiEntrySet = $con.data('api-entry-set'),
         
-        statusTimeout,
         $controlFixed, controlIsFixed = false,
         controlTop, controlHeight, controlBottom,
         scrollCutoff, entryBottoms, entryMargin, scrollInfiniteTrigger,
@@ -43,10 +43,10 @@ $(function () {
         // Display mode; one of:
         //      expanded    Traditional list of titles and bodies
         //      list        List of titles, with expanding bodies
-        displayMode = getCookie('yarr-displayMode', MODE_EXPANDED),
+        displayMode = Yarr.Cookie.get('yarr-displayMode', MODE_EXPANDED),
 
         // Feed list visiblity; either visible or hidden, or undefined for CSS
-        feedListShow = getCookie('yarr-feedListShow', undefined),
+        feedListShow = Yarr.Cookie.get('yarr-feedListShow', undefined),
         
         // Switch items when scrolling past this point
         scrollSwitchMargin = 100,
@@ -63,7 +63,7 @@ $(function () {
     
     // Split pkAvailable
     if (pkAvailable == '') {
-        pkAvailable = []
+        pkAvailable = [];
     } else {
         pkAvailable = pkAvailable.split(',');
     }
@@ -72,27 +72,7 @@ $(function () {
     /**************************************************************************
     **                                                          Functions
     */
-    
-    function setCookie(key, value) {
-        /** Set the cookie */
-        var expires = new Date;
-        expires.setDate(expires.getDate() + 3650);
-        document.cookie = [
-            encodeURIComponent(key), '=', value,
-            '; expires=' + expires.toUTCString(),
-            '; path=/',
-            (window.location.protocol == 'https:') ? '; secure' : ''
-        ].join('');
-    }
-    
-    function getCookie(key, defaultValue) {
-        /** Get all cookies */
-        var pairs = document.cookie.split('; ');
-        for (var i = 0, pair; pair = pairs[i] && pairs[i].split('='); i++) {
-            if (decodeURIComponent(pair[0]) === key) return pair[1];
-        }
-        return defaultValue;
-    }
+
     
     function mkButton(txt, fn) {
         return $('<a href="#" class="button">' + txt + '</a>')
@@ -125,7 +105,7 @@ $(function () {
         
         // Update var and cookie
         displayMode = newMode;
-        setCookie('yarr-displayMode', displayMode);
+        Yarr.Cookie.set('yarr-displayMode', displayMode);
         
         // Scroll to the top
         $scroller.scrollTop(0);
@@ -192,7 +172,7 @@ $(function () {
         // Save the current display configuration in a cookie
         // This will disable initial auto-sensing between screen sizes,
         feedListShow = isOpen ? FEEDS_HIDDEN : FEEDS_VISIBLE;
-        setCookie('yarr-feedListShow', feedListShow);
+        Yarr.Cookie.set('yarr-feedListShow', feedListShow);
     }
     
     function setupControl() {
@@ -338,42 +318,22 @@ $(function () {
         $entry.find('img').load(entriesResized);
     }
     
-    function setStatus(msg, is_error) {
-        /** Display a message in the status popup */
-        clearTimeout(statusTimeout);
-        if (!msg) {
-            $status.hide();
-            return;
-        }
-        
-        $status.text(msg).show();
-        if (is_error) {
-            $status.addClass('yarr_error');
-        } else {
-            $status.removeClass('yarr_error');
-        }
-        
-        statusTimeout = setTimeout(function () {
-            $status.fadeOut();
-        }, 5000);
-    }
-    
     function apiCall(url, data, successFn, failFn) {
         if (!url) {
-            setStatus('API disabled');
+            Yarr.Status.set('API disabled');
             return;
         }
         
         /** Make a call to the API */
         $.getJSON(url, data)
             .done(function(json) {
-                setStatus(json.msg, !json.success);
+                Yarr.Status.set(json.msg, !json.success);
                 if (successFn) {
                     successFn(json);
                 }
             })
             .fail(function(jqxhr, textStatus, error ) {
-                setStatus(textStatus + ': ' + error, true);
+                Yarr.Status.set(textStatus + ': ' + error, true);
                 if (failFn) {
                     failFn(textStatus);
                 }
@@ -509,7 +469,6 @@ $(function () {
         }
         infiniteLoading = true;
         
-        
         // Build list of visible PKs
         // ++ move pk_lookup outside into cached global
         var pkLookup = {}, $el;
@@ -537,43 +496,42 @@ $(function () {
         }
         
         if (pkRequest.length == 0) {
-            setStatus('No more entries to load');
+            Yarr.Status.set('No more entries to load');
             infiniteLoading = false;
             infiniteFinished = true;
             return;
         }
         
         // Get data for entries
-        setStatus('Loading...');
-        apiCall(apiEntryGet, {
-            'entry_pks':      pkRequest.join(',')
-        }, function (json) {
-            /** API list load: success */
-            infiniteLoading = false;
-            
-            // Catch no more entries
-            var count = json.entries.length;
-            if (count == 0) {
-                setStatus('No more entries to load');
-                infiniteFinished = true;
-                return;
+        Yarr.Status.set('Loading...');
+        Yarr.API.get_entries(
+            pkRequest,
+            function (entries) {
+                /** Entries loaded */
+                infiniteLoading = false;
+                
+                // Catch no more entries
+                var count = entries.length;
+                if (count == 0) {
+                    Yarr.Status.set('No more entries to load');
+                    infiniteFinished = true;
+                    return;
+                }
+                
+                // Add HTML of entries
+                for (var i=0; i<count; i++) {
+                    var $entry = $(entries[i].html).appendTo($content);
+                    setupEntry($entry);
+                }
+                
+                // Update $entries and recalc size
+                $entries = $('.yarr_entry');
+                entriesResized();
+            }, function () {
+                /** API list load: failure */
+                infiniteLoading = false;
             }
-            
-            // Add entries
-            for (var i=0; i<count; i++) {
-                var $entry = $(json.entries[i]).appendTo($content);
-                setupEntry($entry);
-            }
-            
-            // Update $entries and recalc size
-            $entries = $('.yarr_entry');
-            entriesResized();
-            
-        }, function () {
-            /** API list load: failure */
-            infiniteLoading = false;
-        });
-        
+        );
     }
     
     function entriesResized() {

@@ -62,15 +62,14 @@ def paginate(request, qs, adjacent_pages=3):
     return paginated, pagination
 
 
+def jsonEncode(data):
+    return simplejson.dumps(data, cls=DjangoJSONEncoder)
+
 def jsonResponse(data):
     """
     Return a JSON HttpResponse
     """
-    return HttpResponse(
-        simplejson.dumps(data, cls=DjangoJSONEncoder),
-        mimetype='application/json',
-    )
-
+    return HttpResponse(jsonEncode(data), mimetype='application/json')
 
 def import_opml(file_path, user, purge=False):
     if purge:

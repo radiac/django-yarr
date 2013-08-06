@@ -100,9 +100,14 @@ def list_entries(
         'unread':   unread,
         'current_view': current_view,
         'yarr_settings': {
-            'control_fixed':    settings.LAYOUT_FIXED,
             'add_jquery':       settings.ADD_JQUERY,
+            'control_fixed':    settings.LAYOUT_FIXED,
             'api_page_length':  settings.API_PAGE_LENGTH,
+            # JavaScript YARR_CONFIG variables
+            'config':   utils.jsonEncode({
+                'api':  reverse('yarr-api_base'),
+                'con':  '#yarr_con',
+            }),
         },
     }))
     
@@ -234,7 +239,10 @@ def feeds(request, template="yarr/feeds.html"):
         'feeds':    feeds,
         'yarr_settings': {
             'add_jquery':       settings.ADD_JQUERY,
-            'api_base':         reverse('yarr-api_base'),
+            # JavaScript YARR_CONFIG variables
+            'config':   utils.jsonEncode({
+                'api':  reverse('yarr-api_base'),
+            }),
         },
     }))
     
@@ -431,7 +439,10 @@ def api_entry_get(request, template="yarr/include/entry.html"):
     compiled = loader.get_template(template)
     for entry in entries:
         data[entry.pk] = {
-            'html': compiled.render(Context({'entry': entry}))
+            'feed':     entry.feed_id,
+            'read':     entry.read,
+            'saved':    entry.saved,
+            'html':     compiled.render(Context({'entry': entry}))
         }
     
     # Respond
