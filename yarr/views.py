@@ -413,7 +413,7 @@ def api_entry_get(request, template="yarr/include/entry.html"):
     Returns in JSON format:
         success     Boolean indicating success
         entries     Object with entry pk as key, entry data as object in value:
-                    rendered    Entry rendered using template
+                    html    Entry rendered as HTML using template
     """
     # Get entries queryset
     pks = request.GET.get('entry_pks', '')
@@ -431,7 +431,7 @@ def api_entry_get(request, template="yarr/include/entry.html"):
     compiled = loader.get_template(template)
     for entry in entries:
         data[entry.pk] = {
-            'rendered': compiled.render(Context({'entry': entry}))
+            'html': compiled.render(Context({'entry': entry}))
         }
     
     # Respond
