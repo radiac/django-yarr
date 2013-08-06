@@ -344,6 +344,10 @@ def api_feed_get(request):
                     If not provided, returns all fields
                     Excluded fields: id, user, all related fields
                     The pk (id) is provided as the key
+    
+    Returns in JSON format:
+        success     Boolean indicating success
+        feeds       Object with feed pk as key, feed data as object in value
     """
     # Get feeds queryset
     pks = request.GET.get('feed_pks', '')
@@ -403,10 +407,13 @@ def api_entry_get(request, template="yarr/include/entry.html"):
     """
     JSON API to get entry data
     
-    Returns pre-rendered data using the entry template
-    
     Arguments passed on GET:
         entry_pks   List of entries to get
+        
+    Returns in JSON format:
+        success     Boolean indicating success
+        entries     Object with entry pk as key, entry data as object in value:
+                    rendered    Entry rendered using template
     """
     # Get entries queryset
     pks = request.GET.get('entry_pks', '')
@@ -420,19 +427,17 @@ def api_entry_get(request, template="yarr/include/entry.html"):
         entries = models.Entry.objects.none()
     
     # Render
-    rendered = []
+    data = {}
     compiled = loader.get_template(template)
     for entry in entries:
-        rendered.append(
-            compiled.render(Context({
-                'entry':    entry,
-            }))
-        )
+        data[entry.pk] = {
+            'rendered': compiled.render(Context({'entry': entry}))
+        }
     
     # Respond
     return utils.jsonResponse({
         'success':  success,
-        'entries':  rendered,
+        'entries':  data,
     })
     
 
