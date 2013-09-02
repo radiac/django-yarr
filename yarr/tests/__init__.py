@@ -7,14 +7,6 @@ from django.test import TestCase
 from yarr.models import Feed
 from yarr.decorators import with_socket_timeout
 
-try:
-    from xml.sax import SAXParseException
-except ImportError:
-    XML_AVAILABLE = False
-    SAXParseException = None
-else:
-    XML_AVAILABLE = True
-
 
 class FeedTest(TestCase):
     def setUp(self):
