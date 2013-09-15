@@ -18,7 +18,7 @@ from yarr import settings, managers
 ###############################################################################
 #                                                               Setup
 
-# Disable feedparser's sanitizer
+# Disable feedparser's sanitizer - FeedManager will be using bleach instead
 feedparser.SANITIZE_HTML = 0
 
 class NullFile(object):
@@ -159,7 +159,7 @@ class Feed(models.Model):
         Raises:
             FetchError  Feed fetch suffered permanent failure
         """
-        # Request and parse the feed, and get status, feed and entries
+        # Request and parse the feed
         d = feedparser.parse(self.feed_url)
         status  = d.get('status', 200)
         feed    = d.get('feed', None)
