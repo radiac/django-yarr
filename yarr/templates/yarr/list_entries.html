@@ -23,9 +23,9 @@
 {% block yarr_control %}
     <div class="yarr_control">
         <ul class="yarr_menu_filter">
-            <li><a href="{% url 'yarr-list_all' %}"{% if not unread and not saved %} class="yarr_selected"{% endif %}>All</a></li>
-            <li><a href="{% url 'yarr-list_unread' %}"{% if unread %} class="yarr_selected"{% endif %}>Unread</a></li>
-            <li><a href="{% url 'yarr-list_saved' %}"{% if saved %} class="yarr_selected"{% endif %}>Saved</a></li>
+            <li><a href="{% url 'yarr-list_all' %}{% if ascending_by_date %}?order=asc{% endif %}"{% if not unread and not saved %} class="yarr_selected"{% endif %}>All</a></li>
+            <li><a href="{% url 'yarr-list_unread' %}{% if ascending_by_date %}?order=asc{% endif %}"{% if unread %} class="yarr_selected"{% endif %}>Unread</a></li>
+            <li><a href="{% url 'yarr-list_saved' %}{% if ascending_by_date %}?order=asc{% endif %}"{% if saved %} class="yarr_selected"{% endif %}>Saved</a></li>
         </ul>
         <ul class="yarr_menu_op">
             {% if feed %}
@@ -34,33 +34,41 @@
                 <li><a href="{% url 'yarr-mark_all_read' %}">Mark all read</a></li>
             {% endif %}
         </ul>
+
+        <ul class="yarr_menu_sort">
+            {% if ascending_by_date %}
+                <li><a href="./">Latest first</a></li>
+            {% else %}
+                <li><a href="?order=asc">Oldest first</a></li>
+            {% endif %}
+        </ul>
         
         {% if entries.paginator.num_pages > 1 %}
             <ul class="yarr_paginated">
                 {% if pagination.has_previous %}
-                    <li><a href="?p={{ pagination.previous }}">&laquo;</a></li>
+                    <li><a href="?{{ pagination.previous.query }}">&laquo;</a></li>
                 {% endif %}
 
-                {% if pagination.show_first %}
-                    <li><a href="?p=1">1</a></li>
-                    <li><span>...</span></li>
+                {% if pagination.first %}
+                    <li><a href="?{{ pagination.first.query }}">{{ pagination.first.number }}</a></li>
+                    <li><span>…</span></li>
                 {% endif %}
                 
-                {% for linkpage in pagination.page_numbers %}
-                    {% ifequal linkpage pagination.current %}
-                        <li><span>{{ pagination.current }}</span></li>
+                {% for linkpage in pagination.pages %}
+                    {% if linkpage.current %}
+                        <li><span class="yarr_selected">{{ linkpage.number }}</span></li>
                     {% else %}
-                        <li><a href="?p={{ linkpage }}">{{ linkpage }}</a></li>
-                    {% endifequal %}
+                        <li><a href="?{{ linkpage.query }}">{{ linkpage.number }}</a></li>
+                    {% endif %}
                 {% endfor %}
                 
                 {% if pagination.show_last %}
-                    <li><span>...</span></li>
-                    <li><a href="?p=last">{{ pagination.total }}</a></li>
+                    <li><span>…</span></li>
+                    <li><a href="?{{ pagination.last.query }}">{{ pagination.last.number }}</a></li>
                 {% endif %}
                 
                 {% if pagination.has_next %}
-                    <li><a href="?p={{ pagination.next }}">&raquo;</a></li>
+                    <li><a href="?{{ pagination.next.query }}">&raquo;</a></li>
                 {% endif %}
             </ul>
         {% endif %}
