@@ -1,6 +1,4 @@
-from django.conf.urls.defaults import patterns, include, url
-
-import django.contrib.auth.views
+from django.conf.urls.defaults import patterns, url
 
 urlpatterns = patterns('yarr.views',
     url(r'^$', 'home',

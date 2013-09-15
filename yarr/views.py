@@ -53,6 +53,10 @@ def list_entries(
         unread      If true, show only unread unsaved entries
         saved       If true, show only saved entries; priority over unread
     Note: an entry can only either be unread or saved, not both
+
+    Takes a single querystring argument:
+        order       If "asc", order chronologically (otherwise
+                    reverse-chronologically).
     """
     # Saved has priority over unread
     if saved:
@@ -60,7 +64,13 @@ def list_entries(
     
     # Get entries queryset
     qs, feed = get_entries(request, feed_pk, unread, saved)
-    
+
+    ascending_by_date = request.GET.get('order', 'dsc') == 'asc'
+    if ascending_by_date:
+        qs = qs.order_by('date')
+    else:
+        qs = qs.order_by('-date')  # Default ordering.
+
     # Make list of available pks for this page
     available_pks = qs.values_list('pk', flat=True)
     
@@ -98,6 +108,7 @@ def list_entries(
         'feeds':    feeds,
         'saved':    saved,
         'unread':   unread,
+        'ascending_by_date': ascending_by_date,
         'current_view': current_view,
         'yarr_settings': {
             'add_jquery':       settings.ADD_JQUERY,

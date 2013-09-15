@@ -1,7 +1,6 @@
 """
 Utils for yarr
 """
-import os
 from xml.dom import minidom
 
 from django.core.paginator import Paginator, EmptyPage, InvalidPage
@@ -41,22 +40,46 @@ def paginate(request, qs, adjacent_pages=3):
     if end_page >= total_pages - 1:
         end_page = total_pages + 1
 
+    def page_dict(number):
+        """
+        A dictionary which describes a page of the given number.  Includes
+        a version of the current querystring, replacing only the "p" parameter
+        so nothing else is clobbered.
+        """
+        query = request.GET.copy()
+        query['p'] = str(number)
+        return {
+            'number': number,
+            'query': query.urlencode(),
+            'current': number == paginated.number,
+        }
+
     page_numbers = [
         n for n in range(start_page, end_page) if n > 0 and n <= total_pages
     ]
 
+    if 1 not in page_numbers:
+        first = page_dict(1)
+    else:
+        first = None
+
+    if total_pages not in page_numbers:
+        last = page_dict(total_pages)
+    else:
+        last = None
+
     pagination = {
         'has_next':     paginated.has_next(),
-        'next':         paginated.next_page_number() if paginated.has_next() else 0,
+        'next':         page_dict(paginated.next_page_number()) if paginated.has_next() else None,
 
         'has_previous': paginated.has_previous(),
-        'previous':     paginated.previous_page_number() if paginated.has_previous() else 0,
+        'previous':     page_dict(paginated.previous_page_number()) if paginated.has_previous() else None,
 
-        'current':      paginated.number,
-        'show_first':   1 not in page_numbers,
-        'page_numbers': page_numbers,
-        'show_last':    total_pages not in page_numbers,
-        'total':        total_pages,
+        'show_first':   first is not None,
+        'first':        first,
+        'pages':        [page_dict(n) for n in page_numbers],
+        'show_last':    last is not None,
+        'last':         last,
     }
 
     return paginated, pagination

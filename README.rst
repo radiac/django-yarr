@@ -61,6 +61,10 @@ Installation
 
    Note: If you are using Django 1.4 or later, you will need to set
    ``USE_TZ = False``, until support for Django 1.3 is dropped from Yarr.
+   Unless you are using PostgreSQL, also set ``TIME_ZONE = 'UTC'`` to ease
+   the `migration`_ later.
+
+.. _migration: https://docs.djangoproject.com/en/1.5/topics/i18n/timezones/#migration-guide
 
 3. Include the URLconf in your project's urls.py::
 
@@ -70,7 +74,7 @@ Installation
 
     python manage.py migrate yarr
 
-   * If you don't have South, you will use ``python manage.py syncdb``, and
+   If you don't have South, you will use ``python manage.py syncdb``, and
    later regret your decision
 
 5. **Optional**: Import feeds for a user from an OPML file, load all items, and

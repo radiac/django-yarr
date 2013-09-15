@@ -58,7 +58,7 @@ $(function () {
         pageLength = $con.data('api-page-length'),
         
         // Whether or not the control bar and feed list should be fixed
-        layoutFixed = $con.data('layout-fixed', true)
+        layoutFixed = !!$con.data('layout-fixed')
     ;
     
     // Split pkAvailable
