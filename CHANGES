@@ -5,6 +5,13 @@ Django Yarr Changes
 Changelog
 =========
 
+0.3.8       2013-09-15
+            Feature:    Added toggle to display feed items oldest first
+            Feature:    Changed sanitiser to allow ``<img alt>`` by default
+            Bugfix:     Fixed ``YARR_LAYOUT_FIXED = False``
+            Bugfix:     Added documentation regarding timezones
+            Thanks to:  Tom Most (twm) for all changes in this release
+
 0.3.7       2013-08-06
             Internal:   Import feed refactor for better reuse
             Thanks to:  Spencer Herzberg (sherzberg): import feed refactor
