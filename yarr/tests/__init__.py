@@ -1,19 +1,11 @@
 import os
 
+import django
 from django.contrib.auth.models import User
 from django.test import TestCase
-from django.utils.unittest import skipIf
 
 from yarr.models import Feed
 from yarr.decorators import with_socket_timeout
-
-try:
-    from xml.sax import SAXParseException
-except ImportError:
-    XML_AVAILABLE = False
-    SAXParseException = None
-else:
-    XML_AVAILABLE = True
 
 
 class FeedTest(TestCase):
@@ -37,6 +29,12 @@ class FeedTest(TestCase):
             title="Feed: missing server",
             user=user,
             feed_url='http://missing.example.com/',
+        )
+
+        self.feed_with_img = Feed.objects.create(
+            title="Feed: has <img>",
+            user=user,
+            feed_url=os.path.join(test_path, 'feed4-with-img.xml')
         )
         
     def test_feed_wellformed(self):
@@ -93,4 +91,23 @@ class FeedTest(TestCase):
             self.feed_missing_server.error,
             r'^URL error: .+?Name or service not known',
         )
-        
+
+    # assertHTMLEqual was introduced in Django 1.5.  And of course skipIf was
+    # introduced in Python 2.7 or Django 1.5, so we have to do this the jank
+    # way in case of Django < 1.5 on Python 2.6 (we don't care about Python
+    # 2.5, do we?)
+    if django.VERSION >= (1, 5):
+        def test_feed_with_img(self):
+            """
+            With the default settings, an ``<img>`` tag should be permitted
+            ``src``, ``alt``, ``title``, ``width``, and ``height`` attributes.
+            """
+            # Update the feed.
+            self.feed_with_img.check()
+            (entry,) = self.feed_with_img.entries.all()
+
+            self.assertHTMLEqual(
+                entry.content,
+                '<img src="http://example.com/webcomic.png" alt="alt text" '
+                    'title="annoying in-joke" width="100" height="200">'
+            )

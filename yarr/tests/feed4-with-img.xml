@@ -1,0 +1,13 @@
+<rss version="2.0">
+<channel>
+<title>Feed with img in item</title>
+<link>http://example.com/with_img</link>
+<pubDate>Tue, 02 Jul 2013 02:02:02 GMT</pubDate>
+<item>
+    <title>Item 1</title>
+    <description>&lt;img src="http://example.com/webcomic.png" alt="alt text" title="annoying in-joke" width="100" height="200"&gt;</description>
+    <link>http://example.com/?item=1</link>
+    <pubDate>Mon, 01 Jul 2013 01:01:01 GMT</pubDate>
+</item>
+</channel>
+</rss>
