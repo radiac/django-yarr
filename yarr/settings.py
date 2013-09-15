@@ -82,7 +82,7 @@ ALLOWED_ATTRIBUTES = getattr(
         'a':        ['href', 'title'],
         'abbr':     ['title'],
         'acronym':  ['title'],
-        'img':      ['src', 'width', 'height', 'title'],
+        'img':      ['src', 'alt', 'width', 'height', 'title'],
         'th':       ['align', 'valign', 'width', 'colspan', 'rowspan'],
         'td':       ['align', 'valign', 'width', 'colspan', 'rowspan'],
     }
