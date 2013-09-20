@@ -2,7 +2,7 @@
 Django Yarr - Yet Another RSS Reader
 """
 
-__version__ = "0.3.8"
+__version__ = "0.3.9"
 __license__ = "BSD"
 __author__ = "Richard Terry"
 __credits__ = [

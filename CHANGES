@@ -5,6 +5,9 @@ Django Yarr Changes
 Changelog
 =========
 
+0.3.9       2013-09-20
+            Bugfix:     Fixed layout fixed setting in views.list_entries
+
 0.3.8       2013-09-15
             Feature:    Added toggle to display feed items oldest first
             Feature:    Changed sanitiser to allow ``<img alt>`` by default

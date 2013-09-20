@@ -111,7 +111,7 @@ def list_entries(
         'ascending_by_date': ascending_by_date,
         'current_view': current_view,
         'yarr_settings': {
-            'control_fixed':    settings.LAYOUT_FIXED,
+            'layout_fixed':    settings.LAYOUT_FIXED,
             'add_jquery':       settings.ADD_JQUERY,
             'api_page_length':  settings.API_PAGE_LENGTH,
         },
