@@ -153,7 +153,6 @@ YARR = (function () {
 $(function () {
     var Yarr = window.YARR;
     if (!Yarr) {
-        console.log('fail2');
         return;
     }
     
@@ -259,7 +258,6 @@ $(function () {
                             + $('#yarr_feed_add').attr('action')
                             + '?feed_url=%s'
                     ;
-                    console.log('url', url);
                     navigator.registerContentHandler(
                         "application/vnd.mozilla.maybe.feed",
                         url,
