@@ -54,25 +54,52 @@ ITEM_EXPIRY = getattr(settings, 'YARR_ITEM_EXPIRY', 1)
 #
 
 # HTML whitelist for bleach
+# This default list is roughly the same as the WHATWG sanitization rules
+# <http://wiki.whatwg.org/wiki/Sanitization_rules>, but without form elements.
+# A few common HTML 5 elements have been added as well.
 ALLOWED_TAGS = getattr(
     settings, 'YARR_ALLOWED_TAGS',
     [
         'a',
         'abbr',
         'acronym',
+        'aside',
         'b',
         'blockquote',
         'br',
         'code',
+        'data',
+        'dd',
+        'del',
+        'dfn',
+        'div',  # Why not?
+        'dl',
+        'dt',
         'em',
+        'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+        'hr',
         'i',
         'img',
+        'ins',
+        'kbd',
         'li',
         'ol',
         'p',
         'pre',
+        'q',
+        's',
+        'samp',
+        'small',  # Now a semantic tag in HTML5!
+        'span',
+        'strike',
         'strong',
-        'table', 'tr', 'th', 'td',
+        'sub', 'sup',
+        'table', 'tbody', 'td', 'tfoot', 'th', 'thead', 'tr',
+        'time',
+        'tt',  # Obsolete, but docutils likes to generate these.
+        'u',
+        'var',
+        'wbr',
         'ul',
     ]
 )
@@ -82,9 +109,14 @@ ALLOWED_ATTRIBUTES = getattr(
         'a':        ['href', 'title'],
         'abbr':     ['title'],
         'acronym':  ['title'],
+        'data':     ['value'],
+        'dfn':      ['title'],
         'img':      ['src', 'alt', 'width', 'height', 'title'],
-        'th':       ['align', 'valign', 'width', 'colspan', 'rowspan'],
+        'li':       ['value'],
+        'ol':       ['reversed', 'start', 'type'],
         'td':       ['align', 'valign', 'width', 'colspan', 'rowspan'],
+        'th':       ['align', 'valign', 'width', 'colspan', 'rowspan'],
+        'time':     ['datetime'],
     }
 )
 ALLOWED_STYLES = getattr(
