@@ -65,6 +65,8 @@ ALLOWED_TAGS = getattr(
         'acronym',
         'aside',
         'b',
+        'bdi',
+        'bdo',
         'blockquote',
         'br',
         'code',
@@ -106,6 +108,7 @@ ALLOWED_TAGS = getattr(
 ALLOWED_ATTRIBUTES = getattr(
     settings, 'YARR_ALLOWED_ATTRIBUTES',
     {
+        '*':        ['lang', 'dir'],  # lang is necessary for hyphentation.
         'a':        ['href', 'title'],
         'abbr':     ['title'],
         'acronym':  ['title'],
