@@ -93,12 +93,12 @@ class Feed(models.Model):
     """
     # Compulsory data fields
     title = models.TextField(help_text="Name for the feed")
-    feed_url = models.TextField(
+    feed_url = models.TextField("Feed URL",
         validators=[URLValidator()], help_text="URL of the RSS feed",
     )
     
     # Optional data fields
-    site_url = models.TextField(
+    site_url = models.TextField("Site URL",
         validators=[URLValidator()], help_text="URL of the HTML site",
     )
     
