@@ -25,12 +25,16 @@
         <col class="yarr_next_check">
     </colgroup>
     
-    <tr>
-        <th>Feed</th>
-        <th>Unread</th>
-        <th>Status</th>
-        <th>Next check</th>
-    </tr>
+    <thead>
+        <tr>
+            <th>Feed</th>
+            <th>Unread</th>
+            <th>Status</th>
+            <th>Next check</th>
+        </tr>
+    </thead>
+
+    <tbody>
     {% for feed in feeds %}
         <tr
             data-yarr-pk="{{ feed.pk }}"
@@ -59,6 +63,7 @@
             {% endif %}
         </tr>
     {% endfor %}
+    </tbody>
 </table>
 
 {% endblock %}
