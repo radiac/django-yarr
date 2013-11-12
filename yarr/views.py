@@ -488,6 +488,9 @@ def api_entry_set(request):
             saved   = False,
         )
         entries.update_feed_unread()
+        feed_unread = {}
+        for feed in entries.feeds():
+            feed_unread[str(feed.pk)] = feed.count_unread
         
         success = True
         msg = 'Marked as %s' % ('read' if is_read else 'unread')
@@ -500,9 +503,11 @@ def api_entry_set(request):
         )
         success = True
         msg = 'Saved' if is_saved else 'No longer saved'
+        feed_unread = {}
     
     # Respond
     return utils.jsonResponse({
         'success':  success,
         'msg':      msg,
+        'feed_unread': feed_unread,
     })
