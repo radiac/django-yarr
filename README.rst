@@ -46,11 +46,13 @@ cron.
 Installation
 ============
 
-* See 
-
 1. Install ``django-yarr`` (currently only on github)::
 
     pip install -e git+https://github.com/radiac/django-yarr.git#egg=django-yarr
+
+   Note: The master branch may sometimes contain minor changes made since the
+   version was incremented. It will always be safe to use, but versions will be
+   tagged if you only want to follow releases.
 
 2. Add Yarr to ``INSTALLED_APPS``::
 
@@ -64,20 +66,27 @@ Installation
    Unless you are using PostgreSQL, also set ``TIME_ZONE = 'UTC'`` to ease
    the `migration`_ later.
 
+   You may also want to change some settings here (see `Settings`_ below)
+   
 .. _migration: https://docs.djangoproject.com/en/1.5/topics/i18n/timezones/#migration-guide
 
 3. Include the URLconf in your project's urls.py::
 
     url(r'^yarr/', include('yarr.urls')),
 
-4. Add the models to the database using South::
+4. Make sure your ``base.html`` template has the necessary blocks, or override
+   Yarr's base, ``yarr/base.html`` (see `Templates`_ below). You will also want
+   to create a link somewhere to ``yarr-home`` (or ``yarr.views.home``) so
+   users can access it.
+
+5. Add the models to the database using South::
 
     python manage.py migrate yarr
 
    If you don't have South, you will use ``python manage.py syncdb``, and
    later regret your decision
 
-5. **Optional**: Import feeds for a user from an OPML file, load all items, and
+6. **Optional**: Import feeds for a user from an OPML file, load all items, and
    mark them as read::
 
     python manage.py import_opml /path/to/subscriptions.xml username
@@ -86,7 +95,7 @@ Installation
    Feeds can currently only be managed through the admin section - see CHANGES
    for full roadmap.
 
-6. Schedule the ``check_feeds`` management command. By default Yarr expects it
+7. Schedule the ``check_feeds`` management command. By default Yarr expects it
    to be run once an hour, but you can change the ``YARR_MINIMUM_INTERVAL``
    setting to alter this. You could use one of these cron examples::
 
@@ -102,9 +111,6 @@ Installation
 
     # Once an hour (at 10 past every hour), in a virtual environment
     10 * * * * /path/to/virtualenv/bin/python /path/to/project/manage.py check_feeds
-
-7. Create a link to ``yarr-home`` (or ``yarr.views.home``) for users to access
-   Yarr.
 
 
 Settings

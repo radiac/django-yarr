@@ -5,6 +5,8 @@ Django Yarr Changes
 Changelog
 =========
 
+            Feature:    Clarified parts of the instructions
+
 0.3.10      2013-10-23
             Internal:   Change views to use render(), not render_to_response()
             Bugfix:     Removed debug messages from feeds.js
