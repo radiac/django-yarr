@@ -254,6 +254,15 @@ ul.yarr_entry_control li label input {
     }
 }
 
+.yarr_feed_unread {
+    font-weight:    bold;
+}
+.yarr_count_unread {
+    font-size:      0.8em;
+    font-weight:    normal;
+    color:          #666;
+}
+
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 **                                                              List display
 ** Default to expanded mode

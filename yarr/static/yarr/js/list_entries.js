@@ -329,7 +329,7 @@ $(function () {
                     var counts = result['feed_unread'];
                     for (var pk in counts) {
                         var selector = '[data-yarr-feed=' + pk + '] .yarr_count_unread';
-                        $feedList.find(selector).text(counts[pk]);
+                        $feedList.find(selector).text('(' + counts[pk] + ')');
                     }
                 });
             })
