@@ -324,7 +324,14 @@ $(function () {
                 }
                 
                 // Update the server
-                apiCall(apiEntrySet, data);
+                apiCall(apiEntrySet, data, function(result) {
+                    // Update unread count in the feed list.
+                    var counts = result['feed_unread'];
+                    for (var pk in counts) {
+                        var selector = '[data-yarr-feed=' + pk + '] .yarr_count_unread';
+                        $feedList.find(selector).text(counts[pk]);
+                    }
+                });
             })
         ;
         
