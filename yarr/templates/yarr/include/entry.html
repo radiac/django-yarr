@@ -10,7 +10,7 @@
         <div class="yarr_li_date">{{ entry.date|date:"M d Y, H:i" }}</div>
         <div class="yarr_li_entry">
             <span>{{ entry.title|default:"Untitled" }}</span>
-            - {{ entry.content|striptags|truncatechars:20|default:"..." }}
+            — {{ entry.content|truncatewords_html:30|striptags|default:"…" }}
         </div>
     </div>
     <div class="yarr_entry_content">
