@@ -623,7 +623,6 @@ $(function () {
     $content
         .on('click', '.yarr_entry_content', function (e) {
             selectEntry($(this).parent().index());
-            scrollCurrent();
         })
         .on('click', '.yarr_entry_li', function (e) {
             var $entry = $(this).parent();
@@ -631,6 +630,9 @@ $(function () {
                 $entry.removeClass('yarr_open');
             } else {
                 selectEntry($entry.index());
+                // Since everything has shifted around we need to scroll to
+                // a known position or the user will be lost.
+                scrollCurrent();
             }
         })
     ;
