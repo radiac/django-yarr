@@ -333,7 +333,7 @@ pitfalls:
 * http://code.google.com/p/django-reader
 * https://bitbucket.org/tghw/django-feedreader
 
-The icons are from Iconic, http://somerandomdude.com/work/iconic/
+The icons are based on Entypo by Daniel Bruce, http://www.entypo.com/
 
 The pirate pony started life on http://www.mylittledjango.com/ before putting
 on clipart from clker.com and openclipart.org
