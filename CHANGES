@@ -5,37 +5,45 @@ Django Yarr Changes
 Changelog
 =========
 
+0.3.11      Feature:    Add unread count to feed list (#29)
+            Feature:    Minor feed management tweaks (#26)
+            Feature:    Add wrapper <span> for checkbox style-ability (#25)
+            Feature:    Longer entry snippets in list mode (#24)
+            Feature:    Items only scroll on click in list mode (#23)
+            Thanks to:  Tom Most (twm) for all above changes
+            Feature:    Added basic styling for unread count
             Feature:    Clarified parts of the instructions
+            Feature:    Changed icons to ones based on Entypo
 
 0.3.10      2013-10-23
-            Internal:   Change views to use render(), not render_to_response()
+            Internal:   Use render(), not render_to_response() (#20)
             Bugfix:     Removed debug messages from feeds.js
-            Thanks to:  Tuk Bredsdorff (tiktuk) for changing views to render()
+            Thanks to:  Tuk Bredsdorff (tiktuk) for #20
 
 0.3.9       2013-09-20
             Bugfix:     Fixed layout fixed setting in views.list_entries
 
 0.3.8       2013-09-15
-            Feature:    Added toggle to display feed items oldest first
-            Feature:    Changed sanitiser to allow ``<img alt>`` by default
-            Bugfix:     Fixed ``YARR_LAYOUT_FIXED = False``
-            Bugfix:     Added documentation regarding timezones
-            Thanks to:  Tom Most (twm) for all changes in this release
+            Feature:    Added toggle to display feed items oldest first (#18)
+            Bugfix:     Fixed ``YARR_LAYOUT_FIXED = False`` (#17)
+            Feature:    Changed sanitiser to allow ``<img alt>`` (#16)
+            Bugfix:     Added documentation regarding timezones (#15)
+            Thanks to:  Tom Most (twm) for all changes
 
 0.3.7       2013-08-06
-            Internal:   Import feed refactor for better reuse
-            Thanks to:  Spencer Herzberg (sherzberg): import feed refactor
+            Internal:   Import feed refactor for better reuse (#10)
+            Thanks to:  Spencer Herzberg (sherzberg) for all changes
 
 0.3.6       2013-07-20
             Feature:    Added expandable info to feed manager list
-            Feature:    Added shortcut key to open source URL in new window
+            Feature:    Added shortcut key to open source URL in new window (#5)
             Feature:    Added setting to control how long old entries remain
             Feature:    Added link to delete feed on edit feed page
             Internal:   Added cached item counts to Feed
             Internal:   Restructured template inheritance to simplify overrides
             Bugfix:     Added missing code to update an item that has changed
             Bugfix:     Changed check_feeds to check for entries if feed broken
-            Thanks to:  Aleksandr Pasechnik (russkey): shortcut key opens link
+            Thanks to:  Aleksandr Pasechnik (russkey) for #5
 
 0.3.5       2013-07-17
             Bugfix:     Changed "Mark as read" to mark a feed if selected (#4)
@@ -106,6 +114,11 @@ Target
 0.4.0       Drop support for Django 1.3
             Introduce timezone support for Django 1.4 and later
             Display times according to user timezone, not server
+            User options page:
+            * Jump on click (#23)
+            * Default sort order
+            * Open links in new tab (#22)
+            * JS options
 0.5.0       Feed categorisation and entry tags
 0.5.x       Ajax mark all read
             Customise HTML sanitiser to support:
@@ -113,7 +126,6 @@ Target
             * Delay image loading
             * Improve render time
             De-dupe multiple feeds with the same URL before checking
-            Sort by newest/oldest
 1.0.0       Stable release, make available on PyPI
 1.1.0       Adaptive feed check frequency, with smarter spacing to spread load
 
