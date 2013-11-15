@@ -2,8 +2,7 @@
 
 {% block content %}
 
-<form action="." method="POST">
-{% csrf_token %}
+<form action="." method="POST" class="yarr_confirm">
 
 {% if entry %}
     <h2>{{ entry.title }}</h2>
@@ -12,6 +11,7 @@
 <p>{{ message }}</p>
 
 <div>
+    {% csrf_token %}
     <input type="submit" value="{{ submit_label }}">
 </div>
 
