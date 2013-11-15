@@ -273,12 +273,13 @@ $(function () {
         ;
     }
     
-    function wrapCheckbox($box, label) {
+    function wrapCheckbox($box, cls, label) {
         /** Wrap a checkbox in a label */
-        return $('<label>' + label + '</label>')
+        return $('<label><span>' + label + '</span></label>')
             .prepend($box)
             .wrap('<li />')
             .parent()
+            .addClass(cls)
         ;
     }
     
@@ -330,8 +331,8 @@ $(function () {
         // Add buttons
         $entry.find('.yarr_entry_control')
             .empty()
-            .append(wrapCheckbox($read, 'Read'))
-            .append(wrapCheckbox($saved, 'Saved'))
+            .append(wrapCheckbox($read, 'yarr_checkbox_read', 'Read'))
+            .append(wrapCheckbox($saved, 'yarr_checkbox_saved', 'Saved'))
         ;
         
         // When images load, update the position cache
