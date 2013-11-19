@@ -5,6 +5,8 @@ Django Yarr Changes
 Changelog
 =========
 
+0.3.12      Bugfix:     Fixed scroll buttons sprite
+
 0.3.11      Feature:    Add unread count to feed list (#29)
             Feature:    Minor feed management tweaks (#26)
             Feature:    Add wrapper <span> for checkbox style-ability (#25)
