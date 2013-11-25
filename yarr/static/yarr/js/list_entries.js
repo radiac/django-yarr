@@ -328,8 +328,12 @@ $(function () {
                     // Update unread count in the feed list.
                     var counts = result['feed_unread'];
                     for (var pk in counts) {
-                        var selector = '[data-yarr-feed=' + pk + '] .yarr_count_unread';
-                        $feedList.find(selector).text('(' + counts[pk] + ')');
+                        var count = counts[pk];
+                        $feedList.find('[data-yarr-feed=' + pk + ']').each(function() {
+                            $(this)
+                                .toggleClass('yarr_feed_unread', count !== 0)
+                                .find('.yarr_count_unread').text(count);
+                        });
                     }
                 });
             })
