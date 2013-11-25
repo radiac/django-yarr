@@ -5,6 +5,11 @@ Django Yarr Changes
 Changelog
 =========
 
+            Bugfix:     Unread count at 0 removes class (#31)
+            Bugfix:     Fixed urls.py for Django 1.6 (#30)
+            Thanks to:  Chris Franklin (chrisfranklin ) for #30
+                        Tom Most (twm) for #31
+
 0.3.12      Bugfix:     Fixed scroll buttons sprite
 
 0.3.11      Feature:    Add unread count to feed list (#29)
