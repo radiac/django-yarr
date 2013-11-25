@@ -262,6 +262,12 @@ ul.yarr_entry_control li label input {
     font-weight:    normal;
     color:          #666;
 }
+.yarr_count_unread::before {
+    content: "(";
+}
+.yarr_count_unread::after {
+    content: ")";
+}
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 **                                                              List display
