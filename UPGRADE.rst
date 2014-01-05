@@ -13,7 +13,9 @@ Upgrading to 0.3.13
 
 In earlier versions, entry expiry didn't function correctly. This release fixes
 the issue, but because expiry dates are set when a feed updates, you will have
-to wait for all feeds to change before expiry dates are set correctly.
+to wait for all feeds to change before expiry dates are set correctly
+(meaning some old entries will sit around in your database for longer than they
+need to, which could waste disk space if you have a lot of feeds).
 
 To address this, ``check_feeds --force`` has been changed to not just force a
 check of all feeds, but also to force a database update, which will set an
