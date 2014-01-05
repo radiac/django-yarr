@@ -17,15 +17,16 @@ to wait for all feeds to change before expiry dates are set correctly.
 
 To address this, ``check_feeds --force`` has been changed to not just force a
 check of all feeds, but also to force a database update, which will set an
-expiry on all entries no longer in a feed.
+expiry on all entries no longer in a feed. To force expiries onto entries that
+should expire::
 
     python manage.py manage check_feeds --force
 
 Bear in mind that entries on dead feeds will not be touched; this is the
 intended behaviour (in case the feed is temporarily unavailable), but may mean
 that you are left with some entries which should have expired. If this is an
-issue for you, you can manually delete read unsaved entries on inactive feeds
-with:
+issue for you, you can delete the feed (and all entries along with it), or
+manually delete read unsaved entries on inactive feeds with::
 
     from yarr.models import Feed
     feeds = Feed.objects.filter(is_active=False)
