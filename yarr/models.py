@@ -343,7 +343,12 @@ class Feed(models.Model):
             )
         
         # Stop if we now know it hasn't updated recently
-        if updated and self.last_updated and updated <= self.last_updated:
+        if (
+            not force
+            and updated
+            and self.last_updated
+            and updated <= self.last_updated
+        ):
             logfile.write('Has not updated')
             return True
             
@@ -430,14 +435,17 @@ class Feed(models.Model):
             ):
                 latest = entry.date
         
-        # Mark any entries which weren't found and have been read but not saved
-        # for expiry
+        # Mark entries for expiry if:
+        #   ITEM_EXPIRY is set to expire entries
+        #   they weren't found in the feed
+        #   they have been read but not saved
+        #   they haven't already been marked for expiry
         if settings.ITEM_EXPIRY >= 0:
             self.entries.exclude(
                 pk__in=found
             ).read(
             ).unsaved(
-            ).exclude(
+            ).filter(
                 expires__isnull=True
             ).update(
                 expires=datetime.datetime.now() + datetime.timedelta(

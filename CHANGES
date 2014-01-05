@@ -5,15 +5,20 @@ Django Yarr Changes
 Changelog
 =========
 
+0.3.13      2014-01-05
+            Feature:    Changed check_feeds --force to also force a db update
             Feature:    Allow more HTML tags in entries (#32)
+            Bugfix:     Fixed entries not expiring correctly
             Bugfix:     Unread count at 0 removes class (#31)
             Bugfix:     Fixed urls.py for Django 1.6 (#30)
-            Thanks to:  Chris Franklin (chrisfranklin ) for #30
+            Thanks to:  Chris Franklin (chrisfranklin) for #30
                         Tom Most (twm) for #31 and #32
 
-0.3.12      Bugfix:     Fixed scroll buttons sprite
+0.3.12      2013-11-19
+            Bugfix:     Fixed scroll buttons sprite
 
-0.3.11      Feature:    Add unread count to feed list (#29)
+0.3.11      2013-11-15
+            Feature:    Add unread count to feed list (#29)
             Feature:    Minor feed management tweaks (#26)
             Feature:    Add wrapper <span> for checkbox style-ability (#25)
             Feature:    Longer entry snippets in list mode (#24)

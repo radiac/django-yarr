@@ -20,7 +20,7 @@ Features
 * No social nonsense
 
 
-Version 0.3.12
+Version 0.3.13
 
 * See `CHANGES <CHANGES>`_ for full changelog and roadmap
 * See `UPGRADE <UPGRADE.rst>`_ for how to upgrade from earlier releases
@@ -189,6 +189,11 @@ To control feed updates:
     
     Set this to ``0`` to expire immediately, ``-1`` to never expire.
     
+    If changing this from ``-1``, you will probably want to add expiry dates to
+    all relevant entries by forcing an update:
+    
+        python manage.py check_feeds --force
+    
     Default: ``1``
 
 
@@ -266,7 +271,7 @@ Usage::
 
     python manage.py check_feeds [--force] [--read] [--purge]
 
-* ``--force`` forces updates even when not due
+* ``--force`` forces all feeds to update (slow)
 * ``--read`` marks new items as read (useful when first importing feeds)
 * ``--purge`` purges all existing entries
 * ``--verbose`` displays information about feeds as they are being checked
@@ -275,6 +280,11 @@ Individual feeds can be given a custom checking frequency (default is 24
 hours), so ``check_feeds`` needs to run at least as frequently as that; i.e. if
 you want a feed to be checked every 15 minutes, set your cron job to run every
 15 minutes.
+
+Although multiple ``check_feed`` calls can run at the same time without
+interfering with each other, if you are running the command manually you may
+want to temporarily disable your cron job to avoid checking feeds
+unnecessarily.
 
 
 Import OPML

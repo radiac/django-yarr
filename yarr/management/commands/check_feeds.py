@@ -22,7 +22,7 @@ class Command(BaseCommand):
             action='store_true',
             dest='force',
             default=False,
-            help='Force updates even when not due',
+            help='Force all feeds to update',
         ),
         make_option(
             '--read',

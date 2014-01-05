@@ -2,7 +2,7 @@
 Django Yarr - Yet Another RSS Reader
 """
 
-__version__ = "0.3.12"
+__version__ = "0.3.13"
 __license__ = "BSD"
 __author__ = "Richard Terry"
 __credits__ = [
@@ -11,4 +11,5 @@ __credits__ = [
     "Spencer Herzberg (sherzberg)",
     "Tom Most (twm)",
     "Tuk Bredsdorff (tiktuk)",
+    "Chris Franklin (chrisfranklin)",
 ]
