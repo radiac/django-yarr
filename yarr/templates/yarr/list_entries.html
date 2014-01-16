@@ -88,7 +88,12 @@
         
         <ul>
             {% for feed in feeds %}
-                <li><a href="{% url current_view feed_pk=feed.pk %}">{{ feed.title }}</a></li>
+            <li data-yarr-feed="{{ feed.pk }}" {% if feed.count_unread %}class="yarr_feed_unread"{% endif %}>
+                <a href="{% url current_view feed_pk=feed.pk %}">
+                    {{ feed.title }}
+                        <span class="yarr_count_unread">{{ feed.count_unread }}</span>
+                </a>
+            </li>
             {% endfor %}
         </ul>
     </div>

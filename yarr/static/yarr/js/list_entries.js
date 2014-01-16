@@ -253,12 +253,13 @@ $(function () {
         ;
     }
     
-    function wrapCheckbox($box, label) {
+    function wrapCheckbox($box, cls, label) {
         /** Wrap a checkbox in a label */
-        return $('<label>' + label + '</label>')
+        return $('<label><span>' + label + '</span></label>')
             .prepend($box)
             .wrap('<li />')
             .parent()
+            .addClass(cls)
         ;
     }
     
@@ -303,15 +304,26 @@ $(function () {
                 }
                 
                 // Update the server
-                apiCall(apiEntrySet, data);
+                apiCall(apiEntrySet, data, function(result) {
+                    // Update unread count in the feed list.
+                    var counts = result['feed_unread'];
+                    for (var pk in counts) {
+                        var count = counts[pk];
+                        $feedList.find('[data-yarr-feed=' + pk + ']').each(function() {
+                            $(this)
+                                .toggleClass('yarr_feed_unread', count !== 0)
+                                .find('.yarr_count_unread').text(count);
+                        });
+                    }
+                });
             })
         ;
         
         // Add buttons
         $entry.find('.yarr_entry_control')
             .empty()
-            .append(wrapCheckbox($read, 'Read'))
-            .append(wrapCheckbox($saved, 'Saved'))
+            .append(wrapCheckbox($read, 'yarr_checkbox_read', 'Read'))
+            .append(wrapCheckbox($saved, 'yarr_checkbox_saved', 'Saved'))
         ;
         
         // When images load, update the position cache
@@ -581,7 +593,6 @@ $(function () {
     $content
         .on('click', '.yarr_entry_content', function (e) {
             selectEntry($(this).parent().index());
-            scrollCurrent();
         })
         .on('click', '.yarr_entry_li', function (e) {
             var $entry = $(this).parent();
@@ -589,6 +600,9 @@ $(function () {
                 $entry.removeClass('yarr_open');
             } else {
                 selectEntry($entry.index());
+                // Since everything has shifted around we need to scroll to
+                // a known position or the user will be lost.
+                scrollCurrent();
             }
         })
     ;

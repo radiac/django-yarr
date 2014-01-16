@@ -1,4 +1,7 @@
-from django.conf.urls.defaults import patterns, url
+try:
+    from django.conf.urls.defaults import patterns, url
+except ImportError:
+    from django.conf.urls import patterns, url, include
 
 urlpatterns = patterns('yarr.views',
     url(r'^$', 'home',

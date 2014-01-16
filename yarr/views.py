@@ -4,8 +4,8 @@ from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
 from django.db import models as django_models
 from django.http import HttpResponseRedirect, Http404, HttpResponse
-from django.shortcuts import get_object_or_404, render_to_response
-from django.template import RequestContext, loader, Context
+from django.shortcuts import get_object_or_404, render
+from django.template import loader, Context
 from django.utils.html import escape
 
 from yarr import settings, utils, models, forms
@@ -99,7 +99,7 @@ def list_entries(
     elif not unread:
         current_view = 'yarr-list_all'
     
-    return render_to_response(template, RequestContext(request, {
+    return render(request, template, {
         'title':    title,
         'entries':  entries,
         'available_pks': available_pks,
@@ -111,8 +111,8 @@ def list_entries(
         'ascending_by_date': ascending_by_date,
         'current_view': current_view,
         'yarr_settings': {
+            'layout_fixed':     settings.LAYOUT_FIXED,
             'add_jquery':       settings.ADD_JQUERY,
-            'control_fixed':    settings.LAYOUT_FIXED,
             'api_page_length':  settings.API_PAGE_LENGTH,
             # JavaScript YARR_CONFIG variables
             'config':   utils.jsonEncode({
@@ -120,7 +120,7 @@ def list_entries(
                 'con':  '#yarr_con',
             }),
         },
-    }))
+    })
     
     
 @login_required
@@ -179,11 +179,11 @@ def mark_read(
         title = 'Mark all as %s'
         msg = 'Are you sure you want to mark all items in every feed as %s?'
     
-    return render_to_response(template, RequestContext(request, {
+    return render(request, template, {
         'title':    title % display_op,
         'message':  msg % display_op,
         'submit_label': title % display_op,
-    }))
+    })
     
     
 @login_required
@@ -222,12 +222,12 @@ def mark_saved(
         title = 'Unsave item'
         msg = 'Are you sure you no longer want to save this item?'
     
-    return render_to_response(template, RequestContext(request, {
+    return render(request, template, {
         'title':    title,
         'message':  msg,
         'entry':    entry,
         'submit_label': title,
-    }))
+    })
     
 
 @login_required
@@ -244,7 +244,7 @@ def feeds(request, template="yarr/feeds.html"):
     
     add_form = forms.AddFeedForm()
     
-    return render_to_response(template, RequestContext(request, {
+    return render(request, template, {
         'title':    'Manage feeds',
         'feed_form': add_form,
         'feeds':    feeds,
@@ -255,7 +255,7 @@ def feeds(request, template="yarr/feeds.html"):
                 'api':  reverse('yarr-api_base'),
             }),
         },
-    }))
+    })
     
 
 @login_required
@@ -313,11 +313,11 @@ def feed_form(
     else:
         feed_form = form_class(instance=feed)
     
-    return render_to_response(template, RequestContext(request, {
+    return render(request, template, {
         'title':    title,
         'feed_form': feed_form,
         'feed':     feed,
-    }))
+    })
     
     
 @login_required
@@ -336,11 +336,11 @@ def feed_delete(request, feed_pk, template="yarr/confirm.html"):
         messages.success(request, 'Feed deleted')
         return HttpResponseRedirect(reverse(home))
     
-    return render_to_response(template, RequestContext(request, {
+    return render(request, template, {
         'title':    'Delete feed',
         'message':  'Are you sure you want to delete the feed "%s"?' % feed.title,
         'submit_label': 'Delete feed',
-    }))
+    })
 
 
 @login_required
@@ -504,6 +504,9 @@ def api_entry_set(request):
             saved   = False,
         )
         entries.update_feed_unread()
+        feed_unread = {}
+        for feed in entries.feeds():
+            feed_unread[str(feed.pk)] = feed.count_unread
         
         success = True
         msg = 'Marked as %s' % ('read' if is_read else 'unread')
@@ -516,9 +519,11 @@ def api_entry_set(request):
         )
         success = True
         msg = 'Saved' if is_saved else 'No longer saved'
+        feed_unread = {}
     
     # Respond
     return utils.jsonResponse({
         'success':  success,
         'msg':      msg,
+        'feed_unread': feed_unread,
     })

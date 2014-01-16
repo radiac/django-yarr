@@ -74,12 +74,16 @@ class EntryQuerySet(models.query.QuerySet):
     def unsaved(self):
         "Filter to unsaved entries"
         return self.filter(saved=False)
+
+    def feeds(self):
+        "Get feeds associated with entries"
+        return models.loading.get_model('yarr', 'Feed').objects.filter(
+            id__in=self.values_list('feed_id', flat=True).distinct(),
+        )
         
     def update_feed_unread(self):
         "Update feed read count cache"
-        models.loading.get_model('yarr', 'Feed').objects.filter(
-            id__in=self.values_list('feed_id', flat=True).distinct(),
-        ).update_count_unread()
+        self.feeds().update_count_unread()
 
     
 class EntryManager(models.Manager):

@@ -63,7 +63,7 @@ class EditFeedForm(forms.ModelForm):
         widget=forms.Select,
         choices=_build_frequency_choices(),
         label='Frequency',
-        help_text=models.Feed._meta.get_field('check_frequency').help_text,
+        help_text=u'How often to check the feed for changes',
     )
     class Meta:
         model = models.Feed

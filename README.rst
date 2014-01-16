@@ -20,7 +20,7 @@ Features
 * No social nonsense
 
 
-Version 0.3.7
+Version 0.3.13
 
 * See `CHANGES <CHANGES>`_ for full changelog and roadmap
 * See `UPGRADE <UPGRADE.rst>`_ for how to upgrade from earlier releases
@@ -46,11 +46,13 @@ cron.
 Installation
 ============
 
-* See 
-
 1. Install ``django-yarr`` (currently only on github)::
 
     pip install -e git+https://github.com/radiac/django-yarr.git#egg=django-yarr
+
+   Note: The master branch may sometimes contain minor changes made since the
+   version was incremented. It will always be safe to use, but versions will be
+   tagged if you only want to follow releases.
 
 2. Add Yarr to ``INSTALLED_APPS``::
 
@@ -64,20 +66,27 @@ Installation
    Unless you are using PostgreSQL, also set ``TIME_ZONE = 'UTC'`` to ease
    the `migration`_ later.
 
+   You may also want to change some settings here (see `Settings`_ below)
+   
 .. _migration: https://docs.djangoproject.com/en/1.5/topics/i18n/timezones/#migration-guide
 
 3. Include the URLconf in your project's urls.py::
 
     url(r'^yarr/', include('yarr.urls')),
 
-4. Add the models to the database using South::
+4. Make sure your ``base.html`` template has the necessary blocks, or override
+   Yarr's base, ``yarr/base.html`` (see `Templates`_ below). You will also want
+   to create a link somewhere to ``yarr-home`` (or ``yarr.views.home``) so
+   users can access it.
+
+5. Add the models to the database using South::
 
     python manage.py migrate yarr
 
    If you don't have South, you will use ``python manage.py syncdb``, and
    later regret your decision
 
-5. **Optional**: Import feeds for a user from an OPML file, load all items, and
+6. **Optional**: Import feeds for a user from an OPML file, load all items, and
    mark them as read::
 
     python manage.py import_opml /path/to/subscriptions.xml username
@@ -86,7 +95,7 @@ Installation
    Feeds can currently only be managed through the admin section - see CHANGES
    for full roadmap.
 
-6. Schedule the ``check_feeds`` management command. By default Yarr expects it
+7. Schedule the ``check_feeds`` management command. By default Yarr expects it
    to be run once an hour, but you can change the ``YARR_MINIMUM_INTERVAL``
    setting to alter this. You could use one of these cron examples::
 
@@ -102,9 +111,6 @@ Installation
 
     # Once an hour (at 10 past every hour), in a virtual environment
     10 * * * * /path/to/virtualenv/bin/python /path/to/project/manage.py check_feeds
-
-7. Create a link to ``yarr-home`` (or ``yarr.views.home``) for users to access
-   Yarr.
 
 
 Settings
@@ -183,6 +189,11 @@ To control feed updates:
     
     Set this to ``0`` to expire immediately, ``-1`` to never expire.
     
+    If changing this from ``-1``, you will probably want to add expiry dates to
+    all relevant entries by forcing an update:
+    
+        python manage.py check_feeds --force
+    
     Default: ``1``
 
 
@@ -260,7 +271,7 @@ Usage::
 
     python manage.py check_feeds [--force] [--read] [--purge]
 
-* ``--force`` forces updates even when not due
+* ``--force`` forces all feeds to update (slow)
 * ``--read`` marks new items as read (useful when first importing feeds)
 * ``--purge`` purges all existing entries
 * ``--verbose`` displays information about feeds as they are being checked
@@ -269,6 +280,11 @@ Individual feeds can be given a custom checking frequency (default is 24
 hours), so ``check_feeds`` needs to run at least as frequently as that; i.e. if
 you want a feed to be checked every 15 minutes, set your cron job to run every
 15 minutes.
+
+Although multiple ``check_feed`` calls can run at the same time without
+interfering with each other, if you are running the command manually you may
+want to temporarily disable your cron job to avoid checking feeds
+unnecessarily.
 
 
 Import OPML
@@ -327,7 +343,7 @@ pitfalls:
 * http://code.google.com/p/django-reader
 * https://bitbucket.org/tghw/django-feedreader
 
-The icons are from Iconic, http://somerandomdude.com/work/iconic/
+The icons are based on Entypo by Daniel Bruce, http://www.entypo.com/
 
 The pirate pony started life on http://www.mylittledjango.com/ before putting
 on clipart from clker.com and openclipart.org

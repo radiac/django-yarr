@@ -5,6 +5,39 @@ Upgrading Django Yarr
 If a release isn't listed here, there are no special instructions for upgrading
 to that version.
 
+
+Upgrading to 0.3.13
+===================
+
+(from <= 0.3.13)
+
+In earlier versions, entry expiry didn't function correctly. This release fixes
+the issue, but because expiry dates are set when a feed updates, you will have
+to wait for all feeds to change before expiry dates are set correctly
+(meaning some old entries will sit around in your database for longer than they
+need to, which could waste disk space if you have a lot of feeds).
+
+To address this, ``check_feeds --force`` has been changed to not just force a
+check of all feeds, but also to force a database update, which will set an
+expiry on all entries no longer in a feed. To force expiries onto entries that
+should expire::
+
+    python manage.py manage check_feeds --force
+
+Bear in mind that entries on dead feeds will not be touched; this is the
+intended behaviour (in case the feed is temporarily unavailable), but may mean
+that you are left with some entries which should have expired. If this is an
+issue for you, you can delete the feed (and all entries along with it), or
+manually delete read unsaved entries on inactive feeds with::
+
+    from yarr.models import Feed
+    feeds = Feed.objects.filter(is_active=False)
+    for feed in feeds:
+        feed.entries.read().unsaved().delete()
+        feed.update_count_total()
+        feed.save()
+
+
 Upgrading to 0.3.6
 ==================
 
@@ -12,7 +45,7 @@ Upgrading to 0.3.6
 
 Update the yarr package, then run::
 
-    ./manage migrate yarr
+    python manage.py migrate yarr
 
 Changes to templates and static:
 
@@ -60,4 +93,4 @@ Upgrading to 0.1.4
 
 Update the yarr package, then run::
 
-    ./manage migrate yarr
+    python manage.py migrate yarr
