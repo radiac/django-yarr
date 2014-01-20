@@ -2,6 +2,8 @@
 Utils for yarr
 """
 from xml.dom import minidom
+from xml.etree.ElementTree import Element, SubElement, ElementTree
+from cStringIO import StringIO
 
 from django.core.paginator import Paginator, EmptyPage, InvalidPage
 from django.core.serializers.json import DjangoJSONEncoder
@@ -133,3 +135,33 @@ def import_opml(file_path, user, purge=False):
 
     models.Feed.objects.bulk_create(new)
     return len(new), len(existing)
+
+
+def export_opml(user):
+    """
+    Generate a minimal OPML export of the user's feeds.
+
+    :param user: Django User object
+    :param stream: writable file-like object to which the XML is written
+    """
+    root = Element('opml', {'version': '1.0'})
+
+    head = SubElement(root, 'head')
+    title = SubElement(head, 'title')
+    title.text = u'{0} subscriptions'.format(user.username)
+
+    body = SubElement(root, 'body')
+
+    for feed in user.feed_set.all():
+        item = SubElement(body, 'outline', {
+            'type': 'rss',
+            'text': feed.title,
+            'title': feed.title,
+            'xmlUrl': feed.feed_url,
+        })
+        if feed.site_url:
+            item.set('htmlUrl', feed.site_url)
+
+    buf = StringIO()
+    ElementTree(root).write(buf, encoding="UTF-8")
+    return buf.getvalue()
