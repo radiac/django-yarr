@@ -339,10 +339,12 @@ def feeds_export(request):
     """
     Export the user's feed list as OPML.
     """
-    return HttpResponse(
+    response = HttpResponse(
         utils.export_opml(request.user),
         mimetype='application/xml',
     )
+    response['Content-Disposition'] = 'attachment; filename="feeds.opml"'
+    return response
 
 
 @login_required
