@@ -314,14 +314,12 @@ $(function () {
                     'op':       op,
                     'is_read':  $read.prop('checked'),
                     'is_saved': $saved.prop('checked')
-                }
+                };
                 
-                // Update class
-                if ($read.prop('checked')) {
-                    $entry.addClass('yarr_read');
-                } else {
-                    $entry.removeClass('yarr_read');
-                }
+                // Update class and data attributes.
+                $entry.toggleClass('yarr_read', data.is_read);
+                $entry.attr('data-yarr-read', data.is_read);
+                $entry.attr('data-yarr-saved', data.is_saved);
                 
                 // Update the server
                 apiCall(apiEntrySet, data, function(result) {
