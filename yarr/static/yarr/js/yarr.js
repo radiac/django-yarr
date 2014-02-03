@@ -3,6 +3,12 @@ var YARR = (function () {
         Requires YARR_CONFIG
     */
     
+    // Constants, must match server-side values
+    var ENTRY_UNREAD = 0,
+        ENTRY_READ = 1,
+        ENTRY_SAVED = 2
+    ;
+    
     // Get config and apply defaults
     var config = window.YARR_CONFIG;
     if (!config) {
@@ -13,7 +19,11 @@ var YARR = (function () {
     }, config);
     
     // Prep globals
-    var Yarr = {};
+    var Yarr = {
+        ENTRY_UNREAD:   ENTRY_UNREAD,
+        ENTRY_READ:     ENTRY_READ,
+        ENTRY_SAVED:    ENTRY_SAVED
+    };
     
     // Additional initialisation on DOM ready
     $(function () {
@@ -169,6 +179,30 @@ var YARR = (function () {
                         }
                     }, failFn
                 );
+            },
+            unreadEntry: function (entry, successFn, failFn) {
+                Yarr.API.readEntries([entry.pk], successFn, failFn);
+            },
+            unreadEntries: function (entry_pks, successFn, failFn) {
+                Yarr.API.setEntries(entry_pks, ENTRY_UNREAD, successFn, failFn);
+            },
+            readEntry: function (entry, successFn, failFn) {
+                Yarr.API.readEntries([entry.pk], successFn, failFn);
+            },
+            readEntries: function (entry_pks, successFn, failFn) {
+                Yarr.API.setEntries(entry_pks, ENTRY_READ, successFn, failFn);
+            },
+            saveEntry: function (entry, successFn, failFn) {
+                Yarr.API.readEntries([entry.pk], successFn, failFn);
+            },
+            saveEntries: function (entry_pks, successFn, failFn) {
+                Yarr.API.setEntries(entry_pks, ENTRY_SAVED, successFn, failFn);
+            },
+            setEntries: function (entry_pks, state, successFn, failFn) {
+                request('entry/set', {
+                    'entry_pks': entry_pks.join(','),
+                    'state':    state
+                }, successFn, failFn);
             }
         };
     })();

@@ -1,15 +1,47 @@
-=====================
-Upgrading Django Yarr
-=====================
+===============================
+Upgrading Django Yarr to 0.3.14
+===============================
 
-If a release isn't listed here, there are no special instructions for upgrading
-to that version.
+1. Check which version of Yarr you are upgrading from:
+
+    python
+    >>> import yarr
+    >>> yarr.__version__
+
+2. Upgrade the yarr package:
+
+    pip install -e git+https://github.com/radiac/django-yarr.git@0.3.14#egg=django-yarr
+
+3. Follow all sections of the the instructions below until you reach an earlier
+   version than the one you are upgrading from (found in step 1)
+   
+   * For example, to upgrade from 0.3.8, follow the instruction for 0.3.13,
+     then 0.3.12, but not 0.3.6 or earlier.
 
 
-Upgrading to 0.3.13
-===================
+Upgrading from 0.3.13 or earlier
+================================
 
-(from <= 0.3.13)
+Run::
+
+    python manage.py migrate yarr
+
+Developers who have customised their installation of yarr may be affected by
+the following changes:
+
+  * The ``Entry`` model attributes ``.read`` and ``.saved`` have been replaced
+    by ``.state``, with corresponding constants in ``constants.py``
+  * The views ``mark_read`` and ``mark_saved`` have been replaced by
+    ``entry_state``
+  * The named url ``yarr-mark_unsaved`` has been removed, and state urls now
+    start with the prefix ``state/``
+  * The API calls for entries have changed to use the new state attribute
+  * The template ``include/entry.html`` has changed to use state
+  * The script ``static/yarr/js/list_entries.js`` has been refactored
+
+
+Upgrading from 0.3.12 or earlier
+================================
 
 In earlier versions, entry expiry didn't function correctly. This release fixes
 the issue, but because expiry dates are set when a feed updates, you will have
@@ -33,19 +65,13 @@ manually delete read unsaved entries on inactive feeds with::
     from yarr.models import Feed
     feeds = Feed.objects.filter(is_active=False)
     for feed in feeds:
-        feed.entries.read().unsaved().delete()
+        feed.entries.read().delete()
         feed.update_count_total()
         feed.save()
 
 
-Upgrading to 0.3.6
-==================
-
-(from == 0.3.0)
-
-Update the yarr package, then run::
-
-    python manage.py migrate yarr
+Upgrading from 0.3.6 or earlier
+===============================
 
 Changes to templates and static:
 
@@ -57,10 +83,8 @@ Changes to templates and static:
 * Paths to static resources have changed
 
 
-Upgrading to 0.3.0
-==================
-
-(from == 0.2.0)
+Upgrading from 0.3.0 or earlier
+===============================
 
 Changes to templates:
 
@@ -78,19 +102,7 @@ Changes to settings, if you have overridden the defaults:
 Upgrading to 0.2.0
 ==================
 
-(from == 0.1.5)
-
 Change the following settings, if you have overridden the defaults:
 
 * Rename ``YARR_PAGINATION`` to ``YARR_PAGE_LENGTH``
 * Rename ``YARR_API_PAGINATION`` to ``YARR_API_PAGE_LENGTH``
-
-
-Upgrading to 0.1.4
-==================
-
-(from <= 0.1.3)
-
-Update the yarr package, then run::
-
-    python manage.py migrate yarr

@@ -8,7 +8,8 @@ from django.shortcuts import get_object_or_404, render
 from django.template import loader, Context
 from django.utils.html import escape
 
-from yarr import settings, utils, models, forms
+from yarr import constants, settings, utils, models, forms
+from yarr.constants import ENTRY_UNREAD, ENTRY_READ, ENTRY_SAVED
 
 
 @login_required
@@ -18,7 +19,7 @@ def home(request):
     return HttpResponseRedirect(reverse(settings.HOME))
 
 
-def get_entries(request, feed_pk, unread, saved):
+def get_entries(request, feed_pk, state):
     """
     Internal function to filter the entries
     """
@@ -34,36 +35,37 @@ def get_entries(request, feed_pk, unread, saved):
         qs = qs.filter(feed=feed)
         
     # Filter further
-    if saved:
+    if state == constants.ENTRY_UNREAD:
+        qs = qs.unread()
+    elif state == constants.ENTRY_READ:
+        qs = qs.read()
+    elif state == constants.ENTRY_SAVED:
         qs = qs.saved()
-    elif unread:
-        qs = qs.unread().unsaved()
-    
+        
     return qs, feed
     
 @login_required
 def list_entries(
-    request, feed_pk=None, unread=True, saved=False,
-    template="yarr/list_entries.html",
+    request, feed_pk=None, state=None, template="yarr/list_entries.html",
 ):
     """
     Display a list of entries
     Takes optional arguments to determine which entries to list:
         feed_pk     Primary key for a Feed
-        unread      If true, show only unread unsaved entries
-        saved       If true, show only saved entries; priority over unread
-    Note: an entry can only either be unread or saved, not both
+        state       The state of entries to list; one of:
+                    None            All entries
+                    ENTRY_UNREAD    Unread entries
+                    ENTRY_SAVED     Saved entries
 
     Takes a single querystring argument:
         order       If "asc", order chronologically (otherwise
                     reverse-chronologically).
+
+    Note: no built-in url calls this with state == ENTRY_READ, but support
+    exists for a custom url.
     """
-    # Saved has priority over unread
-    if saved:
-        unread = False
-    
     # Get entries queryset
-    qs, feed = get_entries(request, feed_pk, unread, saved)
+    qs, feed = get_entries(request, feed_pk, state)
 
     ascending_by_date = request.GET.get('order', 'dsc') == 'asc'
     if ascending_by_date:
@@ -78,12 +80,14 @@ def list_entries(
     entries, pagination = utils.paginate(request, qs)
     
     # Base title
-    if saved:
-        title = 'Saved items'
-    elif unread:
-        title = 'Unread items'
-    else:
+    if state is None:
         title = 'All items'
+    elif state == constants.ENTRY_UNREAD:
+        title = 'Unread items'
+    elif state == constants.ENTRY_SAVED:
+        title = 'Saved items'
+    else:
+        raise ValueError('Cannot list entries in unknown state')
         
     # Add tag feed to title
     if feed:
@@ -93,11 +97,12 @@ def list_entries(
     feeds = models.Feed.objects.filter(user=request.user)
     
     # Determine current view for reverse
-    current_view = 'yarr-list_unread'
-    if saved:
-        current_view = 'yarr-list_saved'
-    elif not unread:
+    if state is None:
         current_view = 'yarr-list_all'
+    elif state == constants.ENTRY_UNREAD:
+        current_view = 'yarr-list_unread'
+    elif state == constants.ENTRY_SAVED:
+        current_view = 'yarr-list_saved'
     
     return render(request, template, {
         'title':    title,
@@ -106,10 +111,10 @@ def list_entries(
         'pagination': pagination,
         'feed':     feed,
         'feeds':    feeds,
-        'saved':    saved,
-        'unread':   unread,
-        'ascending_by_date': ascending_by_date,
+        'state':    state,
+        'constants':    constants,
         'current_view': current_view,
+        'ascending_by_date': ascending_by_date,
         'yarr_settings': {
             'layout_fixed':     settings.LAYOUT_FIXED,
             'add_jquery':       settings.ADD_JQUERY,
@@ -124,112 +129,83 @@ def list_entries(
     
     
 @login_required
-def mark_read(
-    request, feed_pk=None, entry_pk=None, is_read=True,
+def entry_state(
+    request, feed_pk=None, entry_pk=None, state=None,
     template="yarr/confirm.html",
 ):
     """
-    Mark entries as read
-    Arguments:
-        entry_pk    Primary key for the Entry to change
-                    If None, will try feed_pk
-        feed_pk     Primary key for the Feed to change
-                    If None, all unread unsaved entries will be selected
-        is_read     If True, mark selection as read
-                    If False, mark selection as unread
+    Change entry state for an entry, a feed, or all entries
     """
-    # Select entries to update
+    # Filter entries by selection
+    qs = models.Entry.objects.user(request.user)
     if entry_pk is not None:
-        qs = models.Entry.objects.filter(pk=entry_pk, feed__user=request.user)
+        # Changing specific entry
+        qs = qs.filter(pk=entry_pk)
         
-    elif feed_pk is not None:
-        qs = models.Entry.objects.filter(feed__pk=feed_pk, feed__user=request.user)
-        
-    elif is_read:
-        qs = models.Entry.objects.user(request.user).unread().unsaved()
+    elif state == ENTRY_READ:
+        if feed_pk is not None:
+            # Changing all entries in a feed
+            qs = qs.filter(feed__pk=feed_pk)
+            
+        # Only mark unread as read - don't change saved
+        qs = qs.unread()
         
     else:
-        qs = models.Entry.objects.user(request.user).unsaved()
-    
-    count = qs.count()
-    
-    # Prepare the op for display
-    display_op = 'read' if is_read else 'unread'
-    
+        # Either unknown state, or trying to bulk unread/save
+        messages.error(request, 'Cannot perform this operation')
+        return HttpResponseRedirect(reverse(home))
+        
     # Check there's something to change
+    count = qs.count()
     if count == 0:
-        messages.error(request, 'Nothing to mark as %s' % display_op)
+        messages.error(request, 'No entries found to change')
         return HttpResponseRedirect(reverse(home))
     
     # Process
     if request.POST:
-        qs.update(read=is_read)
+        qs.update(state=state)
         qs.update_feed_unread()
-        messages.success(request, 'Marked as %s' % display_op)
+        if state is constants.ENTRY_UNREAD:
+            messages.success(request, 'Marked as unread')
+        elif state is constants.ENTRY_READ:
+            messages.success(request, 'Marked as read')
+        elif state is constants.ENTRY_SAVED:
+            messages.success(request, 'Saved')
         return HttpResponseRedirect(reverse(home))
     
     # Prep messages
-    if entry_pk:
-        title = 'Mark item as %s'
-        msg = 'Are you sure you want to mark this item as %s?'
-    elif feed_pk:
-        title = 'Mark feed as %s'
-        msg = 'Are you sure you want to mark all items in the feed as %s?'
-    else:
-        title = 'Mark all as %s'
-        msg = 'Are you sure you want to mark all items in every feed as %s?'
-    
-    return render(request, template, {
-        'title':    title % display_op,
-        'message':  msg % display_op,
-        'submit_label': title % display_op,
-    })
-    
-    
-@login_required
-def mark_saved(
-    request, entry_pk, is_saved=True,
-    template="yarr/confirm.html",
-):
-    """
-    Mark entries as saved
-    Arguments:
-        entry_pk    Primary key for an Entry (required)
-        is_saved    If True, mark as saved
-                    If False, unmark as saved
-    """
-    # Look up entry
-    entry = get_object_or_404(
-        models.Entry, pk=entry_pk, feed__user=request.user,
-    )
-    
-    # Update entry
-    if request.POST:
-        entry.saved = is_saved
-        entry.save()
+    op_text = {
+        'verb': 'mark',
+        'desc': '',
+    }
+    if state is constants.ENTRY_UNREAD:
+        op_text['desc'] = ' as unread'
+    elif state is constants.ENTRY_READ:
+        op_text['desc'] = ' as read'
+    elif state is constants.ENTRY_SAVED:
+        op_text['verb'] = 'save'
         
-        if is_saved:
-            msg = 'Item saved'
-        else:
-            msg = 'Item no longer saved'
-        messages.success(request, msg)
-        return HttpResponseRedirect(reverse(home))
-    
-    if is_saved:
-        title = 'Save item'
-        msg = 'Are you sure you want to save this item?'
+    if entry_pk:
+        title = '%(verb)s item%(desc)s'
+        msg = 'Are you sure you want to %(verb)s this item%(desc)s?'
+    elif feed_pk:
+        title = '%(verb)s feed%(desc)s'
+        msg = 'Are you sure you want to %(verb)s all items in the feed%(desc)s?'
     else:
-        title = 'Unsave item'
-        msg = 'Are you sure you no longer want to save this item?'
+        title = '%(verb)s all items%(desc)s'
+        msg = 'Are you sure you want to %(verb)s all items in every feed%(desc)s?'
+    
+    title = title % op_text
+    title = title[0].upper() + title[1:]
     
     return render(request, template, {
         'title':    title,
-        'message':  msg,
-        'entry':    entry,
+        'message':  msg % op_text,
         'submit_label': title,
     })
     
 
+    
 @login_required
 def feeds(request, template="yarr/feeds.html"):
     """
@@ -451,8 +427,7 @@ def api_entry_get(request, template="yarr/include/entry.html"):
     for entry in entries:
         data[entry.pk] = {
             'feed':     entry.feed_id,
-            'read':     entry.read,
-            'saved':    entry.saved,
+            'state':    entry.state,
             'html':     compiled.render(Context({'entry': entry}))
         }
     
@@ -470,57 +445,48 @@ def api_entry_set(request):
     
     Arguments passed on GET:
         entry_pks   List of entries to update
-        op          Operation to perform
-                    ``read``    Change read flag
-                    ``saved``   Change saved flag
-        is_read     New value of read flag, if ``op=read`` (else ignored)
-                    Format: ``is_read=true`` or ``is_read==false``
-        is_saved    New value of saved flag, if ``op=saved`` (else ignored)
-                    Format: ``is_saved=true`` or ``is_saved==false``
+        state       New state
     """
-    # Start assuming the worst
-    success = False
-    msg = 'Unknown operation'
+    # Start assuming success
+    success = True
+    msg = ''
+    feed_unread = {}
     
     # Get entries queryset
     pks = request.GET.get('entry_pks', '').split(',')
     if pks:
-        success = True
         entries = models.Entry.objects.filter(
             feed__user=request.user, pk__in=pks,
         )
     else:
         success = False
+        msg = 'No entries found'
         entries = models.Entry.objects.none()
     
-    # Get operation
-    op = request.GET.get('op', None)
-    
-    # Update flags
-    if op == 'read':
-        is_read = request.GET.get('is_read', 'true') == 'true'
-        entries.update(
-            read    = is_read,
-            saved   = False,
-        )
+    # Update new state
+    state = request.GET.get('state', None)
+    if success and state in (
+        constants.ENTRY_UNREAD, constants.ENTRY_READ, constants.ENTRY_SAVED,
+    ):
+        entries.update(state=state)
         entries.update_feed_unread()
-        feed_unread = {}
+        
+        # Find new unread counts
         for feed in entries.feeds():
             feed_unread[str(feed.pk)] = feed.count_unread
+    
+        # Decide message
+        if state == constants.ENTRY_UNREAD:
+            msg = 'Marked as unread'
+        elif state == constants.ENTRY_READ:
+            msg = 'Marked as read'
+        elif state == constants.ENTRY_SAVED:
+            msg = 'Saved'
+    
+    else:
+        success = False
+        msg = 'Unknown operation'
         
-        success = True
-        msg = 'Marked as %s' % ('read' if is_read else 'unread')
-    
-    elif op == 'saved':
-        is_saved = request.GET.get('is_saved', 'true') == 'true'
-        entries.update(
-            saved   = is_saved,
-            read    = False,
-        )
-        success = True
-        msg = 'Saved' if is_saved else 'No longer saved'
-        feed_unread = {}
-    
     # Respond
     return utils.jsonResponse({
         'success':  success,

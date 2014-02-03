@@ -9,7 +9,7 @@ from django.db import models
 import bleach
 
 from yarr import settings
-
+from yarr.constants import ENTRY_UNREAD, ENTRY_READ, ENTRY_SAVED
 
 
 ###############################################################################
@@ -61,20 +61,16 @@ class EntryQuerySet(models.query.QuerySet):
         
     def read(self):
         "Filter to read entries"
-        return self.filter(read=True)
+        return self.filter(state=ENTRY_READ)
         
     def unread(self):
         "Filter to unread entries"
-        return self.filter(read=False)
+        return self.filter(state=ENTRY_UNREAD)
         
     def saved(self):
         "Filter to saved entries"
-        return self.filter(saved=True)
+        return self.filter(state=ENTRY_SAVED)
         
-    def unsaved(self):
-        "Filter to unsaved entries"
-        return self.filter(saved=False)
-
     def feeds(self):
         "Get feeds associated with entries"
         return models.loading.get_model('yarr', 'Feed').objects.filter(
@@ -102,10 +98,6 @@ class EntryManager(models.Manager):
     def saved(self):
         "Get saved entries"
         return self.get_query_set().saved()
-        
-    def unsaved(self):
-        "Get unsaved entries"
-        return self.get_query_set().unsaved()
         
     def update_feed_unread(self):
         "Update feed read count cache"

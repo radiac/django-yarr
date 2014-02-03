@@ -111,9 +111,12 @@ ul.yarr_entry_control {
     padding:    0.3em 1em;
 }
 
-ul.yarr_entry_control li label,
-ul.yarr_entry_control li a {
+ul.yarr_entry_control li {
     font-size:  0.8em;
+    color:      #666;
+    margin-right:   1em;
+}
+ul.yarr_entry_control li a {
     color:      #666;
     text-decoration:    none;
 }
@@ -201,8 +204,8 @@ ul.yarr_entry_control li label input {
 */
 
 .yarr_feed_list {
+    position: absolute;
     width: 15em;
-    position: fixed;
     border: 1px solid #ccc;
     margin: 1em 0 0 0;
     overflow-y:   scroll;

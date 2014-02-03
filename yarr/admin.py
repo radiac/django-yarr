@@ -24,7 +24,7 @@ admin.site.register(models.Feed, FeedAdmin)
 
 class EntryAdmin(admin.ModelAdmin):
     list_display = [
-        'title', 'date', 'read', 'feed',
+        'title', 'date', 'state', 'feed',
     ]
     list_select_related = True
     search_fields = ['title', 'content',]

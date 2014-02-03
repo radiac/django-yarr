@@ -5,7 +5,13 @@ Django Yarr Changes
 Changelog
 =========
 
-0.3.13      2014-01-05
+0.3.14      2014-02-03  See UPGRADE
+            Feature:    Simplified save/read state
+            Internal:   Refactored list_entries.js
+            Internal:   Changed Entry .save and .read to .state (#35)
+            Docs:       Improved UPGRADE to clarify steps for current release
+
+0.3.13      2014-01-05  See UPGRADE
             Feature:    Changed check_feeds --force to also force a db update
             Feature:    Allow more HTML tags in entries (#32)
             Bugfix:     Fixed entries not expiring correctly
@@ -47,7 +53,7 @@ Changelog
             Internal:   Import feed refactor for better reuse (#10)
             Thanks to:  Spencer Herzberg (sherzberg) for all changes
 
-0.3.6       2013-07-20
+0.3.6       2013-07-20  See UPGRADE
             Feature:    Added expandable info to feed manager list
             Feature:    Added shortcut key to open source URL in new window (#5)
             Feature:    Added setting to control how long old entries remain
@@ -87,7 +93,7 @@ Changelog
             Bugfix:     Fixed double parsing by disabling feedparser sanitizer
             Note:       Changed roadmap
             
-0.2.0       2013-07-05
+0.2.0       2013-07-05  See UPGRADE
             Feature:    Added list view
             Feature:    Replaced API with more sensible get/set model
             Bugfix:     Changed feed check to keep feed title if none provided
@@ -96,7 +102,7 @@ Changelog
 0.1.5       2013-07-05
             Bugfix:     Replaced checks for updated_parsed, suppress warnings
 
-0.1.4       2013-07-05
+0.1.4       2013-07-05  See UPGRADE
             Bugfix:     Changed URLFields to TextFields with URL validator
 
 0.1.3       2013-07-04
@@ -126,6 +132,7 @@ Roadmap
 Target
 0.4.0       Drop support for Django 1.3
             Introduce timezone support for Django 1.4 and later
+            Simplify template if statements with elif
             Display times according to user timezone, not server
             User options page:
             * Jump on click (#23)

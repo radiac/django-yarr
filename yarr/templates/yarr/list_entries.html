@@ -15,18 +15,16 @@
     data-api-page-length="{{ yarr_settings.api_page_length }}"
     data-api-entry-get="{% url 'yarr-api_entry_get' %}"
     data-api-entry-set="{% url 'yarr-api_entry_set' %}"
-    data-q-feedpk="{{ feed.pk }}"
-    data-q-saved="{{ saved|lower }}"
-    data-q-unread="{{ unread|lower }}"
+    data-q-state="{{ state }}"
     data-layout-fixed="{{ yarr_settings.layout_fixed|lower }}"
 >
 
 {% block yarr_control %}
     <div class="yarr_control">
         <ul class="yarr_menu_filter">
-            <li><a href="{% url 'yarr-list_all' %}{% if ascending_by_date %}?order=asc{% endif %}"{% if not unread and not saved %} class="yarr_selected"{% endif %}>All</a></li>
-            <li><a href="{% url 'yarr-list_unread' %}{% if ascending_by_date %}?order=asc{% endif %}"{% if unread %} class="yarr_selected"{% endif %}>Unread</a></li>
-            <li><a href="{% url 'yarr-list_saved' %}{% if ascending_by_date %}?order=asc{% endif %}"{% if saved %} class="yarr_selected"{% endif %}>Saved</a></li>
+            <li><a href="{% url 'yarr-list_all' %}{% if ascending_by_date %}?order=asc{% endif %}"{% if state == None %} class="yarr_selected"{% endif %}>All</a></li>
+            <li><a href="{% url 'yarr-list_unread' %}{% if ascending_by_date %}?order=asc{% endif %}"{% if state == constants.ENTRY_UNREAD %} class="yarr_selected"{% endif %}>Unread</a></li>
+            <li><a href="{% url 'yarr-list_saved' %}{% if ascending_by_date %}?order=asc{% endif %}"{% if state == constants.ENTRY_SAVED %} class="yarr_selected"{% endif %}>Saved</a></li>
         </ul>
         <ul class="yarr_menu_op">
             {% if feed %}
@@ -102,15 +100,7 @@
 {% block yarr_content %}
     <div class="yarr_content">
         {% if entries.object_list|length == 0 %}
-            {% if saved %}
-                <p>No saved items</p>
-            {% else %}
-                {% if unread %}
-                    <p>No unread items</p>
-                {% else %}
-                    <p>No items</p>
-                {% endif %}
-            {% endif %}
+            <p>No {% if state == constants.ENTRY_UNREAD %}unread {% endif %}{% if state == constants.ENTRY_SAVED %}saved {% endif %}items</p>
             
         {% else %}
         

@@ -13,22 +13,27 @@ $(function () {
     
     var $con = Yarr.$con;
     
+    // Key codes
+    var KEY_N = 78,
+        KEY_P = 80,
+        KEY_J = 74,
+        KEY_K = 75,
+        KEY_V = 86,
+        KEY_RET = 13
+    ;
     var 
         /*
-        ** Internal vars
+        ** Constants
         */
-        OP_READ = 'read',
-        OP_SAVED = 'saved',
+        ENTRY_UNREAD = Yarr.ENTRY_UNREAD,
+        ENTRY_READ = Yarr.ENTRY_READ,
+        ENTRY_SAVED = Yarr.ENTRY_SAVED,
+        
         MODE_EXPANDED = 'expanded',
         MODE_LIST = 'list',
         FEEDS_VISIBLE = 'visible',
         FEEDS_HIDDEN = 'hidden',
         
-        apiEntrySet = $con.data('api-entry-set'),
-        
-        $controlFixed, controlIsFixed = false,
-        controlTop, controlHeight, controlBottom,
-        scrollCutoff, entryBottoms, entryMargin,
         
         
         /*
@@ -45,6 +50,7 @@ $(function () {
             // Display mode; one of:
             //      expanded    Traditional list of titles and bodies
             //      list        List of titles, with expanding bodies
+            // ++ rename displayMode to mode
             displayMode: Yarr.Cookie.get('yarr-displayMode', MODE_EXPANDED),
         
             // Whether or not the control bar and feed list should be fixed
@@ -84,7 +90,8 @@ $(function () {
         this.$feedList = $base.find('.yarr_feed_list');
         
         // Initialise related classes
-        this.entries = new EntryManager(this, $base.find('.yarr_entry'));
+        this.keys = new KeyHandler($base);
+        this.entries = new Entries(this, $base.find('.yarr_entry'));
         
         // Set up control bar and fixed layout
         this.setupControl();
@@ -102,7 +109,13 @@ $(function () {
         options: null,
         displayMode: MODE_EXPANDED,
         layoutFixed: true,
+        controlIsFixed: false,
         feedListShow: null,
+        controlTop: null,
+        controlBottom: null,
+        scrollCutoff: null,
+        entryBottoms: null,
+        entryMargin: null,
         
         setupControl: function () {
             /** Remove pagination links, add scroll buttons */
@@ -131,13 +144,13 @@ $(function () {
             $('<ul class="yarr_nav"/>')
                 .append($('<li/>').append(
                     this._mkIconButton('yarr_previous', function () {
-                        return thisLayout.selectPrevious();
+                        return thisLayout.entries.selectPrevious();
                     })
                 ))
                 .append(' ')
                 .append($('<li/>').append(
                     this._mkIconButton('yarr_next', function () {
-                        return thisLayout.selectNext();
+                        return thisLayout.entries.selectNext();
                     })
                 ))
                 .appendTo(this.$control)
@@ -175,8 +188,9 @@ $(function () {
             
             // Prepare the fixed feedList
             this.$feedList.css({
+                'position': 'fixed',
                 'top':      this.controlBottom,
-                'bottom':   this.$feedList.css('margin-top'),
+                'bottom':   this.$feedList.css('margin-top')
             });
             
             // Toggle the feed list visibility, if preference in cookies
@@ -317,17 +331,19 @@ $(function () {
         
         
 
+// ++ here
         onResize: function () {
             /** Event handler for when the scroller resizes
                 Updates the fixed control bar position, and calls entriesResized
             */
             // Get position of $control
-            var controlOffset = this.$control.offset();
+            var controlOffset = this.$control.offset(),
+                controlHeight = this.$control.outerHeight()
+            ;
             
             // Find position of controlTop and scrollCutoff (may have changed)
-            controlTop = controlOffset.top;
-            controlHeight = this.$control.outerHeight();
-            scrollCutoff = controlHeight + scrollSwitchMargin;
+            this.controlTop = controlOffset.top;
+            this.scrollCutoff = controlHeight + scrollSwitchMargin;
             
             // Move $controlFixed to occupy same horizontal position as $control
             if (this.layoutFixed) {
@@ -346,19 +362,19 @@ $(function () {
             /** Event handler for scrolling */
             var scrollTop = this.$scroller.scrollTop(),
                 newCurrent = -1,
-                topCutoff = scrollTop + scrollCutoff,
+                topCutoff = scrollTop + this.scrollCutoff,
                 topMoved = false
             ;
             
             // Switch control bar between fixed and relative position
             if (this.layoutFixed) {
-                if (scrollTop > controlTop) {
+                if (scrollTop > this.controlTop) {
                     // Fixed layout
                     // Only change if changed
-                    if (!controlIsFixed) {
+                    if (!this.controlIsFixed) {
                         // Switch control bar to fixed position
                         this.$controlFixed.show();
-                        controlIsFixed = true;
+                        this.controlIsFixed = true;
                         
                         // Move feed list to bottom of fixed bar
                         this.$feedList.css('top', this.$controlFixed.outerHeight());
@@ -367,14 +383,14 @@ $(function () {
                 } else {
                     // Relative layout
                     // Only switch bars if changed
-                    if (controlIsFixed) {
+                    if (this.controlIsFixed) {
                         // Switch control bar to relative position
                         this.$controlFixed.hide();
-                        controlIsFixed = false;
+                        this.controlIsFixed = false;
                     }
                     
                     // Always move feed list to bottom of relative bar
-                    this.$feedList.css('top', controlBottom - scrollTop);
+                    this.$feedList.css('top', this.controlBottom - scrollTop);
                 }
             }
             
@@ -382,7 +398,7 @@ $(function () {
             if (this.displayMode == MODE_EXPANDED) {
                 // ++ Move this into entries
                 for (var i=0, l=this.entries.entries.length; i<l; i++) {
-                    if (entryBottoms[i] > topCutoff) {
+                    if (this.entryBottoms[i] > topCutoff) {
                         newCurrent = i;
                         break;
                     }
@@ -441,6 +457,12 @@ $(function () {
         for (var i=0, l=$el.length; i<l; i++) {
             this.entries[i] = new Entry(this, $($el[i]));
         }
+        
+        // Bind key events
+        var thisEntries = this;
+        layout.keys.listen(KEY_N, KEY_J, function () { thisEntries.selectNext(); });
+        layout.keys.listen(KEY_P, KEY_K, function () { thisEntries.selectPrevious(); });
+        layout.keys.listen(KEY_V, KEY_RET, function () { thisEntries.clickCurrent(); });
     }
     
     Entries.prototype = $.extend(Entries.prototype, {
@@ -541,11 +563,11 @@ $(function () {
             */
             
             // Cache the entry positions
-            entryBottoms = [];
+            this.entryBottoms = [];
             var $el;
             for (var i=0, l=this.entries.length; i<l; i++) {
                 $el = this.entries[i].$el;
-                entryBottoms[i] = $el.offset().top + $el.outerHeight();
+                this.entryBottoms[i] = $el.offset().top + $el.outerHeight();
             }
             
             // Update the infinite scroll trigger
@@ -556,6 +578,7 @@ $(function () {
             /** Select an entry */
             // Deselect current
             if (this.current !== null) {
+                console.log('fofofo', this.entries, this.current)
                 this.entries[this.current].$el.removeClass('yarr_active');
             }
             
@@ -566,7 +589,7 @@ $(function () {
             ;
             
             // Open the selected item
-            this.openCurrent();
+            this.entries[this.current].open();
             
             // If this is the last entry, try to load more
             if (index == this.entries.length - 1) {
@@ -575,13 +598,15 @@ $(function () {
         },
         selectNext: function () {
             /** Select the next (or first) entry */
-            if (this.current === null) {
-                this.current = -1;
+            var current = this.current;
+            if (current === null) {
+                // None selected, force the increment to pick -1
+                current = -1;
             }
-            if (this.current == this.entries.length - 1) {
+            if (current == this.entries.length - 1) {
                 return;
             }
-            this.selectEntry(this.current + 1);
+            this.selectEntry(current + 1);
             this.scrollCurrent();
         },
         
@@ -599,25 +624,6 @@ $(function () {
             this.layout.scrollTo(this.entries[this.current].$el.offset().top);
         },
         
-        openCurrent: function () {
-            /** Open the specified entry, marking it as read */
-            var $read = this.$current.find('input[name="read"]'),
-                $saved = this.$current.find('input[name="saved"]')
-            ;
-            if (!$saved.prop('checked') && !$read.prop('checked')) {
-                $read
-                    .prop('checked', true)
-                    .change()
-                ;
-            }
-            
-            if (this.layout.displayMode == MODE_LIST) {
-                this.$entries.removeClass('yarr_open');
-                this.$current.addClass('yarr_open');
-                this.entriesResized();
-            }
-        },
-
         clickCurrent: function () {
             /** Clicks the link of the current entry to open it in a new tab */
             if (this.current === null) {
@@ -629,22 +635,25 @@ $(function () {
             if (this.layout.displayMode == MODE_LIST
                 && !this.$current.hasClass('yarr_open')
             ) {
+                this.entries[this.current].open();
                 return;
             }
             this.$current.find('a[class="yarr-link"]')[0].click();
         }
     });
     
-    
+    // ++ move Entry onto Yarr.Entry
     function Entry (entries, $el) {
         var thisEntry = this;
         this.entries = entries;
+        this.$el = $el;
         this.index = $el.index();
         this.pk = $el.data('yarr-pk');
         
         // Detect state
-        this.read = $el.data('yarr-read');
-        this.saved = $el.data('yarr-saved');
+        var state = parseInt($el.data('yarr-state'), 10);
+        this.read = state == ENTRY_READ;
+        this.saved = state == ENTRY_SAVED;
         
         // Enhance entry with javascript
         this.setup();
@@ -663,90 +672,74 @@ $(function () {
             var thisEntry = this;
             
             // Build toggle buttons
-            this.$read = this._mkCheckbox('read', this.read)
-                .change(function () {
-                    thisEntry.changeState(OP_READ);
-                })
-            ;
-            this.$saved = this._mkCheckbox('saved', this.saved)
-                .change(function () {
-                    thisEntry.changeState(OP_SAVE);
-                })
-            ;
+            this.$read = this._mkCheckbox('read', ENTRY_READ, this.read);
+            this.$saved = this._mkCheckbox('saved', ENTRY_SAVED, this.saved);
             
             // Add buttons
             this.$el.find('.yarr_entry_control')
                 .empty()
-                .append(this._wrapCheckbox($read, 'yarr_checkbox_read', 'Read'))
-                .append(this._wrapCheckbox($saved, 'yarr_checkbox_saved', 'Saved'))
+                .append(this._wrapCheckbox(this.$read, 'yarr_checkbox_read', 'Read'))
+                .append(this._wrapCheckbox(this.$saved, 'yarr_checkbox_saved', 'Saved'))
             ;
             
             // When images load, update the position cache
-            $entry.find('img').load(this.entries.entriesResized);
+            this.$el.find('img').load(function () {
+                thisEntry.entries.entriesResized();
+            });
         },
-        changeState: function (op) {
-            var $box = $(this),
-                state = $box.prop('checked'),
-                $other = (op == OP_READ) ? this.$saved : this.$read,
-                data
-            ;
-            
-            // If true, the other field must be false
-            if (state) {
-                $other.prop('checked', false);
+        changeState: function (state) {
+            /** Handle a read/saved state checkbox change */
+            if (state == ENTRY_READ) {
+                if (this.read) {
+                    this.markUnread();
+                } else {
+                    this.markRead();
+                }
+            } else if (state == ENTRY_SAVED) {
+                if (this.saved) {
+                    this.markRead();
+                } else {
+                    this.markSaved();
+                }
             }
-            this.$el.attr('data-yarr-read', this.$read.prop('checked'));
-            this.read = this.$read.prop('checked');
-            this.saved = this.$saved.prop('checked');
-            
-            // Update class
-            if (this.$read.prop('checked')) {
-                this.$el.addClass('yarr_read');
-            } else {
-                this.$el.removeClass('yarr_read');
-            }
-            
-            // Save the state
-            if (op == OP_READ) {
-                this.markRead();
-            } else {
-                this.markSaved();
-            }
-            this.saveState(op);
         },
         
+        markUnread: function (data) {
+            var thisEntry = this;
+            this.read = false;
+            this.saved = false;
+            this.$el.removeClass('yarr_read yarr_saved');
+            Yarr.API.entry_unread(this, function (data) { thisEntry._markDone(data); });
+        },
         markRead: function (data) {
-            Yarr.API.entry_read(this);
+            var thisEntry = this;
+            this.read = true;
+            this.saved = false;
+            this.$el.addClass('yarr_read').removeClass('yarr_saved');
+            Yarr.API.entry_read(this, function (data) { thisEntry._markDone(data); });
         },
         markSaved: function (data) {
-            Yarr.API.entry_saved(this);
+            var thisEntry = this;
+            this.read = false;
+            this.saved = true;
+            this.$el.addClass('yarr_saved').removeClass('yarr_read');
+            Yarr.API.entry_saved(this, function (data) { thisEntry._markDone(data); });
         },
-        
-        saveState: function (op) {
-            /** The state of the entry has changed, update on server */
-            // Prep data
-            data = {
-                'entry_pks': [this.pk].join(','),
-                'op':       op,
-                'is_read':  this.read,
-                'is_saved': this.saved
-            };
-            
-            // Update the server
-            apiCall(apiEntrySet, data, function(result) {
-                // Update unread count in the feed list.
-                var counts = result['feed_unread'];
-                for (var pk in counts) {
-                    var count = counts[pk];
-                    thisEntries.layout.$feedList.find(
-                        '[data-yarr-feed=' + pk + ']'
-                    ).each(function() {
+        _markDone: function (data) {
+            // Update unread count in the feed list.
+            var counts = result['feed_unread'];
+            for (var pk in counts) {
+                var count = counts[pk];
+                this.entries.layout.$feedList
+                    .find('[data-yarr-feed=' + pk + ']')
+                    .each(function() {
                         $(this)
                             .toggleClass('yarr_feed_unread', count !== 0)
-                            .find('.yarr_count_unread').text(count);
-                    });
-                }
-            });
+                            .find('.yarr_count_unread').text(count)
+                        ;
+                    })
+                ;
+            }
         },
         
         onListClick: function (e) {
@@ -763,11 +756,27 @@ $(function () {
             this.entries.selectEntry(this.index);
         },
         
+        openCurrent: function () {
+            /** Open the specified entry, marking it as read */
+            // Open
+            if (this.entries.layout.displayMode == MODE_LIST) {
+                this.entries.$entries.removeClass('yarr_open');
+                this.$el.addClass('yarr_open');
+                this.entries.entriesResized();
+            }
+            
+            // Mark as read
+            this.markRead();
+        },
+        
         /* Internal util fns */
-        _mkCheckbox: function (name, state) {
+        _mkCheckbox: function (name, state, value) {
             /** Build a checkbox */
             return $('<input type="checkbox" name="' + name + '"/>')
-                .prop('checked', state)
+                .prop('checked', value)
+                .change(function () {
+                    thisEntry.changeState(state);
+                })
             ;
         },
         
@@ -784,79 +793,45 @@ $(function () {
     
     
     
-    
     /**************************************************************************
-    **                                                          Functions
+    **                                                     Bind event handlers
     */
 
-     
-        
-    function apiCall(url, data, successFn, failFn) {
-        if (!url) {
-            Yarr.Status.set('API disabled');
-            return;
-        }
-        
-        /** Make a call to the API */
-        $.getJSON(url, data)
-            .done(function(json) {
-                Yarr.Status.set(json.msg, !json.success);
-                if (successFn) {
-                    successFn(json);
-                }
-            })
-            .fail(function(jqxhr, textStatus, error ) {
-                Yarr.Status.set(textStatus + ': ' + error, true);
-                if (failFn) {
-                    failFn(textStatus);
-                }
+    function KeyHandler($el) {
+        var thisHandler = this;
+        this.$el = $el
+            .keydown(function (e) {
+                thisHandler.handle(e);
             })
         ;
+        this.registry = {};
     }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+    KeyHandler.prototype = $.extend(KeyHandler.prototype, {
+        listen: function () {
+            /** Call a function when one or more keys is selected
+                Last argument should be the function; example:
+                    keys.listen(KEY_N, KEY_X, KEY_T, myfn);
+            */
+            var keys = Array.prototype.slice.call(arguments),
+                fn = keys.pop()
+            ;
+            for (var i=0, l=keys.length; i<l; i++) {
+                this.registry[keys[i]] = fn;
+            }
+        },
+        handle: function (e) {
+            if (this.registry[e.which]) {
+                e.preventDefault();
+                this.registry[e.which]();
+            }
+        }
+    });
     
     /**************************************************************************
     **                                                          Initialise
     */
     
-    // Set up page
     var layout = new Layout(options);
     
     
-    
-    
-    /**************************************************************************
-    **                                                     Bind event handlers
-    */
-    
-    // Key presses
-    var KEY_N = 78,
-        KEY_P = 80,
-        KEY_J = 74,
-        KEY_K = 75,
-        KEY_V = 86,
-        KEY_RET = 13
-    ;
-    $('body').keydown(function (e) {
-        /** Event handler for keypresses */
-        if (e.which == KEY_N || e.which == KEY_J) {
-            selectNext();
-        } else if (e.which == KEY_P || e.which == KEY_K) {
-            selectPrevious();
-        } else if (e.which == KEY_V || e.which == KEY_RET) {
-            clickCurrent();
-        } else {
-            return;
-        }
-        e.preventDefault();
-    });
 });

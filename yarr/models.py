@@ -13,6 +13,7 @@ import feedparser
 # ++ TODO: tags
 
 from yarr import settings, managers
+from yarr.constants import ENTRY_UNREAD, ENTRY_READ, ENTRY_SAVED
 
 
 ###############################################################################
@@ -389,7 +390,7 @@ class Feed(models.Model):
             # Create Entry and set feed
             entry = Entry.objects.from_feedparser(raw_entry)
             entry.feed = self
-            entry.read = read
+            entry.state = ENTRY_READ if read else ENTRY_UNREAD
             
             # Try to match by guid, then link, then title and date
             if entry.guid:
@@ -438,13 +439,12 @@ class Feed(models.Model):
         # Mark entries for expiry if:
         #   ITEM_EXPIRY is set to expire entries
         #   they weren't found in the feed
-        #   they have been read but not saved
+        #   they have been read (excludes those saved)
         #   they haven't already been marked for expiry
         if settings.ITEM_EXPIRY >= 0:
             self.entries.exclude(
                 pk__in=found
             ).read(
-            ).unsaved(
             ).filter(
                 expires__isnull=True
             ).update(
@@ -475,8 +475,11 @@ class Entry(models.Model):
     """
     # Internal fields
     feed = models.ForeignKey(Feed, related_name='entries')
-    read = models.BooleanField(default=False)
-    saved = models.BooleanField(default=False)
+    state = models.IntegerField(default=ENTRY_UNREAD, choices=(
+        (ENTRY_UNREAD,  'Unread'),
+        (ENTRY_READ,    'Read'),
+        (ENTRY_SAVED,   'Saved'),
+    ))
     expires = models.DateTimeField(
         blank=True, null=True, help_text="When the entry should expire",
     )
