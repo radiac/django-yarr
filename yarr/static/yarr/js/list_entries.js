@@ -1,14 +1,4 @@
-/** ++ In development ++
-    Current position is // ++ HERE
-    Need to strip // ++
-    Need to remove global vars at top
-    Split Layout into Control, Feed
-    Refactor Layout/Entries ready for mobile layout replacement class
-        Rename Layout to ListEntries
-        Add Layout ready for MobileLayout
-            Handle infinite scroll
-            Pass everything else up to ListEntries
-    Extend Yarr.Entry to use either a EntryRender or MobileEntryRender class
+/** JavaScript for yarr list_entries 
 */
 
 $(function () {
@@ -23,14 +13,6 @@ $(function () {
     
     var $con = Yarr.$con;
     
-    // Key codes
-    var KEY_N = 78,
-        KEY_P = 80,
-        KEY_J = 74,
-        KEY_K = 75,
-        KEY_V = 86,
-        KEY_RET = 13
-    ;
     var 
         /*
         ** Constants
@@ -44,7 +26,13 @@ $(function () {
         FEEDS_VISIBLE = 'visible',
         FEEDS_HIDDEN = 'hidden',
         
-        
+        // Key codes
+        KEY_N = 78,
+        KEY_P = 80,
+        KEY_J = 74,
+        KEY_K = 75,
+        KEY_V = 86,
+        KEY_RET = 13,
         
         /*
         ** Settings
@@ -60,7 +48,6 @@ $(function () {
             // Display mode; one of:
             //      expanded    Traditional list of titles and bodies
             //      list        List of titles, with expanding bodies
-            // ++ rename displayMode to mode
             displayMode: Yarr.Cookie.get('yarr-displayMode', MODE_EXPANDED),
         
             // Whether or not the control bar and feed list should be fixed
@@ -339,9 +326,6 @@ $(function () {
             );
         },
         
-        
-
-// ++ here
         onResize: function () {
             /** Event handler for when the scroller resizes
                 Updates the fixed control bar position, and calls entriesResized
@@ -520,7 +504,6 @@ $(function () {
             }
             
             // Decide which pks to get next
-            // ++ can be smarter here - use pkUnloaded
             var pkRequest = [];
             len = this.pkAvailable.length;
             for (i=0; i<len && pkRequest.length<loadNumber; i++) {
@@ -529,7 +512,7 @@ $(function () {
                 }
             }
             
-            if (pkRequest.length == 0) {
+            if (pkRequest.length === 0) {
                 Yarr.Status.set('No more entries to load');
                 this.loading = false;
                 this.finished = true;
@@ -546,7 +529,7 @@ $(function () {
                     
                     // Catch no more entries
                     var count = entries.length;
-                    if (count == 0) {
+                    if (count === 0) {
                         Yarr.Status.set('No more entries to load');
                         thisEntries.finished = true;
                         return;
@@ -654,7 +637,6 @@ $(function () {
         }
     });
     
-    // ++ move Entry onto Yarr.Entry
     function Entry (entries, $el) {
         var thisEntry = this;
         this.entries = entries;
@@ -813,7 +795,7 @@ $(function () {
     
     
     /**************************************************************************
-    **                                                     Bind event handlers
+    **                                                          Key handler
     */
 
     function KeyHandler($el) {
@@ -854,6 +836,4 @@ $(function () {
     */
     
     var layout = new Layout(options);
-    
-    
 });
