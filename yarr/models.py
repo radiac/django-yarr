@@ -93,9 +93,14 @@ class Feed(models.Model):
         ttl
     """
     # Compulsory data fields
-    title = models.TextField(help_text="Name for the feed")
+    title = models.TextField(help_text="Published title of the feed")
     feed_url = models.TextField("Feed URL",
         validators=[URLValidator()], help_text="URL of the RSS feed",
+    )
+    text = models.TextField(
+        "Custom title",
+        blank=True,
+        help_text="Custom title for the feed - defaults to feed title above",
     )
     
     # Optional data fields
@@ -140,7 +145,7 @@ class Feed(models.Model):
     objects = managers.FeedManager()
     
     def __unicode__(self):
-        return self.title
+        return self.text or self.title
     
     def update_count_unread(self):
         """Update the cached unread count"""

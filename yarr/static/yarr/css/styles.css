@@ -446,10 +446,15 @@ form.yarr_form table tr *:first-child {
 form.yarr_form table th,
 form.yarr_form table td {
     vertical-align: top;
+    border: 0;
 }
 
 form.yarr_form table th {
     text-align:     left;
+    font-weight:    normal;
+}
+form.yarr_form table tr.required th {
+    font-weight:    bold;
 }
 
 form.yarr_form table input[type="text"] {

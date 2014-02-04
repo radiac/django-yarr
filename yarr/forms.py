@@ -3,6 +3,7 @@ from django import forms
 from yarr import settings, models
 
 class AddFeedForm(forms.ModelForm):
+    required_css_class = 'required'
     class Meta:
         model = models.Feed
         fields = ['feed_url']
@@ -59,6 +60,7 @@ def _build_frequency_choices():
     return choices
 
 class EditFeedForm(forms.ModelForm):
+    required_css_class = 'required'
     check_frequency = forms.ChoiceField(
         widget=forms.Select,
         choices=_build_frequency_choices(),
@@ -67,9 +69,9 @@ class EditFeedForm(forms.ModelForm):
     )
     class Meta:
         model = models.Feed
-        fields = ['title', 'feed_url', 'is_active', 'check_frequency']
+        fields = ['text', 'feed_url', 'is_active', 'check_frequency']
         widgets = {
-            'title':    forms.TextInput(),
-            'feed_url':     forms.TextInput(),
+            'text':    forms.TextInput(),
+            'feed_url': forms.TextInput(),
             'title':    forms.TextInput(),
         }

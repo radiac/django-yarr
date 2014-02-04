@@ -43,7 +43,7 @@
             data-yarr-last-checked="{{ feed.last_checked|default:"Not checked yet" }}"
             data-yarr-is-active="{{ feed.is_active|lower }}"
         >
-            <td><a href="{% url "yarr-feed_edit" feed_pk=feed.pk %}">{{ feed.title }}</a></td>
+            <td><a href="{% url "yarr-feed_edit" feed_pk=feed.pk %}">{{ feed }}</a></td>
             
             <td>{{ feed.count_unread }}/{{ feed.count_total }}</td>
             
