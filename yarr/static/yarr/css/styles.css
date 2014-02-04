@@ -226,9 +226,35 @@ ul.yarr_entry_control li label input {
 .yarr_feed_list li {
     height:     1.8em;
     line-height:    1.8em;
+    width:          100%;
+    overflow:       hidden;
+}
+.yarr_feed_list li a {
+    height:     1.8em;
+    vertical-align: top;
+    display:        inline-block;
+    max-width:      10em;
     white-space:    nowrap;
     overflow:       hidden;
     text-overflow:  ellipsis;
+}
+
+.yarr_feed_unread {
+    font-weight:    bold;
+}
+.yarr_count_unread {
+    vertical-align: top;
+    display:        inline-block;
+    font-size:      0.8em;
+    font-weight:    normal;
+    color:          #666;
+    margin-left:    0.4em;
+}
+.yarr_count_unread:before {
+    content: "(";
+}
+.yarr_count_unread:after {
+    content: ")";
 }
 
 @media all and (max-width: 50em) {
@@ -257,20 +283,6 @@ ul.yarr_entry_control li label input {
     }
 }
 
-.yarr_feed_unread {
-    font-weight:    bold;
-}
-.yarr_count_unread {
-    font-size:      0.8em;
-    font-weight:    normal;
-    color:          #666;
-}
-.yarr_count_unread::before {
-    content: "(";
-}
-.yarr_count_unread::after {
-    content: ")";
-}
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 **                                                              List display

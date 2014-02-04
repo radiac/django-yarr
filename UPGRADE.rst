@@ -25,10 +25,12 @@ Upgrading from 0.3.13 or earlier
 Run::
 
     python manage.py migrate yarr
+    
+If you have customised your installation of yarr, you may be affected by the
+following changes:
 
-Developers who have customised their installation of yarr may be affected by
-the following changes:
-
+  * In ``list_entries.html``, ``span.yarr_count_unread`` is now a sibling of
+    ``yarr_feed_unread a`` instead of a child
   * The ``Entry`` model attributes ``.read`` and ``.saved`` have been replaced
     by ``.state``, with corresponding constants in ``constants.py``
   * The views ``mark_read`` and ``mark_saved`` have been replaced by
@@ -36,7 +38,8 @@ the following changes:
   * The named url ``yarr-mark_unsaved`` has been removed, and state urls now
     start with the prefix ``state/``
   * The API calls for entries have changed to use the new state attribute
-  * The template ``include/entry.html`` has changed to use state
+  * The template ``include/entry.html`` now passes ``data-yarr-state`` instead
+    of read and saved
   * The script ``static/yarr/js/list_entries.js`` has been refactored
 
 

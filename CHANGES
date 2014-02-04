@@ -7,9 +7,10 @@ Changelog
 
 0.3.14      2014-02-03  See UPGRADE
             Feature:    Simplified save/read state
-            Internal:   Refactored list_entries.js
             Internal:   Changed Entry .save and .read to .state (#35)
-            Docs:       Improved UPGRADE to clarify steps for current release
+            Internal:   Refactored list_entries.js
+            Bugfix:     Unread count updates correctly when reading items
+            Bugfix:     Unread count shows next to abreviated feed
 
 0.3.13      2014-01-05  See UPGRADE
             Feature:    Changed check_feeds --force to also force a db update
