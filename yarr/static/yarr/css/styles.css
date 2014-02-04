@@ -309,6 +309,9 @@ ul.yarr_entry_control li label input {
 .yarr_read .yarr_entry_li {
     background-color:   #eee;
 }
+.yarr_saved .yarr_entry_li {
+    background-color:   #cec;
+}
 .yarr_entry_li {
     padding:    0 1em;
 }
@@ -343,7 +346,8 @@ ul.yarr_entry_control li label input {
     color:      #000;
     font-weight:    bold;
 }
-.yarr_read .yarr_li_entry span {
+.yarr_read .yarr_li_entry span,
+.yarr_saved .yarr_li_entry span {
     font-weight:    normal;
 }
 .yarr_li_date {

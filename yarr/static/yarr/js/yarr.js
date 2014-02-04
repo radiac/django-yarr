@@ -73,7 +73,6 @@ var YARR = (function () {
                 // Create the status now rather than within constructor
                 // Allows pages to override $con
                 if (!$status) {
-                    console.log('adding status', Yarr.$con);
                     $status = $('<div id="yarr_status" />')
                         .appendTo(Yarr.$con)
                         .hide()
@@ -127,10 +126,10 @@ var YARR = (function () {
         // Hash for faster lookup
         var dates = {'last_checked': 1, 'last_updated': 1, 'next_check': 1};
         return {
-            get_feed: function (feed, successFn, failFn) {
-                Yarr.API.get_feeds([feed.pk], successFn, failFn);
+            getFeed: function (feed, successFn, failFn) {
+                Yarr.API.getFeeds([feed.pk], successFn, failFn);
             },
-            get_feeds: function (feed_pks, successFn, failFn) {
+            getFeeds: function (feed_pks, successFn, failFn) {
                 request(
                     'feed/get', {'feed_pks': feed_pks.join(',')},
                     function (json) {
@@ -154,10 +153,11 @@ var YARR = (function () {
                     }, failFn
                 );
             },
-            get_entry: function (entry, successFn, failFn) {
-                Yarr.API.get_entries([entry.pk], successFn, failFn);
+            
+            getEntry: function (entry, successFn, failFn) {
+                Yarr.API.getEntries([entry.pk], successFn, failFn);
             },
-            get_entries: function (entry_pks, successFn, failFn) {
+            getEntries: function (entry_pks, successFn, failFn) {
                 request(
                     'entry/get', {'entry_pks': entry_pks.join(',')},
                     function (json) {
@@ -180,24 +180,27 @@ var YARR = (function () {
                     }, failFn
                 );
             },
+            
             unreadEntry: function (entry, successFn, failFn) {
-                Yarr.API.readEntries([entry.pk], successFn, failFn);
-            },
-            unreadEntries: function (entry_pks, successFn, failFn) {
-                Yarr.API.setEntries(entry_pks, ENTRY_UNREAD, successFn, failFn);
+                Yarr.API.unreadEntries([entry.pk], successFn, failFn);
             },
             readEntry: function (entry, successFn, failFn) {
                 Yarr.API.readEntries([entry.pk], successFn, failFn);
             },
+            saveEntry: function (entry, successFn, failFn) {
+                Yarr.API.saveEntries([entry.pk], successFn, failFn);
+            },
+            
+            unreadEntries: function (entry_pks, successFn, failFn) {
+                Yarr.API.setEntries(entry_pks, ENTRY_UNREAD, successFn, failFn);
+            },
             readEntries: function (entry_pks, successFn, failFn) {
                 Yarr.API.setEntries(entry_pks, ENTRY_READ, successFn, failFn);
-            },
-            saveEntry: function (entry, successFn, failFn) {
-                Yarr.API.readEntries([entry.pk], successFn, failFn);
             },
             saveEntries: function (entry_pks, successFn, failFn) {
                 Yarr.API.setEntries(entry_pks, ENTRY_SAVED, successFn, failFn);
             },
+            
             setEntries: function (entry_pks, state, successFn, failFn) {
                 request('entry/set', {
                     'entry_pks': entry_pks.join(','),
@@ -219,7 +222,7 @@ var YARR = (function () {
             if (this.loaded) {
                 return successFn();
             }
-            Yarr.API.get_feed(this, successFn, failFn);
+            Yarr.API.getFeed(this, successFn, failFn);
         }
     };
     
@@ -234,7 +237,7 @@ var YARR = (function () {
             if (this.loaded) {
                 return successFn();
             }
-            Yarr.API.get_entry(this, successFn, failFn);
+            Yarr.API.getEntry(this, successFn, failFn);
         }
     };
     

@@ -1,4 +1,14 @@
 /** ++ In development ++
+    Current position is // ++ HERE
+    Need to strip // ++
+    Need to remove global vars at top
+    Split Layout into Control, Feed
+    Refactor Layout/Entries ready for mobile layout replacement class
+        Rename Layout to ListEntries
+        Add Layout ready for MobileLayout
+            Handle infinite scroll
+            Pass everything else up to ListEntries
+    Extend Yarr.Entry to use either a EntryRender or MobileEntryRender class
 */
 
 $(function () {
@@ -98,6 +108,7 @@ $(function () {
         if (this.layoutFixed) {
             this.fixLayout();
         }
+        var thisLayout = this;
         this.$scroller
             .resize(function () { thisLayout.onResize(); })
             .scroll(function () { thisLayout.onScroll(); })
@@ -114,7 +125,6 @@ $(function () {
         controlTop: null,
         controlBottom: null,
         scrollCutoff: null,
-        entryBottoms: null,
         entryMargin: null,
         
         setupControl: function () {
@@ -361,7 +371,6 @@ $(function () {
         onScroll: function () {
             /** Event handler for scrolling */
             var scrollTop = this.$scroller.scrollTop(),
-                newCurrent = -1,
                 topCutoff = scrollTop + this.scrollCutoff,
                 topMoved = false
             ;
@@ -394,27 +403,14 @@ $(function () {
                 }
             }
             
-            // Update selection if in expanded mode
-            if (this.displayMode == MODE_EXPANDED) {
-                // ++ Move this into entries
-                for (var i=0, l=this.entries.entries.length; i<l; i++) {
-                    if (this.entryBottoms[i] > topCutoff) {
-                        newCurrent = i;
-                        break;
-                    }
-                }
-                if (newCurrent >= 0 && newCurrent != this.entries.current) {
-                    this.entries.selectEntry(newCurrent);
-                }
-            }
+            // Tell the entries to handle scrolling
+            this.entries.handleScroll(topCutoff);
             
             // Infinite scroll
             if (scrollTop > this.scrollInfiniteTrigger) {
                 this.entries.loadInfiniteScroll();
             }
         },
-    
-        
         
         /* Internal util functions */
         _mkButton: function (txt, fn) {
@@ -477,7 +473,24 @@ $(function () {
         
         current: null,
         $current: null,
+        entryBottoms: null,
         
+        handleScroll: function (top) {
+            var newCurrent = -1;
+            
+            // Update selection if in expanded mode
+            if (this.layout.displayMode == MODE_EXPANDED) {
+                for (var i=0, l=this.entries.length; i<l; i++) {
+                    if (this.entryBottoms[i] > top) {
+                        newCurrent = i;
+                        break;
+                    }
+                }
+                if (newCurrent >= 0 && newCurrent != this.current) {
+                    this.selectEntry(newCurrent);
+                }
+            }
+        },
         loadInfiniteScroll: function (loadNumber) {
             /** Infinite scroll loader
                 Called when it is time to load more entries
@@ -511,7 +524,7 @@ $(function () {
             var pkRequest = [];
             len = this.pkAvailable.length;
             for (i=0; i<len && pkRequest.length<loadNumber; i++) {
-                if (!pkLookup[this.pkAvailable[i]]) {
+                if (!this.pkLookup[this.pkAvailable[i]]) {
                     pkRequest.push(this.pkAvailable[i]);
                 }
             }
@@ -525,7 +538,7 @@ $(function () {
             
             // Get data for entries
             Yarr.Status.set('Loading...');
-            Yarr.API.get_entries(
+            Yarr.API.getEntries(
                 pkRequest,
                 function (entries) {
                     /** Entries loaded */
@@ -578,7 +591,6 @@ $(function () {
             /** Select an entry */
             // Deselect current
             if (this.current !== null) {
-                console.log('fofofo', this.entries, this.current)
                 this.entries[this.current].$el.removeClass('yarr_active');
             }
             
@@ -651,9 +663,9 @@ $(function () {
         this.pk = $el.data('yarr-pk');
         
         // Detect state
-        var state = parseInt($el.data('yarr-state'), 10);
-        this.read = state == ENTRY_READ;
-        this.saved = state == ENTRY_SAVED;
+        this.state = parseInt($el.data('yarr-state'), 10);
+        this.read = this.state == ENTRY_READ;
+        this.saved = this.state == ENTRY_SAVED;
         
         // Enhance entry with javascript
         this.setup();
@@ -704,30 +716,34 @@ $(function () {
             }
         },
         
-        markUnread: function (data) {
-            var thisEntry = this;
-            this.read = false;
-            this.saved = false;
-            this.$el.removeClass('yarr_read yarr_saved');
-            Yarr.API.entry_unread(this, function (data) { thisEntry._markDone(data); });
+        markUnread: function () {
+            this._markSet(false, false, Yarr.API.unreadEntry);
         },
-        markRead: function (data) {
-            var thisEntry = this;
-            this.read = true;
-            this.saved = false;
-            this.$el.addClass('yarr_read').removeClass('yarr_saved');
-            Yarr.API.entry_read(this, function (data) { thisEntry._markDone(data); });
+        markRead: function () {
+            this._markSet(true, false, Yarr.API.readEntry);
         },
-        markSaved: function (data) {
+        markSaved: function () {
+            this._markSet(false, true, Yarr.API.saveEntry);
+        },
+        _markSet: function (read, saved, api) {
+            /** Set internal and call API */
             var thisEntry = this;
-            this.read = false;
-            this.saved = true;
-            this.$el.addClass('yarr_saved').removeClass('yarr_read');
-            Yarr.API.entry_saved(this, function (data) { thisEntry._markDone(data); });
+            this.read = read;
+            this.saved = saved;
+            this.$read.prop('checked', read);
+            this.$saved.prop('checked', saved);
+            this.$el
+                .removeClass('yarr_read yarr_saved')
+                .addClass(read ? 'yarr_read' : (saved ? 'yarr_saved' : ''))
+            ;
+            api(this, function (data) {
+                thisEntry._markDone(data);
+            });
         },
         _markDone: function (data) {
+            /** After API success */
             // Update unread count in the feed list.
-            var counts = result['feed_unread'];
+            var counts = data['feed_unread'];
             for (var pk in counts) {
                 var count = counts[pk];
                 this.entries.layout.$feedList
@@ -746,17 +762,17 @@ $(function () {
             if (this.$el.hasClass('yarr_open')) {
                 this.$el.removeClass('yarr_open');
             } else {
-                entries.selectEntry(this.$el.index());
+                this.entries.selectEntry(this.$el.index());
                 // Since everything has shifted around we need to scroll to
                 // a known position or the user will be lost.
-                entries.scrollCurrent();
+                this.entries.scrollCurrent();
             }
         },
         onContentClick: function (e) {
             this.entries.selectEntry(this.index);
         },
         
-        openCurrent: function () {
+        open: function () {
             /** Open the specified entry, marking it as read */
             // Open
             if (this.entries.layout.displayMode == MODE_LIST) {
@@ -765,13 +781,16 @@ $(function () {
                 this.entries.entriesResized();
             }
             
-            // Mark as read
-            this.markRead();
+            // Mark as read if unread
+            if (this.state == ENTRY_UNREAD) {
+                this.markRead();
+            }
         },
         
         /* Internal util fns */
         _mkCheckbox: function (name, state, value) {
             /** Build a checkbox */
+            var thisEntry = this;
             return $('<input type="checkbox" name="' + name + '"/>')
                 .prop('checked', value)
                 .change(function () {
@@ -820,6 +839,9 @@ $(function () {
             }
         },
         handle: function (e) {
+            if (e.ctrlKey) {
+                return;
+            }
             if (this.registry[e.which]) {
                 e.preventDefault();
                 this.registry[e.which]();

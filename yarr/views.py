@@ -465,27 +465,30 @@ def api_entry_set(request):
     
     # Update new state
     state = request.GET.get('state', None)
-    if success and state in (
-        constants.ENTRY_UNREAD, constants.ENTRY_READ, constants.ENTRY_SAVED,
-    ):
-        entries.update(state=state)
-        entries.update_feed_unread()
+    if state is not None:
+        state = int(state)
+    if success:
+        if state in (
+            constants.ENTRY_UNREAD, constants.ENTRY_READ, constants.ENTRY_SAVED,
+        ):
+            entries.update(state=state)
+            entries.update_feed_unread()
+            
+            # Find new unread counts
+            for feed in entries.feeds():
+                feed_unread[str(feed.pk)] = feed.count_unread
         
-        # Find new unread counts
-        for feed in entries.feeds():
-            feed_unread[str(feed.pk)] = feed.count_unread
+            # Decide message
+            if state == constants.ENTRY_UNREAD:
+                msg = 'Marked as unread'
+            elif state == constants.ENTRY_READ:
+                msg = 'Marked as read'
+            elif state == constants.ENTRY_SAVED:
+                msg = 'Saved'
     
-        # Decide message
-        if state == constants.ENTRY_UNREAD:
-            msg = 'Marked as unread'
-        elif state == constants.ENTRY_READ:
-            msg = 'Marked as read'
-        elif state == constants.ENTRY_SAVED:
-            msg = 'Saved'
-    
-    else:
-        success = False
-        msg = 'Unknown operation'
+        else:
+            success = False
+            msg = 'Unknown operation'
         
     # Respond
     return utils.jsonResponse({
