@@ -1,4 +1,4 @@
-/** JavaScript for yarr list_entries 
+/** JavaScript for yarr list_entries
 */
 
 $(function () {
@@ -79,21 +79,21 @@ $(function () {
         this.options = options;
         this.displayMode = options.displayMode;
         this.layoutFixed = options.layoutFixed;
-        this.feedListShow = options.feedListShow;
         
         // Find elements
         this.$control = $base.find('.yarr_control');
         this.$content = $base.find('.yarr_content');
-        this.$feedList = $base.find('.yarr_feed_list');
         
         // Initialise related classes
         this.keys = new KeyHandler($base);
+        this.feedList = new FeedList(this, $base.find('.yarr_feed_list'));
         this.entries = new Entries(this, $base.find('.yarr_entry'));
         
         // Set up control bar and fixed layout
         this.setupControl();
         if (this.layoutFixed) {
             this.fixLayout();
+            this.feedList.fixLayout();
         }
         var thisLayout = this;
         this.$scroller
@@ -108,7 +108,6 @@ $(function () {
         displayMode: MODE_EXPANDED,
         layoutFixed: true,
         controlIsFixed: false,
-        feedListShow: null,
         controlTop: null,
         controlBottom: null,
         scrollCutoff: null,
@@ -155,7 +154,7 @@ $(function () {
             
             // Calculate entry margin for autoscrolling
             this.controlBottom = this.$control.offset().top + this.$control.outerHeight();
-            this.entryMargin = this.$feedList.offset().top - this.controlBottom;
+            this.entryMargin = this.feedList.$el.offset().top - this.controlBottom;
         },
         fixLayout: function () {
             /** Prepare fixed layout */
@@ -165,7 +164,7 @@ $(function () {
             $('<ul class="yarr_menu_feed"/ >')
                 .append($('<li/>').append(
                     this._mkButton('Feeds', function () {
-                        thisLayout.toggleFeed();
+                        thisLayout.feedList.toggle();
                     })
                 ))
                 .insertBefore(this.$control.find('.yarr_menu_filter'))
@@ -183,17 +182,6 @@ $(function () {
                 .hide()
             ;
             
-            // Prepare the fixed feedList
-            this.$feedList.css({
-                'position': 'fixed',
-                'top':      this.controlBottom,
-                'bottom':   this.$feedList.css('margin-top')
-            });
-            
-            // Toggle the feed list visibility, if preference in cookies
-            if (this.feedListShow) {
-                this.toggleFeed(this.feedListShow);
-            }
         },
         switchMode: function (newMode) {
             /** Switch display mode between expanded and list view */
@@ -218,69 +206,6 @@ $(function () {
             this.ensureFullScreen();
         },
         
-        toggleFeed: function(to) {
-            /** Toggle the visibility of the feed
-                Only available if layoutFixed
-            */
-            // Current state is determined by checking for element visibility
-            // This allows the CSS to decide the default status with media rules
-            var thisLayout = this,
-                speed = 'fast',
-                isOpen = this.$feedList.is(":visible"),
-                
-                // Add dummy element to get true CSS values
-                $dummyList = $('<div class="yarr_feed_list">&nbsp;</div>')
-            ;
-            
-            // Check if the switch isn't needed
-            if ((to == FEEDS_VISIBLE && isOpen)
-                || (to == FEEDS_HIDDEN && !isOpen)
-            ) {
-                return;
-            }
-            
-            // Special action for mobile layout
-            if ($dummyList.css('position') == 'relative') {
-                if (isOpen) {
-                    this.$feedList.slideUp(speed, function () {
-                        this.$feedList.removeAttr('style');
-                    });
-                } else {
-                    this.$feedList.slideDown(speed);
-                }
-                return;
-            }
-            
-            // Normal sidebar layout
-            if (isOpen) {
-                this.$feedList.animate({'width': 0}, speed, function () {
-                    thisLayout.$feedList.hide();
-                });
-                this.$content.animate({'margin-left': 0}, speed);
-                
-            } else {
-                var $dummyContent = $('<div class="yarr_content">&nbsp;</div>');
-                
-                this.$feedList
-                    .show()
-                    .animate({'width': $dummyList.width()}, function () {
-                        thisLayout.$feedList.removeAttr('style');
-                    })
-                ;
-                this.$content
-                    .animate(
-                        {'margin-left': $dummyContent.css('margin-left')},
-                        function () {
-                            thisLayout.$content.removeAttr('style');
-                        }
-                    );
-            }
-            
-            // Save the current display configuration in a cookie
-            // This will disable initial auto-sensing between screen sizes,
-            this.feedListShow = isOpen ? FEEDS_HIDDEN : FEEDS_VISIBLE;
-            Yarr.Cookie.set('yarr-feedListShow', this.feedListShow);
-        },
         
         ensureFullScreen: function() {
             /** Ensure that enough entries have loaded to fill the screen, if more
@@ -305,10 +230,6 @@ $(function () {
             // the infinite scroll margin, by finding height of one entry
             this.entries.loadInfiniteScroll(
                 Math.ceil(gap / this.entries.entries[0].$el.outerHeight())
-            );
-            
-            this.entries.loadInfiniteScroll(
-            
             );
         },
         
@@ -370,7 +291,7 @@ $(function () {
                         this.controlIsFixed = true;
                         
                         // Move feed list to bottom of fixed bar
-                        this.$feedList.css('top', this.$controlFixed.outerHeight());
+                        this.feedList.$el.css('top', this.$controlFixed.outerHeight());
                     }
                     
                 } else {
@@ -383,7 +304,7 @@ $(function () {
                     }
                     
                     // Always move feed list to bottom of relative bar
-                    this.$feedList.css('top', this.controlBottom - scrollTop);
+                    this.feedList.$el.css('top', this.controlBottom - scrollTop);
                 }
             }
             
@@ -416,6 +337,98 @@ $(function () {
        
     });
     
+    function FeedList(layout, $el) {
+        this.layout = layout;
+        this.$el = $el;
+        
+        // Load options
+        this.feedListShow = layout.options.feedListShow;
+        
+        // Detect values, using dummy elements where necessary
+        var $dummyList = $('<div class="yarr_feed_list">&nbsp;</div>'),
+            $dummyContent = $('<div class="yarr_content">&nbsp;</div>')
+        ;
+        this.defaultPosition = $dummyList.css('position');
+        this.defaultWidth = $dummyList.width();
+        this.contentMargin = $dummyContent.css('margin-left');
+        this.isOpen = $el.is(":visible");
+    }
+    FeedList.prototype = $.extend(FeedList.prototype, {
+        fixLayout: function () {
+            // Prepare the fixed feedList
+            this.$el.css({
+                'position': 'fixed',
+                'top':      this.layout.controlBottom,
+                'bottom':   this.$el.css('margin-top')
+            });
+            
+            // Toggle the feed list visibility, if preference in cookies
+            if (this.feedListShow) {
+                this.toggle(this.feedListShow);
+            }
+        },
+        toggle: function (to) {
+            /** Toggle the visibility of the feed list
+                Only available if layoutFixed
+            */
+            // Current state is determined by checking for element visibility
+            // This allows the CSS to decide the default status with media rules
+            var thisFeedList = this,
+                speed = 'fast'
+            ;
+            
+            // Check if the switch isn't needed
+            if ((to == FEEDS_VISIBLE && this.isOpen)
+                || (to == FEEDS_HIDDEN && !this.isOpen)
+            ) {
+                return;
+            }
+            this.isOpen = !this.isOpen;
+            
+            // Special action for mobile layout
+            if (this.defaultPosition == 'relative') {
+                if (this.isOpen) {
+                    this.$el.slideDown(speed);
+                } else {
+                    this.$el.slideUp(speed, function () {
+                        this.$el.removeAttr('style');
+                    });
+                }
+                return;
+            }
+            
+            // Normal sidebar layout
+            if (this.isOpen) {
+                this.$el
+                    .show()
+                    .animate({'width': this.defaultWidth}, function () {
+                        thisFeedList.$el.removeAttr('style');
+                    })
+                ;
+                this.layout.$content
+                    .animate(
+                        {'margin-left': this.contentMargin},
+                        function () {
+                            thisFeedList.layout.$content.removeAttr('style');
+                        }
+                    )
+                ;
+                
+            } else {
+                this.$el.animate({'width': 0}, speed, function () {
+                    thisFeedList.$el.hide();
+                });
+                this.layout.$content.animate({'margin-left': 0}, speed);
+            }
+            
+            // Save the current display configuration in a cookie
+            // This will disable initial auto-sensing between screen sizes,
+            this.feedListShow = this.isOpen ? FEEDS_HIDDEN : FEEDS_VISIBLE;
+            Yarr.Cookie.set('yarr-feedListShow', this.feedListShow);
+        },
+    });
+    
+    
     function Entries(layout, $el) {
         this.layout = layout;
         this.$entries = $el;
@@ -435,7 +448,7 @@ $(function () {
         // Initialise Entry classes
         this.entries = [];
         for (var i=0, l=$el.length; i<l; i++) {
-            this.entries[i] = new Entry(this, $($el[i]));
+            this.entryFromHtml($($el[i]));
         }
         
         // Bind key events
@@ -458,6 +471,13 @@ $(function () {
         current: null,
         $current: null,
         entryBottoms: null,
+        
+        entryFromHtml: function ($el) {
+            /** Create an Entry from HTML */
+            var entry = Yarr.Entry.get($el.data('yarr-pk'));
+            entry.init(this, $el);
+            this.entries.push(entry);
+        },
         
         handleScroll: function (top) {
             var newCurrent = -1;
@@ -539,7 +559,7 @@ $(function () {
                     var $entries = [];
                     for (var i=0; i<count; i++) {
                         var $entry = $(entries[i].html).appendTo(thisEntries.layout.$content);
-                        thisEntries.entries.push(new Entry(thisEntries, $entry));
+                        thisEntries.entryFromHtml($entry);
                         $entries.push($entry);
                     }
                     
@@ -637,30 +657,31 @@ $(function () {
         }
     });
     
-    function Entry (entries, $el) {
-        var thisEntry = this;
-        this.entries = entries;
-        this.$el = $el;
-        this.index = $el.index();
-        this.pk = $el.data('yarr-pk');
-        
-        // Detect state
-        this.state = parseInt($el.data('yarr-state'), 10);
-        this.read = this.state == ENTRY_READ;
-        this.saved = this.state == ENTRY_SAVED;
-        
-        // Enhance entry with javascript
-        this.setup();
-        
-        // Find elements and handle clicks
-        this.$content = $el.find('.yarr_entry_content')
-            .click(function (e) { return thisEntry.onContentClick(e); })
-        ;
-        this.$li = $el.find('.yarr_entry_li')
-            .click(function (e) { return thisEntry.onListClick(e); })
-        ;
-    }
-    Entry.prototype = $.extend(Entry.prototype, {
+    Yarr.Entry.prototype = $.extend(Yarr.Entry.prototype, {
+        init: function (entries, $el) {
+            var thisEntry = this;
+            this.entries = entries;
+            this.$el = $el;
+            this.index = $el.index();
+            this.pk = $el.data('yarr-pk');
+            this.feed = Yarr.Feed.get($el.data('yarr-feed'));
+            
+            // Detect state
+            this.state = parseInt($el.data('yarr-state'), 10);
+            this.read = this.state == ENTRY_READ;
+            this.saved = this.state == ENTRY_SAVED;
+            
+            // Enhance entry with javascript
+            this.setup();
+            
+            // Find elements and handle clicks
+            this.$content = $el.find('.yarr_entry_content')
+                .click(function (e) { return thisEntry.onContentClick(e); })
+            ;
+            this.$li = $el.find('.yarr_entry_li')
+                .click(function (e) { return thisEntry.onListClick(e); })
+            ;
+        },
         setup: function () {
             /** Convert a static HTML entry to ajax-ready controls */
             var thisEntry = this;

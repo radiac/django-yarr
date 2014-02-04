@@ -1,6 +1,7 @@
 {% load url from future %}
 
 <div class="yarr_entry{% if entry.state == constants.ENTRY_READ %} yarr_read{% endif %}{% if entry.state == constants.ENTRY_SAVED %} yarr_saved{% endif %}"
+    data-yarr-feed="{{ entry.feed.pk }}"
     data-yarr-pk="{{ entry.pk }}"
     data-yarr-state="{{ entry.state }}"
 >
