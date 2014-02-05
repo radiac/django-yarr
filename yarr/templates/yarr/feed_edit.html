@@ -4,8 +4,10 @@
 
 {% block content %}
 
-{{ block.super }}
+<div id="yarr_feed_edit">
+    {{ block.super }}
 
-{% include "yarr/include/form_feed_edit.html" %}
+    {% include "yarr/include/form_feed_edit.html" %}
+</div>
 
 {% endblock %}
