@@ -10,21 +10,14 @@
 
 {% block content %}
 
-<div id="yarr_con"
-    data-available-pks="{{ available_pks|join:"," }}"
-    data-api-page-length="{{ yarr_settings.api_page_length }}"
-    data-api-entry-get="{% url 'yarr-api_entry_get' %}"
-    data-api-entry-set="{% url 'yarr-api_entry_set' %}"
-    data-q-state="{{ state }}"
-    data-layout-fixed="{{ yarr_settings.layout_fixed|lower }}"
->
+<div id="yarr_con">
 
 {% block yarr_control %}
     <div class="yarr_control">
         <ul class="yarr_menu_filter">
-            <li><a href="{% url 'yarr-list_all' %}{% if ascending_by_date %}?order=asc{% endif %}"{% if state == None %} class="yarr_selected"{% endif %}>All</a></li>
-            <li><a href="{% url 'yarr-list_unread' %}{% if ascending_by_date %}?order=asc{% endif %}"{% if state == constants.ENTRY_UNREAD %} class="yarr_selected"{% endif %}>Unread</a></li>
-            <li><a href="{% url 'yarr-list_saved' %}{% if ascending_by_date %}?order=asc{% endif %}"{% if state == constants.ENTRY_SAVED %} class="yarr_selected"{% endif %}>Saved</a></li>
+            <li><a href="{% url 'yarr-list_all' %}{% if order_asc %}?order={{ constants.ORDER_ASC }}{% endif %}"{% if state == None %} class="yarr_selected"{% endif %}>All</a></li>
+            <li><a href="{% url 'yarr-list_unread' %}{% if order_asc %}?order={{ constants.ORDER_ASC }}{% endif %}"{% if state == constants.ENTRY_UNREAD %} class="yarr_selected"{% endif %}>Unread</a></li>
+            <li><a href="{% url 'yarr-list_saved' %}{% if order_asc %}?order={{ constants.ORDER_ASC }}{% endif %}"{% if state == constants.ENTRY_SAVED %} class="yarr_selected"{% endif %}>Saved</a></li>
         </ul>
         <ul class="yarr_menu_op">
             {% if feed %}
@@ -35,10 +28,10 @@
         </ul>
 
         <ul class="yarr_menu_sort">
-            {% if ascending_by_date %}
+            {% if order_asc %}
                 <li><a href="./">Latest first</a></li>
             {% else %}
-                <li><a href="?order=asc">Oldest first</a></li>
+                <li><a href="?order={{ constants.ORDER_ASC }}">Oldest first</a></li>
             {% endif %}
         </ul>
         
@@ -76,15 +69,13 @@
 
 {% block yarr_feed_list %}
     <div class="yarr_feed_list">
-        <ul class="yarr_menu_feeds">
-            <li><a href="{% url 'yarr-feed_add' %}">Add feed</a></li>
-            <li><a href="{% url 'yarr-feeds' %}">Manage feeds</a></li>
-            {% if feed %}
-                <li><a href="{% url current_view %}">View all feeds</a></li>
-            {% endif %}
+        <ul class="yarr_feed_menu">
+            <li><a href="{% url 'yarr-feed_add' %}" class="yarr_add_feed">Add feed</a></li>
+            <li><a href="{% url 'yarr-feeds' %}" class="yarr_manage_feeds">Manage feeds</a></li>
+            <li><a href="{% url current_view %}" class="yarr_view_all{% if not feed %} yarr_disabled{% endif %}">View all feeds</a></li>
         </ul>
         
-        <ul>
+        <ul class="yarr_feed_list_feeds">
             {% for feed in feeds %}
             <li data-yarr-feed="{{ feed.pk }}" {% if feed.count_unread %}class="yarr_feed_unread"{% endif %}>
                 <a href="{% url current_view feed_pk=feed.pk %}">{{ feed }}</a><span class="yarr_count_unread">{{ feed.count_unread }}</span>

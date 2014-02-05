@@ -21,6 +21,16 @@ LAYOUT_FIXED = getattr(settings, 'YARR_LAYOUT_FIXED', True)
 # If true, add jQuery to the page when required
 ADD_JQUERY = getattr(settings, 'YARR_ADD_JQUERY', True)
 
+# Template string for document title (shown on the browser window and tabs).
+# If set, used to update the title when changing feeds in list view.
+# Use ``%(feed)s`` as a placeholder for the feed title (case sensitive)
+TITLE_TEMPLATE = getattr(settings, 'YARR_TITLE_TEMPLATE', '%(feed)s') or ''
+
+# jQuery Selector for page title (an element in your page template)
+# If set, this element's content will be replaced with the feed title when
+# changing feeds in list view.
+TITLE_SELECTOR = getattr(settings, 'YARR_TITLE_SELECTOR', '') or ''
+
 
 #
 # To control feed updates

@@ -66,15 +66,15 @@ def list_entries(
     """
     # Get entries queryset
     qs, feed = get_entries(request, feed_pk, state)
-
-    ascending_by_date = request.GET.get('order', 'dsc') == 'asc'
-    if ascending_by_date:
+    
+    order = request.GET.get('order', constants.ORDER_DESC)
+    if order == constants.ORDER_ASC:
         qs = qs.order_by('date')
     else:
-        qs = qs.order_by('-date')  # Default ordering.
+        qs = qs.order_by('-date')
 
     # Make list of available pks for this page
-    available_pks = qs.values_list('pk', flat=True)
+    available_pks = list(qs.values_list('pk', flat=True))
     
     # Paginate
     entries, pagination = utils.paginate(request, qs)
@@ -107,22 +107,27 @@ def list_entries(
     return render(request, template, {
         'title':    title,
         'entries':  entries,
-        'available_pks': available_pks,
         'pagination': pagination,
         'feed':     feed,
         'feeds':    feeds,
         'state':    state,
+        'order_asc':    order == constants.ORDER_ASC,
         'constants':    constants,
         'current_view': current_view,
-        'ascending_by_date': ascending_by_date,
         'yarr_settings': {
-            'layout_fixed':     settings.LAYOUT_FIXED,
             'add_jquery':       settings.ADD_JQUERY,
-            'api_page_length':  settings.API_PAGE_LENGTH,
             # JavaScript YARR_CONFIG variables
             'config':   utils.jsonEncode({
                 'api':  reverse('yarr-api_base'),
                 'con':  '#yarr_con',
+                'initial_state':    state,
+                'initial_order':    order,
+                'initial_feed':     feed_pk,
+                'layout_fixed':     settings.LAYOUT_FIXED,
+                'api_page_length':  settings.API_PAGE_LENGTH,
+                'title_template':   settings.TITLE_TEMPLATE,
+                'title_selector':   settings.TITLE_SELECTOR,
+                'available_pks':    available_pks,
             }),
         },
     })
@@ -397,6 +402,65 @@ def api_feed_get(request):
         'feeds':    data,
     })
     
+    
+@login_required
+def api_feed_pks_get(request):
+    """
+    JSON API to get entry pks for given feeds
+    
+    Arguments passed on GET:
+        feed_pks    List of feeds to get entry pks for about
+                    If none, returns entry pks for all feeds
+        state       The state of entries to read
+        order       The order to sort entries in
+                    Defaults to ORDER_DESC
+    
+    Returns in JSON format:
+        success     Boolean indicating success
+        pks         Object with feed pk as key, list of entry pks as list value
+    """
+    feed_pks = request.GET.get('feed_pks', '')
+    state = request.GET.get('state', '') or None
+    order = request.GET.get('order', constants.ORDER_DESC)
+    
+    if state is not None:
+        state = int(state)
+    
+    # Get entries queryset, filtered by user and feed
+    entries = models.Entry.objects.filter(feed__user=request.user)
+    if feed_pks:
+        try:
+            entries = entries.filter(feed__pk__in=feed_pks.split(','))
+        except Exception:
+            return utils.jsonResponse({
+                'success':  False,
+                'msg':      'Invalid request',
+            })
+    
+    # Filter by state
+    if state == constants.ENTRY_UNREAD:
+        entries = entries.unread()
+    elif state == constants.ENTRY_READ:
+        entries = entries.read()
+    elif state == constants.ENTRY_SAVED:
+        entries = entries.saved()
+    
+    # Order them
+    if order == constants.ORDER_ASC:
+        entries = entries.order_by('date')
+    else:
+        entries = entries.order_by('-date')
+    
+    # Get a list of remaining pks
+    pks = list(entries.values_list('pk', flat=True))
+            
+    # Respond
+    return utils.jsonResponse({
+        'success':  True,
+        'pks':      pks,
+    })
+        
+    
 @login_required
 def api_entry_get(request, template="yarr/include/entry.html"):
     """
@@ -404,14 +468,18 @@ def api_entry_get(request, template="yarr/include/entry.html"):
     
     Arguments passed on GET:
         entry_pks   List of entries to get
+        order       Order to send them back in
+                    Defaults to ORDER_DESC
         
     Returns in JSON format:
         success     Boolean indicating success
-        entries     Object with entry pk as key, entry data as object in value:
+        entries     List of entries, rendered entry as object in value:
                     html    Entry rendered as HTML using template
     """
-    # Get entries queryset
     pks = request.GET.get('entry_pks', '')
+    order = request.GET.get('order', constants.ORDER_DESC)
+    
+    # Get entries queryset
     if pks:
         success = True
         entries = models.Entry.objects.filter(
@@ -421,15 +489,25 @@ def api_entry_get(request, template="yarr/include/entry.html"):
         success = False
         entries = models.Entry.objects.none()
     
+    # Order them
+    if order == constants.ORDER_ASC:
+        entries = entries.order_by('date')
+    else:
+        entries = entries.order_by('-date')
+    
     # Render
-    data = {}
+    data = []
     compiled = loader.get_template(template)
     for entry in entries:
-        data[entry.pk] = {
+        data.append({
+            'pk':       entry.pk,
             'feed':     entry.feed_id,
             'state':    entry.state,
-            'html':     compiled.render(Context({'entry': entry}))
-        }
+            'html':     compiled.render(Context({
+                'constants':    constants,
+                'entry':        entry,
+            }))
+        })
     
     # Respond
     return utils.jsonResponse({

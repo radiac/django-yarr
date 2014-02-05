@@ -17,9 +17,9 @@ $(function () {
         /*
         ** Constants
         */
-        ENTRY_UNREAD = Yarr.ENTRY_UNREAD,
-        ENTRY_READ = Yarr.ENTRY_READ,
-        ENTRY_SAVED = Yarr.ENTRY_SAVED,
+        ENTRY_UNREAD = Yarr.constants.ENTRY_UNREAD,
+        ENTRY_READ = Yarr.constants.ENTRY_READ,
+        ENTRY_SAVED = Yarr.constants.ENTRY_SAVED,
         
         MODE_EXPANDED = 'expanded',
         MODE_LIST = 'list',
@@ -49,18 +49,27 @@ $(function () {
             //      expanded    Traditional list of titles and bodies
             //      list        List of titles, with expanding bodies
             displayMode: Yarr.Cookie.get('yarr-displayMode', MODE_EXPANDED),
-        
-            // Whether or not the control bar and feed list should be fixed
-            layoutFixed: !!$con.data('layout-fixed'),
             
             // Feed list visiblity; either visible or hidden, or null for CSS
             feedListShow: Yarr.Cookie.get('yarr-feedListShow', null),
             
+            // Whether or not the control bar and feed list should be fixed
+            layoutFixed: Yarr.config.layout_fixed,
+        
             // Number of entries on a page
-            pageLength: $con.data('api-page-length'),
+            pageLength: Yarr.config.api_page_length,
             
             // List of available pks
-            pkAvailable: String($con.data('available-pks'))
+            pkAvailable: Yarr.config.available_pks,
+            
+            // Title control
+            titleTemplate: Yarr.config.title_template,
+            titleSelector: Yarr.config.title_selector,
+            
+            // Initial state, order and feed for this page
+            initialState: Yarr.config.initial_state,
+            initialOrder: Yarr.config.initial_order,
+            initialFeed: Yarr.config.initial_feed
         }
     ;
     
@@ -77,12 +86,21 @@ $(function () {
         
         // Set options
         this.options = options;
+        this.state = options.initialState;
+        this.order = options.initialOrder;
         this.displayMode = options.displayMode;
         this.layoutFixed = options.layoutFixed;
         
         // Find elements
         this.$control = $base.find('.yarr_control');
         this.$content = $base.find('.yarr_content');
+        
+        // Detect values using dummy elements
+        var $dummyListItem = $('<div class="yarr_entry_li">&nbsp;</div>')
+            .appendTo(this.$content)
+        ;
+        this.listItemHeight = $dummyListItem.outerHeight();
+        $dummyListItem.remove();
         
         // Initialise related classes
         this.keys = new KeyHandler($base);
@@ -105,6 +123,8 @@ $(function () {
     Layout.prototype = $.extend(Layout.prototype, {
         // Settings from options
         options: null,
+        state:  null,
+        order:  null,
         displayMode: MODE_EXPANDED,
         layoutFixed: true,
         controlIsFixed: false,
@@ -112,6 +132,9 @@ $(function () {
         controlBottom: null,
         scrollCutoff: null,
         entryMargin: null,
+        
+        // Height of an item when in list mode
+        listItemHeight: 0,
         
         setupControl: function () {
             /** Remove pagination links, add scroll buttons */
@@ -181,7 +204,6 @@ $(function () {
                 })
                 .hide()
             ;
-            
         },
         switchMode: function (newMode) {
             /** Switch display mode between expanded and list view */
@@ -203,34 +225,62 @@ $(function () {
             this.$scroller.scrollTop(0);
             
             // Ensure full screen
-            this.ensureFullScreen();
+            this.loadScreen();
         },
         
-        
-        ensureFullScreen: function() {
-            /** Ensure that enough entries have loaded to fill the screen, if more
-                are available.
-                
-                Infinite scroll can't trigger without a full screen to scroll.
-            */
-            
-            // Only in list mode
-            if (this.displayMode != MODE_LIST) {
-                return;
+        setTitle: function (feed) {
+            var title = 'all items';
+            if (this.state == ENTRY_UNREAD) {
+                title = 'Unread items';
+            } else if (this.state == ENTRY_SAVED) {
+                title = 'Saved items';
             }
             
-            // Get the height from the bottom of the loaded entries to the bottom
-            // of the viewport, plus the infinite scroll margin
+            if (feed) {
+                title = feed + ' - ' + title;
+            }
+            
+            if (this.options.titleSelector) {
+                $(this.options.titleSelector).text(title);
+            }
+            if (this.options.titleTemplate) {
+                document.title = this.options.titleTemplate.replace('%(feed)s', title);
+            }
+        },
+        
+        loadScreen: function() {
+            /** Ensure that enough entries have loaded to fill the screen.
+                Infinite scroll can't trigger without a full screen to scroll.
+                
+                In list mode, this will calculate how many entries to load
+                based on the height of an unexpanded entry.
+                
+                In expanded mode, this will keep loading pages until the screen
+                is full, or there is no more to load.
+            */
+            // Get the height from the bottom of the loaded entries to the
+            // bottom of the viewport, plus the infinite scroll margin
             var gap = (
                 (this.$scroller.innerHeight() + scrollInfiniteMargin)
                 - (this.$content.offset().top + this.$content.outerHeight())
             );
+            if (gap < 0) {
+                return;
+            }
             
-            // If there's a gap, tell Entries to load enough entries to exceed
-            // the infinite scroll margin, by finding height of one entry
-            this.entries.loadInfiniteScroll(
-                Math.ceil(gap / this.entries.entries[0].$el.outerHeight())
-            );
+            if (this.displayMode == MODE_LIST) {
+                // If there's a gap, tell Entries to load enough entries to
+                // exceed the infinite scroll margin
+                this.entries.loadNext(Math.ceil(gap / this.listItemHeight));
+                
+            } else if (this.displayMode == MODE_EXPANDED) {
+                var thisLayout = this;
+                this.entries.loadNext(function () {
+                    if (thisLayout.entries.pkUnloaded.length) {
+                        thisLayout.loadScreen();
+                    }
+                })
+            }
         },
         
         updateScrollTrigger: function () {
@@ -270,7 +320,7 @@ $(function () {
             
             // The entries will have resized
             this.entries.entriesResized();
-            this.ensureFullScreen();
+            this.loadScreen();
         },
     
         onScroll: function () {
@@ -313,7 +363,7 @@ $(function () {
             
             // Infinite scroll
             if (scrollTop > this.scrollInfiniteTrigger) {
-                this.entries.loadInfiniteScroll();
+                this.entries.loadNext();
             }
         },
         
@@ -338,6 +388,7 @@ $(function () {
     });
     
     function FeedList(layout, $el) {
+        var thisFeedList = this;
         this.layout = layout;
         this.$el = $el;
         
@@ -352,6 +403,34 @@ $(function () {
         this.defaultWidth = $dummyList.width();
         this.contentMargin = $dummyContent.css('margin-left');
         this.isOpen = $el.is(":visible");
+        
+        // Find elements
+        this.$feeds = $el.find('.yarr_feed_list_feeds');
+        this.$viewAll = $el.find('.yarr_feed_menu .yarr_view_all')
+            .click(function (e) {
+                e.preventDefault();
+                thisFeedList.selectFeed();
+            })
+        ;
+        
+        // Create Feeds from the items
+        this.feeds = {};
+        var $feedEls=this.$feeds.find('[data-yarr-feed]'),
+            pk, $feedEl
+        ;
+        for (var i=0, l=$feedEls.length; i<l; i++) {
+            $feedEl = $($feedEls[i]);
+            pk = $feedEl.data('yarr-feed');
+            this.feeds[pk] = Yarr.Feed.get(pk);
+            this.feeds[pk].init(this, $feedEl);
+        }
+        
+        // Find current feed
+        if (layout.options.initialFeed) {
+            this.current = Yarr.Feed.get(layout.options.initialFeed);
+        } else {
+            this.current = null;
+        }
     }
     FeedList.prototype = $.extend(FeedList.prototype, {
         fixLayout: function () {
@@ -360,6 +439,11 @@ $(function () {
                 'position': 'fixed',
                 'top':      this.layout.controlBottom,
                 'bottom':   this.$el.css('margin-top')
+            });
+            this.$feeds.css({
+                'position': 'absolute',
+                'top':      this.$feeds.position().top,
+                'bottom':   0
             });
             
             // Toggle the feed list visibility, if preference in cookies
@@ -426,29 +510,78 @@ $(function () {
             this.feedListShow = this.isOpen ? FEEDS_HIDDEN : FEEDS_VISIBLE;
             Yarr.Cookie.set('yarr-feedListShow', this.feedListShow);
         },
+        setUnread: function (pk, count) {
+            /** Set the unread count for the feed given by pk */
+            if (this.feeds[pk]) {
+                this.feeds[pk].setUnread(count);
+            }
+        },
+        selectFeed: function (feed) {
+            /** Select the specified Feed
+                To select all feeds, pass nothing or null
+            */
+            this.current = feed;
+            
+            // Tell the Layout to change the document and page titles
+            layout.setTitle(feed);
+            
+            // Show or hide the "View all feeds" button
+            this.$viewAll.toggle(!!feed);
+            
+            // Tell entries to load this feed
+            this.layout.entries.loadFeed(feed);
+        }
+    });
+
+    Yarr.Feed.prototype = $.extend(Yarr.Feed.prototype, {
+        init: function (feedList, $el) {
+            this.feedList = feedList;
+            this.$el = $el;
+            this.$unread = $el.find('.yarr_count_unread');
+            this.hasUnread = parseInt(this.$unread.text(), 10) === 0;
+            
+            var thisFeed = this;
+            this.text = this.$el.find('a')
+                .click(function (e) {
+                    e.preventDefault();
+                    feedList.selectFeed(thisFeed);
+                })
+                .text()
+            ;
+        },
+        setUnread: function (count) {
+            this.$el.toggleClass('yarr_feed_unread', count !== 0);
+            this.$unread.text(count);
+        }
     });
     
     
     function Entries(layout, $el) {
         this.layout = layout;
         this.$entries = $el;
-        this.pkLookup = {};
         
         // Options
         this.pageLength = layout.options.pageLength;
-        this.pkAvailable = layout.options.pkAvailable;
-        
-        // Split pkAvailable
-        if (!this.pkAvailable) {
-            this.pkAvailable = [];
-        } else {
-            this.pkAvailable = this.pkAvailable.split(',');
-        }
         
         // Initialise Entry classes
         this.entries = [];
-        for (var i=0, l=$el.length; i<l; i++) {
-            this.entryFromHtml($($el[i]));
+        var pkAvailable = layout.options.pkAvailable,
+            foundPks = {},
+            entry,
+            i, l = $el.length
+        ;
+        for (i=0; i<l; i++) {
+            entry = this.entryFromHtml($($el[i]));
+            foundPks[entry.pk] = true;
+        }
+        
+        // Generate list of unloaded pks
+        l = pkAvailable.length;
+        this.pkUnloaded = [];
+        for (i=0; i<l; i++) {
+            if (!foundPks[pkAvailable[i]]) {
+                this.pkUnloaded.push(pkAvailable[i]);
+            }
         }
         
         // Bind key events
@@ -461,12 +594,13 @@ $(function () {
     Entries.prototype = $.extend(Entries.prototype, {
         // Page length for API requests
         pageLength: null,
-        pkAvailable: null,
         
+        // List of unread pks
+        pkUnloaded: null,
+        
+        // Keep track of async requests to allow blocking and superceding
         loading: false,
-        finished: false,
-        pkLookup: null,
-        pkLast: 0,
+        loadId: 0,
         
         current: null,
         $current: null,
@@ -477,6 +611,59 @@ $(function () {
             var entry = Yarr.Entry.get($el.data('yarr-pk'));
             entry.init(this, $el);
             this.entries.push(entry);
+            return entry;
+        },
+        
+        loadFeed: function (feed) {
+            /** Discard the current entries and load the entries from the Feed
+                To load all feeds, pass null or undefined
+            */
+            if (feed) {
+                Yarr.Status.set('Loading feed...');
+            } else {
+                Yarr.Status.set('Loading all feeds...');
+            }
+            
+            // This feed load takes priority over any previous load
+            this.loading = true;
+            var thisEntries = this,
+                loadId = ++this.loadId,
+                feed_pks = feed ? [feed.pk] : []
+            ;
+            Yarr.API.getFeedsPks(
+                feed_pks,
+                this.layout.state,
+                this.layout.order,
+                function (pks) {
+                    if (loadId < thisEntries.loadId) {
+                        return;
+                    }
+                    thisEntries.loadPks(pks);
+                    thisEntries.loading = false;
+                },
+                function () {
+                    thisEntries.loading = false;
+                }
+            );
+        },
+        loadPks: function (pks) {
+            /** Change the available pks to those specified
+                Discard the current entries and load enough entries from the
+                new pks to fill a page
+            */
+            Yarr.Status.set('Loading entries...');
+            this.pkUnloaded = pks;
+            
+            // Remove entries
+            this.entries = [];
+            this.$entries.remove();
+            this.$entries = $();
+            
+            // Reset all other vars
+            this.loading = false;
+            
+            // Load a screen full of entries
+            this.layout.loadScreen();
         },
         
         handleScroll: function (top) {
@@ -495,28 +682,32 @@ $(function () {
                 }
             }
         },
-        loadInfiniteScroll: function (loadNumber) {
-            /** Infinite scroll loader
-                Called when it is time to load more entries
-            */
-            var thisEntries = this;
+        loadNext: function (loadNumber, successFn) {
+            /** Load next page of entries, if possible
             
-            // Don't do anything if:
-            //  * there are no entries at all,
-            //  * we're already trying to load more, or
-            //  * there is no more to load
-            if (this.entries.length === 0 || this.loading || this.finished) {
+                Arguments:
+                    loadNumber  Number of entries to load
+                                Defaults to page length, API_PAGE_LENGTH
+                    isMore      Boolean to determine whether this is a
+                                first load, or an infinite load for more
+            */
+            // Don't do anything if already loading, or nothing more to load
+            if (this.loading || this.pkUnloaded.length === 0) {
                 return;
             }
+            
+            // Check if just sent successFn
+            if (typeof(loadNumber) == "function") {
+                successFn = loadNumber;
+                loadNumber = null;
+            }
+            
+            var thisEntries = this,
+                loadId = ++this.loadId,
+                isMore = (this.entries.length !== 0)
+            ;
             this.loading = true;
             
-            // Build list of visible PKs
-            var $entry, i, len = this.entries.length;
-            for (i=this.pkLast; i<len; i++) {
-                $entry = $(this.entries[i].$el);
-                this.pkLookup[$entry.data('yarr-pk')] = $entry;
-            }
-            this.pkLast = this.entries.length;
             
             // Default loadNumber to pageLength - may be higher in list mode
             if (!loadNumber) {
@@ -524,18 +715,28 @@ $(function () {
             }
             
             // Decide which pks to get next
-            var pkRequest = [];
-            len = this.pkAvailable.length;
-            for (i=0; i<len && pkRequest.length<loadNumber; i++) {
-                if (!this.pkLookup[this.pkAvailable[i]]) {
-                    pkRequest.push(this.pkAvailable[i]);
-                }
-            }
+            var num = Math.min(this.pkUnloaded.length, loadNumber),
+                pkRequest = this.pkUnloaded.slice(0, num)
+            ;
+            this.pkUnloaded = this.pkUnloaded.slice(num);
             
+            // If there is nothing to request, handle correctly
             if (pkRequest.length === 0) {
-                Yarr.Status.set('No more entries to load');
-                this.loading = false;
-                this.finished = true;
+                if (isMore) {
+                    Yarr.Status.set('No more entries to load');
+                } else {
+                    Yarr.Status.set('Feed is empty');
+                    var state = thisEntries.layout;
+                    thisEntries.$entries = $('<p/>')
+                        .text(
+                            'No' + (
+                                (state == ENTRY_UNREAD) ? ' unread' :
+                                (state == ENTRY_SAVED) ? ' saved' : ''
+                            ) + ' items'
+                        )
+                        .appendTo(thisEntries.layout.$content)
+                    ;
+                }
                 return;
             }
             
@@ -543,29 +744,30 @@ $(function () {
             Yarr.Status.set('Loading...');
             Yarr.API.getEntries(
                 pkRequest,
+                this.layout.order,
                 function (entries) {
                     /** Entries loaded */
-                    thisEntries.loading = false;
-                    
-                    // Catch no more entries
-                    var count = entries.length;
-                    if (count === 0) {
-                        Yarr.Status.set('No more entries to load');
-                        thisEntries.finished = true;
+                    // Check this load call hasn't been superseded
+                    if (loadId < thisEntries.loadId) {
                         return;
                     }
+                    thisEntries.loading = false;
                     
                     // Add HTML of entries
-                    var $entries = [];
-                    for (var i=0; i<count; i++) {
-                        var $entry = $(entries[i].html).appendTo(thisEntries.layout.$content);
+                    for (var i=0, l=entries.length; i<l; i++) {
+                        var $entry = $(entries[i].html)
+                            .appendTo(thisEntries.layout.$content)
+                        ;
                         thisEntries.entryFromHtml($entry);
-                        $entries.push($entry);
+                        thisEntries.$entries = thisEntries.$entries.add($entry);
                     }
                     
-                    // Update $entries and recalc size
-                    thisEntries.$entries.add($entries);
+                    // Recalc size
                     thisEntries.entriesResized();
+                    if (successFn) {
+                        successFn();
+                    }
+                    
                 }, function () {
                     /** API list load: failure */
                     thisEntries.loading = false;
@@ -608,7 +810,7 @@ $(function () {
             
             // If this is the last entry, try to load more
             if (index == this.entries.length - 1) {
-                this.loadInfiniteScroll();
+                this.loadNext();
             }
         },
         selectNext: function () {
@@ -749,15 +951,7 @@ $(function () {
             var counts = data['feed_unread'];
             for (var pk in counts) {
                 var count = counts[pk];
-                this.entries.layout.$feedList
-                    .find('[data-yarr-feed=' + pk + ']')
-                    .each(function() {
-                        $(this)
-                            .toggleClass('yarr_feed_unread', count !== 0)
-                            .find('.yarr_count_unread').text(count)
-                        ;
-                    })
-                ;
+                this.entries.layout.feedList.setUnread(pk, count);
             }
         },
         

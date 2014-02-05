@@ -1,6 +1,6 @@
-===============================
-Upgrading Django Yarr to 0.3.14
-===============================
+==============================
+Upgrading Django Yarr to 0.4.0
+==============================
 
 1. Check which version of Yarr you are upgrading from:
 
@@ -10,7 +10,7 @@ Upgrading Django Yarr to 0.3.14
 
 2. Upgrade the yarr package:
 
-    pip install -e git+https://github.com/radiac/django-yarr.git@0.3.14#egg=django-yarr
+    pip install -e git+https://github.com/radiac/django-yarr.git@0.4.0#egg=django-yarr
 
 3. Follow all sections of the the instructions below until you reach an earlier
    version than the one you are upgrading from (found in step 1)
@@ -26,11 +26,19 @@ Run::
 
     python manage.py migrate yarr
     
+
+New settings are available:
+
+  * ``YARR_TITLE_TEMPLATE`` to update the document title (window and tabs)
+  * ``YARR_TITLE_SELECTOR`` to update the page title (in your template)
+
+
 If you have customised your installation of yarr, you may be affected by the
 following changes:
 
-  * In ``list_entries.html``, ``span.yarr_count_unread`` is now a sibling of
-    ``yarr_feed_unread a`` instead of a child
+  * In ``list_entries.html``:
+    * ``div.yarr_feed_list`` has had several structural and styling changes
+    * The data attributes on ``div.yarr_con`` have been removed
   * The ``Entry`` model attributes ``.read`` and ``.saved`` have been replaced
     by ``.state``, with corresponding constants in ``constants.py``
   * The views ``mark_read`` and ``mark_saved`` have been replaced by
@@ -38,8 +46,8 @@ following changes:
   * The named url ``yarr-mark_unsaved`` has been removed, and state urls now
     start with the prefix ``state/``
   * The API calls for entries have changed to use the new state attribute
-  * The template ``include/entry.html`` now passes ``data-yarr-state`` instead
-    of read and saved
+  * The template ``include/entry.html`` now sets the attr ``data-yarr-state``,
+    instead of ``data-yarr-read`` and ``data-yarr-saved``
   * The script ``static/yarr/js/list_entries.js`` has been refactored
 
 

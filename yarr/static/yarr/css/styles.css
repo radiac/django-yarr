@@ -63,6 +63,7 @@ ul.yarr_entry_control li {
     margin-right:   0;
 }
 
+
 .yarr_control li a,
 .yarr_control li span {
     display:    block;
@@ -208,8 +209,13 @@ ul.yarr_entry_control li label input {
     width: 15em;
     border: 1px solid #ccc;
     margin: 1em 0 0 0;
-    overflow-y:   scroll;
 }
+.yarr_feed_list_feeds {
+    left:   0;
+    right:  0;
+    overflow-y: scroll;
+}
+
 .yarr_content {
     margin-left:    16em;
 }
@@ -238,6 +244,13 @@ ul.yarr_entry_control li label input {
     overflow:       hidden;
     text-overflow:  ellipsis;
 }
+
+.yarr_feed_menu li a.yarr_disabled {
+    color:  #ccc;
+    cursor: default;
+    text-decoration: none;
+}
+
 
 .yarr_feed_unread {
     font-weight:    bold;

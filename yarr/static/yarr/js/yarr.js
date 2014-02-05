@@ -4,10 +4,13 @@ var YARR = (function () {
     */
     
     // Constants, must match server-side values
-    var ENTRY_UNREAD = 0,
-        ENTRY_READ = 1,
-        ENTRY_SAVED = 2
-    ;
+    var constants = {
+        ENTRY_UNREAD:   0,
+        ENTRY_READ:     1,
+        ENTRY_SAVED:    2,
+        ORDER_ASC:      'asc',
+        ORDER_DESC:     'desc'
+    };
     
     // Get config and apply defaults
     var config = window.YARR_CONFIG;
@@ -20,9 +23,8 @@ var YARR = (function () {
     
     // Prep globals
     var Yarr = {
-        ENTRY_UNREAD:   ENTRY_UNREAD,
-        ENTRY_READ:     ENTRY_READ,
-        ENTRY_SAVED:    ENTRY_SAVED
+        constants:      constants,
+        config:         config
     };
     
     // Additional initialisation on DOM ready
@@ -111,8 +113,12 @@ var YARR = (function () {
             $.getJSON(root_url + api_call + '/', data)
                 .done(function(json) {
                     Yarr.Status.set(json.msg, !json.success);
-                    if (successFn) {
-                        successFn(json);
+                    if (json.success) {
+                        if (successFn) {
+                            successFn(json);
+                        }
+                    } else if (failFn) {
+                        failFn(json.msg);
                     }
                 })
                 .fail(function(jqxhr, textStatus, error ) {
@@ -154,12 +160,35 @@ var YARR = (function () {
                 );
             },
             
-            getEntry: function (entry, successFn, failFn) {
-                Yarr.API.getEntries([entry.pk], successFn, failFn);
+            getFeedPks: function (feed, state, order, successFn, failFn) {
+                Yarr.API.getFeedsPks([feed.pk], state, order, successFn, failFn);
             },
-            getEntries: function (entry_pks, successFn, failFn) {
+            getFeedsPks: function (feed_pks, state, order, successFn, failFn) {
                 request(
-                    'entry/get', {'entry_pks': entry_pks.join(',')},
+                    'feed/pks', {
+                        'feed_pks': feed_pks.join(','),
+                        'state':    state,
+                        'order':    order
+                    },
+                    function (json) {
+                        if (successFn) {
+                            successFn(json.pks);
+                        }
+                    }, failFn
+                );
+            },
+            
+            getEntry: function (entry, successFn, failFn) {
+                Yarr.API.getEntries(
+                    [entry.pk], constants.ORDER_DESC, successFn, failFn
+                );
+            },
+            getEntries: function (entry_pks, order, successFn, failFn) {
+                request(
+                    'entry/get', {
+                        'entry_pks': entry_pks.join(','),
+                        'order': order
+                    },
                     function (json) {
                         // Load data into Entry instances
                         var pk, entry, entries=[], key, data;
@@ -192,13 +221,13 @@ var YARR = (function () {
             },
             
             unreadEntries: function (entry_pks, successFn, failFn) {
-                Yarr.API.setEntries(entry_pks, ENTRY_UNREAD, successFn, failFn);
+                Yarr.API.setEntries(entry_pks, constants.ENTRY_UNREAD, successFn, failFn);
             },
             readEntries: function (entry_pks, successFn, failFn) {
-                Yarr.API.setEntries(entry_pks, ENTRY_READ, successFn, failFn);
+                Yarr.API.setEntries(entry_pks, constants.ENTRY_READ, successFn, failFn);
             },
             saveEntries: function (entry_pks, successFn, failFn) {
-                Yarr.API.setEntries(entry_pks, ENTRY_SAVED, successFn, failFn);
+                Yarr.API.setEntries(entry_pks, constants.ENTRY_SAVED, successFn, failFn);
             },
             
             setEntries: function (entry_pks, state, successFn, failFn) {
@@ -216,22 +245,25 @@ var YARR = (function () {
         this.pk = pk;
         this.loaded = false;
     });
-    Yarr.Feed.prototype = {
+    Yarr.Feed.prototype = $.extend(Yarr.Feed.prototype, {
         load: function (successFn, failFn) {
             /** Load feed data */
             if (this.loaded) {
                 return successFn();
             }
             Yarr.API.getFeed(this, successFn, failFn);
+        },
+        toString: function () {
+            return this.text || this.title || 'untitled';
         }
-    };
+    });
     
     /** Entry object */
     Yarr.Entry = Yarr.multiton(function (pk) {
         this.pk = pk;
         this.loaded = false;
     });
-    Yarr.Entry.prototype = {
+    Yarr.Entry.prototype = $.extend(Yarr.Entry.prototype, {
         load: function (successFn, failFn) {
             /** Load entry data */
             if (this.loaded) {
@@ -239,7 +271,7 @@ var YARR = (function () {
             }
             Yarr.API.getEntry(this, successFn, failFn);
         }
-    };
+    });
     
     
     /** Cookie management */

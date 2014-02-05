@@ -5,13 +5,13 @@ Django Yarr Changes
 Changelog
 =========
 
-0.3.14      2014-02-03  See UPGRADE
-            Feature:    Simplified save/read state
+0.4.0       2014-02-05  See UPGRADE
+            Feature:    Change feeds without changing page (fixes #27)
+            Feature:    Simplified save/read state, save indicated in list mode
             Bugfix:     Changed Entry .save and .read to .state (fixes #35)
             Bugfix:     Added Feed.text for user-customisable title (fixes #34)
             Bugfix:     Unread count updates correctly when reading items
             Bugfix:     Unread count shows next to abreviated feed
-            Internal:   Refactored list_entries.js
 
 0.3.13      2014-01-05  See UPGRADE
             Feature:    Changed check_feeds --force to also force a db update
@@ -132,7 +132,16 @@ Roadmap
 =======
 
 Target
-0.4.0       Drop support for Django 1.3
+0.4.x       Update URL history to reflect state
+            Server-side user options
+            * Move in cookies and order flag
+            Ajax mark all read
+            Customise HTML sanitiser to support:
+            * Support whitelist of embedded media (eg youtube)
+            * Delay image loading
+            * Improve render time
+            De-dupe multiple feeds with the same URL before checking
+0.5.0       Drop support for Django 1.3
             Introduce timezone support for Django 1.4 and later
             Simplify template if statements with elif
             Display times according to user timezone, not server
@@ -141,15 +150,10 @@ Target
             * Default sort order
             * Open links in new tab (#22)
             * JS options
-0.5.0       Feed categorisation and entry tags
-0.5.x       Ajax mark all read
-            Customise HTML sanitiser to support:
-            * Support whitelist of embedded media (eg youtube)
-            * Delay image loading
-            * Improve render time
-            De-dupe multiple feeds with the same URL before checking
+0.6.0       Feed categorisation and entry tags
 1.0.0       Stable release, make available on PyPI
 1.1.0       Adaptive feed check frequency, with smarter spacing to spread load
+1.2.0       Support for i18n
 
 The roadmap is subject to change; if a lot of people let me know that something
 is a priority, I will try to move it up the list.

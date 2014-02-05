@@ -10,7 +10,7 @@
 {% if yarr_settings.add_jquery %}
 <script src="{{ STATIC_URL }}yarr/js/jquery-1.10.1.min.js"></script>
 {% endif %}
-<script>YARR_CONFIG={{ yarr_settings.config|safe }};</script>
+<script>YARR_CONFIG={{ yarr_settings.config|safe|default:'{}' }};</script>
 {% endblock %}
 
 {% block title %}{{ title }}{% endblock %}
