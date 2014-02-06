@@ -6,12 +6,16 @@ Changelog
 =========
 
 0.4.0       2014-02-05  See UPGRADE
-            Feature:    Change feeds without changing page (fixes #27)
+            Feature:    Simplified control bar
+            Feature:    Can now change feeds without reloading page (fixes #27)
+            Feature:    Can now change filter and order without reloading page
             Feature:    Simplified save/read state, save indicated in list mode
             Bugfix:     Changed Entry .save and .read to .state (fixes #35)
             Bugfix:     Added Feed.text for user-customisable title (fixes #34)
             Bugfix:     Unread count updates correctly when reading items
             Bugfix:     Unread count shows next to abreviated feed
+            Bugfix:     Feed toggle correctly determines feedlist width
+            Internal:   Refactored list_entries.js
 
 0.3.13      2014-01-05  See UPGRADE
             Feature:    Changed check_feeds --force to also force a db update

@@ -14,7 +14,7 @@
 
 {% block yarr_control %}
     <div class="yarr_control">
-        <ul class="yarr_menu_filter">
+        <ul class="yarr_menu_state">
             <li><a href="{% url 'yarr-list_all' %}{% if order_asc %}?order={{ constants.ORDER_ASC }}{% endif %}"{% if state == None %} class="yarr_selected"{% endif %}>All</a></li>
             <li><a href="{% url 'yarr-list_unread' %}{% if order_asc %}?order={{ constants.ORDER_ASC }}{% endif %}"{% if state == constants.ENTRY_UNREAD %} class="yarr_selected"{% endif %}>Unread</a></li>
             <li><a href="{% url 'yarr-list_saved' %}{% if order_asc %}?order={{ constants.ORDER_ASC }}{% endif %}"{% if state == constants.ENTRY_SAVED %} class="yarr_selected"{% endif %}>Saved</a></li>

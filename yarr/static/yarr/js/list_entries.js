@@ -111,7 +111,11 @@ $(function () {
         this.setupControl();
         if (this.layoutFixed) {
             this.fixLayout();
+            // Set up the feed list with initial visibility preference
             this.feedList.fixLayout();
+            if (this.feedList.feedListShow) {
+                this.feedList.toggle(this.feedList.feedListShow);
+            }
         }
         var thisLayout = this;
         this.$scroller
@@ -136,31 +140,87 @@ $(function () {
         // Height of an item when in list mode
         listItemHeight: 0,
         
+        // Control bar menu and nav lists
+        $menu: null,
+        $nav: null,
+        
         setupControl: function () {
-            /** Remove pagination links, add scroll buttons */
-            
-            // Adds infinite scroll support, so disable pagination links
-            this.$control.find('.yarr_paginated').remove();
-            
-            // Add mode switch and initialise
+            /** Set up top control bar for JavaScript management */
             var thisLayout = this;
-            this.modeButton = this._mkButton(
-                'Mode',
-                function () {
-                    thisLayout.switchMode(
-                        (thisLayout.displayMode == MODE_LIST)
-                        ? MODE_EXPANDED : MODE_LIST
-                    );
-                }
-            );
-            $('<ul class="yarr_menu_mode" />')
-                .append($('<li/>').append(this.modeButton))
-                .insertAfter(this.$control.find('.yarr_menu_op'))
+            
+            // Remove all existing buttons
+            this.$control.empty();
+            
+            // Build new menu list
+            this.$menu = $('<ul class="yarr_menu">')
+                .appendTo(this.$control)
             ;
+            
+            // Build feed settings dropdown
+            var $addFeed = this.feedList.$el.find('.yarr_add_feed'),
+                $manageFeeds = this.feedList.$el.find('.yarr_manage_feeds')
+            ;
+            this.settingsDropDown = new DropDown(
+                [
+                    [$addFeed.text(), $addFeed.attr('href'), true],
+                    [$manageFeeds.text(), $manageFeeds.attr('href'), true]
+                ]
+            );
+            $addFeed.add($manageFeeds).parent().remove();
+            this.settingsDropDown.setLabel(
+                '<span class="yarr_button_settings" title="Settings">&nbsp;</span>'
+            );
+            this.$menu.append(this.settingsDropDown.asLi());
+            
+            // Add mode switch menu
+            this.settingsDropDown.addMenu(
+                'mode',
+                [
+                    ['Expanded view', MODE_EXPANDED],
+                    ['List view', MODE_LIST]
+                ],
+                function (value) {
+                    thisLayout.switchMode(value);
+                },
+                this.displayMode
+            );
             this.switchMode(this.displayMode);
             
+            // Add ordering 
+            this.settingsDropDown.addMenu(
+                'order',
+                [
+                    ['Newest first', Yarr.constants.ORDER_DESC],
+                    ['Oldest first', Yarr.constants.ORDER_ASC]
+                ],
+                function (value) {
+                    thisLayout.setOrder(value);
+                },
+                this.order
+            );
+            
+            // Build state dropdown
+            this.stateDropDown = new DropDown(
+                [
+                    ['All items', null],
+                    ['Unread items', ENTRY_UNREAD],
+                    ['Saved items', ENTRY_SAVED]
+                ],
+                function (state) {
+                    if (state == thisLayout.state) {
+                        return;
+                    }
+                    thisLayout.state = state;
+                    thisLayout.entries.loadFeed(thisLayout.feedList.current);
+                },
+                this.state
+            );
+            this.$menu.append(this.stateDropDown.asLi());
+            
+            
+            
             // Add next/prev buttons
-            $('<ul class="yarr_nav"/>')
+            this.$nav = $('<ul class="yarr_nav"/>')
                 .append($('<li/>').append(
                     this._mkIconButton('yarr_previous', function () {
                         return thisLayout.entries.selectPrevious();
@@ -174,27 +234,24 @@ $(function () {
                 ))
                 .appendTo(this.$control)
             ;
-            
-            // Calculate entry margin for autoscrolling
-            this.controlBottom = this.$control.offset().top + this.$control.outerHeight();
-            this.entryMargin = this.feedList.$el.offset().top - this.controlBottom;
         },
         fixLayout: function () {
             /** Prepare fixed layout */
             
             // Add feed switch and initialise
             var thisLayout = this;
-            $('<ul class="yarr_menu_feed"/ >')
-                .append($('<li/>').append(
-                    this._mkButton('Feeds', function () {
+            this.$menu.prepend(
+                (new Button(
+                    '<span class="yarr_button_feeds" title="Feeds">&nbsp;</span>',
+                    null, function () {
                         thisLayout.feedList.toggle();
                     })
-                ))
-                .insertBefore(this.$control.find('.yarr_menu_filter'))
-            ;
+                ).asLi()
+            );
             
             // Clone control bar ready for fixed position
             // Need to clone so the original can stay in position
+            // ++ Padding on .yarr_control shifts off center
             this.$controlFixed = this.$control
                 .clone(true)
                 .insertAfter(this.$control)
@@ -211,10 +268,8 @@ $(function () {
             // Switch the mode
             if (newMode == MODE_LIST) {
                 this.$content.addClass('yarr_mode_list');
-                this.modeButton.text('Expanded view');
             } else {
                 this.$content.removeClass('yarr_mode_list');
-                this.modeButton.text('List view');
             }
             
             // Update var and cookie
@@ -227,7 +282,13 @@ $(function () {
             // Ensure full screen
             this.loadScreen();
         },
-        
+        setOrder: function (order) {
+            if (order == this.order) {
+                return;
+            }
+            this.order = order;
+            this.entries.reload();
+        },
         setTitle: function (feed) {
             var title = 'all items';
             if (this.state == ENTRY_UNREAD) {
@@ -306,6 +367,10 @@ $(function () {
                 controlHeight = this.$control.outerHeight()
             ;
             
+            // Calculate entry margin for autoscrolling
+            this.controlBottom = this.$control.offset().top + this.$control.outerHeight();
+            this.entryMargin = this.feedList.$el.offset().top - this.controlBottom;
+            
             // Find position of controlTop and scrollCutoff (may have changed)
             this.controlTop = controlOffset.top;
             this.scrollCutoff = controlHeight + scrollSwitchMargin;
@@ -318,12 +383,18 @@ $(function () {
                 });
             }
             
+            // Update feedlist
+            this.feedList.resized();
+            
             // The entries will have resized
             this.entries.entriesResized();
             this.loadScreen();
+            
+            // May have affected scroll position
+            this.onScroll(true);
         },
     
-        onScroll: function () {
+        onScroll: function (force) {
             /** Event handler for scrolling */
             var scrollTop = this.$scroller.scrollTop(),
                 topCutoff = scrollTop + this.scrollCutoff,
@@ -335,7 +406,7 @@ $(function () {
                 if (scrollTop > this.controlTop) {
                     // Fixed layout
                     // Only change if changed
-                    if (!this.controlIsFixed) {
+                    if (force || !this.controlIsFixed) {
                         // Switch control bar to fixed position
                         this.$controlFixed.show();
                         this.controlIsFixed = true;
@@ -347,7 +418,7 @@ $(function () {
                 } else {
                     // Relative layout
                     // Only switch bars if changed
-                    if (this.controlIsFixed) {
+                    if (force || this.controlIsFixed) {
                         // Switch control bar to relative position
                         this.$controlFixed.hide();
                         this.controlIsFixed = false;
@@ -387,6 +458,161 @@ $(function () {
        
     });
     
+    function Button(label, className, fn) {
+        this.label = label;
+        this.className = className || 'button';
+        this.clickFn = fn;
+        var thisButton = this;
+        this.$el = $(
+            '<a href="#" class="' + this.className + '">' + this.label + '</a>'
+        )
+            .click(function (e) {
+                e.preventDefault();
+                thisButton.clickFn(e);
+            })
+        ;
+    }
+    Button.prototype = $.extend(Button.prototype, {
+        setLabel: function (label) {
+            this.label = label;
+            this.$el.html(label);
+        },
+        asLi: function () {
+            return $('<li/>').append(this.$el);
+        }
+    });
+    
+    function Menu(options, fn, current) {
+        /**
+            options     List of tuples
+                            [label, value, valueIsHref]
+                        If valueIsHref, will be a straight link,
+                        otherwise will try to call fn arg
+            fn          Function to call if option not an href
+                        [label, value]  ->  fn(value, label)
+            current     Current value (undefined for no current value)
+        */
+        var thisMenu = this;
+        this.options = options;
+        this.selectFn = fn;
+        
+        this.$options = $();
+        for (var i=0, $a; i<options.length; i++) {
+            if (options[i][2]) {
+                $a = $('<a href="' + options[i][1] + '">' + options[i][0] + '</a>');
+            } else {
+                $a = $('<a href="#">' + options[i][0] + '</a>').click(
+                    function (e) {
+                        e.preventDefault();
+                        thisMenu.select($(this).parent().index());
+                    }
+                );
+            }
+            this.$options = this.$options.add($a);
+        }
+        if (current !== undefined) {
+            this.setValue(current);
+        }
+    }
+    Menu.prototype = $.extend(Menu.prototype, {
+        setValue: function (value) {
+            this.value = value;
+            for (var i=0; i<this.options.length; i++) {
+                if (this.options[i][1] == value) {
+                    this.render(i);
+                    return this.options[i][0];
+                }
+            }
+        },
+        select: function (index) {
+            this.render(index);
+            this.value = this.options[index][1];
+            this.selectFn(this.value, this.options[index][0]);
+        },
+        render: function (index) {
+            this.$options.removeClass('yarr_selected');
+            $(this.$options[index]).addClass('yarr_selected');
+        },
+        asUl: function () {
+            var $ul = $('<ul/>');
+            for (var i=0, l=this.$options.length; i<l; i++) {
+                $ul.append(
+                    $('<li/>').append($(this.$options[i]))
+                );
+            }
+            return $ul;
+        }
+    });
+    
+    function DropDown(options, fn, current) {
+        var thisDropDown = this;
+        this.isOpen = false;
+        
+        this.detectClick = function (e) {
+            if (e.target == thisDropDown.$el[0]) {
+                return;
+            }
+            thisDropDown.close();
+        };
+        
+        // Create button
+        Button.call(this, '', 'yarr_dropdown', function (e) {
+            if (!thisDropDown.isOpen) {
+                thisDropDown.open();
+            } else {
+                thisDropDown.close();
+            }
+        });
+        
+        // Create menu element
+        this.$menu = $('<div class="yarr_dropdown_menu"/>');
+        this.added = false;
+        
+        this.menus = {};
+        this.addMenu(null, options, fn);
+        this.defaultMenu = this.menus[null];
+        if (current !== undefined) {
+            this.setValue(current);
+        }
+    }
+    DropDown.prototype = $.extend(new Button(), DropDown.prototype, {
+        addMenu: function (id, options, fn, current) {
+            var thisDropDown = this;
+            var menu = new Menu(options, function (value, label) {
+                if (menu == thisDropDown.defaultMenu) {
+                    thisDropDown.setLabel(label);
+                }
+                fn(value, label);
+            }, current);
+            this.menus[id] = menu;
+            this.$menu.append(menu.asUl());
+        },
+        
+        setValue: function (value) {
+            this.value = value;
+            var label = this.defaultMenu.setValue(value);
+            this.setLabel(label);
+        },
+        open: function () {
+            this.isOpen = true;
+            if (!this.added) {
+                this.$menu.appendTo($('body'));
+                this.added = true;
+            }
+            var buttonPos = this.$el.offset();
+            this.$menu.css({
+                'top':  buttonPos.top + this.$el.outerHeight() - 1,
+                'left': buttonPos.left
+            }).show();
+            $(document).on('click', this.detectClick);
+        },
+        close: function () {
+            this.isOpen = false;
+            this.$menu.hide();
+            $(document).off('click', this.detectClick);
+        }
+    });
+    
     function FeedList(layout, $el) {
         var thisFeedList = this;
         this.layout = layout;
@@ -395,19 +621,16 @@ $(function () {
         // Load options
         this.feedListShow = layout.options.feedListShow;
         
-        // Detect values, using dummy elements where necessary
-        var $dummyList = $('<div class="yarr_feed_list">&nbsp;</div>'),
-            $dummyContent = $('<div class="yarr_content">&nbsp;</div>')
-        ;
-        this.defaultPosition = $dummyList.css('position');
-        this.defaultWidth = $dummyList.width();
-        this.contentMargin = $dummyContent.css('margin-left');
-        this.isOpen = $el.is(":visible");
+        // Detect values
+        this.updatePositions();
         
         // Find elements
         this.$feeds = $el.find('.yarr_feed_list_feeds');
         this.$viewAll = $el.find('.yarr_feed_menu .yarr_view_all')
             .click(function (e) {
+                if (thisFeedList.$viewAll.hasClass('yarr_disabled')) {
+                    return;
+                }
                 e.preventDefault();
                 thisFeedList.selectFeed();
             })
@@ -433,6 +656,27 @@ $(function () {
         }
     }
     FeedList.prototype = $.extend(FeedList.prototype, {
+        // The y offset for the absolute-positioned feeds menu
+        feedsOffset: null,
+        
+        updatePositions: function () {
+            // Detect values using dummy elements
+            var $dummyList = $('<div class="yarr_feed_list">&nbsp;</div>')
+                    .css('display', 'block')
+                    .insertAfter(this.$el),
+                $dummyContent = $('<div class="yarr_content">&nbsp;</div>')
+                    .insertAfter(this.layout.$content)
+            ;
+            this.defaultPosition = $dummyList.css('position');
+            this.defaultWidth = $dummyList.width();
+            this.contentMargin = $dummyContent.css('margin-left');
+            $dummyList.remove();
+            $dummyContent.remove();
+            
+            // Detect state
+            this.isOpen = this.$el.is(":visible");
+            this.isNarrow = (this.defaultPosition == 'relative');
+        },
         fixLayout: function () {
             // Prepare the fixed feedList
             this.$el.css({
@@ -440,21 +684,37 @@ $(function () {
                 'top':      this.layout.controlBottom,
                 'bottom':   this.$el.css('margin-top')
             });
+            if (!this.feedsOffset) {
+                this.feedsOffset = this.$feeds.position().top;
+            }
             this.$feeds.css({
                 'position': 'absolute',
-                'top':      this.$feeds.position().top,
+                'top':      this.feedsOffset,
                 'bottom':   0
             });
-            
-            // Toggle the feed list visibility, if preference in cookies
-            if (this.feedListShow) {
-                this.toggle(this.feedListShow);
+        },
+        resized: function () {
+            this.updatePositions();
+            if (this.layout.layoutFixed) {
+                this.fixLayout();
+                
+                if (this.isOpen && !this.isNarrow) {
+                    this.$el.css('width', this.defaultWidth);
+                    this.layout.$content.css('margin-left', this.contentMargin);
+                } else {
+                    this.$el.css('width', 0);
+                    this.layout.$content.css('margin-left', 0);
+                }
             }
         },
         toggle: function (to) {
             /** Toggle the visibility of the feed list
                 Only available if layoutFixed
             */
+            if (!this.layout.layoutFixed) {
+                return;
+            }
+            
             // Current state is determined by checking for element visibility
             // This allows the CSS to decide the default status with media rules
             var thisFeedList = this,
@@ -470,13 +730,11 @@ $(function () {
             this.isOpen = !this.isOpen;
             
             // Special action for mobile layout
-            if (this.defaultPosition == 'relative') {
+            if (this.isNarrow) {
                 if (this.isOpen) {
                     this.$el.slideDown(speed);
                 } else {
-                    this.$el.slideUp(speed, function () {
-                        this.$el.removeAttr('style');
-                    });
+                    this.$el.slideUp(speed);
                 }
                 return;
             }
@@ -485,17 +743,10 @@ $(function () {
             if (this.isOpen) {
                 this.$el
                     .show()
-                    .animate({'width': this.defaultWidth}, function () {
-                        thisFeedList.$el.removeAttr('style');
-                    })
+                    .animate({'width': this.defaultWidth})
                 ;
                 this.layout.$content
-                    .animate(
-                        {'margin-left': this.contentMargin},
-                        function () {
-                            thisFeedList.layout.$content.removeAttr('style');
-                        }
-                    )
+                    .animate({'margin-left': this.contentMargin})
                 ;
                 
             } else {
@@ -507,7 +758,7 @@ $(function () {
             
             // Save the current display configuration in a cookie
             // This will disable initial auto-sensing between screen sizes,
-            this.feedListShow = this.isOpen ? FEEDS_HIDDEN : FEEDS_VISIBLE;
+            this.feedListShow = this.isOpen ? FEEDS_VISIBLE : FEEDS_HIDDEN;
             Yarr.Cookie.set('yarr-feedListShow', this.feedListShow);
         },
         setUnread: function (pk, count) {
@@ -522,11 +773,16 @@ $(function () {
             */
             this.current = feed;
             
+            // Hide bar if in narrow screen mode
+            if (this.isNarrow) {
+                this.toggle(FEEDS_HIDDEN);
+            }
+            
             // Tell the Layout to change the document and page titles
             layout.setTitle(feed);
             
             // Show or hide the "View all feeds" button
-            this.$viewAll.toggle(!!feed);
+            this.$viewAll.toggleClass('yarr_disabled', !feed);
             
             // Tell entries to load this feed
             this.layout.entries.loadFeed(feed);
@@ -602,6 +858,7 @@ $(function () {
         loading: false,
         loadId: 0,
         
+        // Currently selected entry
         current: null,
         $current: null,
         entryBottoms: null,
@@ -614,6 +871,10 @@ $(function () {
             return entry;
         },
         
+        reload: function () {
+            /** Reload the current feed */
+            this.loadFeed(this.layout.feedList.current);
+        },
         loadFeed: function (feed) {
             /** Discard the current entries and load the entries from the Feed
                 To load all feeds, pass null or undefined
@@ -691,8 +952,25 @@ $(function () {
                     isMore      Boolean to determine whether this is a
                                 first load, or an infinite load for more
             */
+            var thisEntries = this,
+                isMore = (this.entries.length !== 0)
+            ;
+            
             // Don't do anything if already loading, or nothing more to load
             if (this.loading || this.pkUnloaded.length === 0) {
+                if (isMore) {
+                    Yarr.Status.set('No more entries to load');
+                } else {
+                    var msg = 'No' + (
+                        (this.layout.state == ENTRY_UNREAD) ? ' unread' :
+                        (this.layout.state == ENTRY_SAVED) ? ' saved' : ''
+                    ) + ' items'
+                    Yarr.Status.set(msg);
+                    thisEntries.$entries = $('<p/>')
+                        .text(msg)
+                        .appendTo(thisEntries.layout.$content.empty())
+                    ;
+                }
                 return;
             }
             
@@ -702,10 +980,7 @@ $(function () {
                 loadNumber = null;
             }
             
-            var thisEntries = this,
-                loadId = ++this.loadId,
-                isMore = (this.entries.length !== 0)
-            ;
+            var loadId = ++this.loadId;
             this.loading = true;
             
             
@@ -720,23 +995,9 @@ $(function () {
             ;
             this.pkUnloaded = this.pkUnloaded.slice(num);
             
-            // If there is nothing to request, handle correctly
+            // Would be weird to get here with nothing to request, but
+            // handle it just in case
             if (pkRequest.length === 0) {
-                if (isMore) {
-                    Yarr.Status.set('No more entries to load');
-                } else {
-                    Yarr.Status.set('Feed is empty');
-                    var state = thisEntries.layout;
-                    thisEntries.$entries = $('<p/>')
-                        .text(
-                            'No' + (
-                                (state == ENTRY_UNREAD) ? ' unread' :
-                                (state == ENTRY_SAVED) ? ' saved' : ''
-                            ) + ' items'
-                        )
-                        .appendTo(thisEntries.layout.$content)
-                    ;
-                }
                 return;
             }
             
@@ -966,7 +1227,7 @@ $(function () {
             }
         },
         onContentClick: function (e) {
-            this.entries.selectEntry(this.index);
+            this.entries.selectEntry(this.$el.index());
         },
         
         open: function () {

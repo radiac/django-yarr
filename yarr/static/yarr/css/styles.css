@@ -29,6 +29,12 @@
 }
 
 
+@media all and (max-width: 40em) {
+    #yarr_status {
+        top:    auto;
+        bottom: 0;
+    }
+}
 
 /******************************************************************************
 **                                                              Control bar
@@ -47,8 +53,25 @@
     box-sizing:         border-box; /* Opera/IE 8+ */
 }
 
+.yarr_dropdown_menu {
+    position:   absolute;
+    margin:     0;
+    padding:    0;
+    border:     1px solid #ccc;
+    border-top: 0;
+    background: #f8f8f8;
+    color:      #666;
+    z-index:    9999;
+    -webkit-box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.5);
+    box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.5);
+}
+.yarr_dropdown_menu ul {
+    margin:     0;
+    padding:    0;
+    list-style: none;
+}
 .yarr_control ul {
-    margin:     0 2em 0 0;
+    margin:     0;
     padding:    0;
     float:      left;
 }
@@ -56,28 +79,65 @@
 ul.yarr_entry_control {
     list-style: none;
 }
+.yarr_control > ul + ul {
+    margin-left:   16px;
+}
 
 .yarr_control li,
 ul.yarr_entry_control li {
     display:        inline-block;
-    margin-right:   0;
+}
+
+ul.yarr_menu li {
+    margin-right:   8px;
+}
+
+ul.yarr_nav li {
+    margin-left:   8px;
 }
 
 
+.yarr_dropdown_menu ul + ul {
+    border-top: 1px solid #666;
+}
+
+.yarr_dropdown_menu li a,
 .yarr_control li a,
-.yarr_control li span {
+.yarr_control li > span {
     display:    block;
+    height:     24px;
+    line-height:    24px;
+    padding:    0 8px;
     border:     1px solid #ccc;
     background: #f8f8f8;
     color:      #666;
     font-size:  0.8em;
-    padding:    0.4em 1em;
     font-weight:    bold;
     text-decoration:    none;
 }
+.yarr_dropdown_menu li a {
+    border-width:   1px 0 0 0;
+}
+
+.yarr_button_feeds,
+.yarr_button_settings {
+    display:    block;
+    width:  24px;
+    height: 24px;
+    background-color:   transparent;
+    background-repeat:  no-repeat;
+    background-position: 50% -72px;
+    background-image: url('/static/yarr/images/icons.png');
+}
+.yarr_button_feeds {
+    background-position: 50% -96px;
+}
+
+.yarr_dropdown_menu li a:hover,
+.yarr_dropdown_menu li a.yarr_selected,
 .yarr_control li a:hover,
 .yarr_control li a.yarr_selected,
-.yarr_control li span {
+.yarr_control li > span {
     color:      #000;
     background-color: #fff;
 }
@@ -88,16 +148,27 @@ ul.yarr_entry_control li {
     margin:     0;
 }
 
+
+
+.yarr_control li .yarr_dropdown {
+    padding:  0 24px 0 8px;
+    height: 24px;
+    background-repeat:  no-repeat;
+    background-position: right 0;
+    background-image: url('/static/yarr/images/icons.png');
+}
+
 .yarr_control .yarr_nav a {
     width:  24px;
-    padding:    0.4em 0;
+    height: 24px;
+    padding:    0;
     background-repeat:  no-repeat;
-    background-position: 0 50%;
-    background-image: url('/static/yarr/images/arrows.png');
+    background-position: 50% -24px;
+    background-image: url('/static/yarr/images/icons.png');
 }
 
 .yarr_control .yarr_nav a.yarr_next {
-    background-position: -24px 50%;
+    background-position: 50% -48px;
 }
 
 
@@ -245,7 +316,7 @@ ul.yarr_entry_control li label input {
     text-overflow:  ellipsis;
 }
 
-.yarr_feed_menu li a.yarr_disabled {
+.yarr_feed_list li a.yarr_disabled {
     color:  #ccc;
     cursor: default;
     text-decoration: none;
@@ -286,10 +357,16 @@ ul.yarr_entry_control li label input {
 @media all and (max-width: 40em) {
     .yarr_feed_list {
         display:    none;
-        position:   relative;
-        width:      auto;
+    }
+    .yarr_feed_list,
+    .yarr_feed_list ul {
+        position:   relative !important;
+        width:      auto  !important;
         overflow-y: auto;
         top:        0 !important;
+    }
+    .yarr_feed_list li a {
+        max-width:      90%;
     }
     .yarr_content {
         margin-left: 0;
@@ -379,6 +456,15 @@ ul.yarr_entry_control li label input {
     float:      right;
     text-align: right;
     width:      10em;
+}
+
+@media all and (max-width: 40em) {
+    .yarr_li_feed {
+        width:  5em;
+    }
+    .yarr_li_date {
+        display:    none;
+    }
 }
 
 

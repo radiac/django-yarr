@@ -37,7 +37,8 @@ If you have customised your installation of yarr, you may be affected by the
 following changes:
 
   * In ``list_entries.html``:
-    * ``div.yarr_feed_list`` has had several structural and styling changes
+    * The elements ``div.yarr_control`` and ``div.yarr_feed_list`` have had
+      several significant changes to structure, style and js enhancements
     * The data attributes on ``div.yarr_con`` have been removed
   * The ``Entry`` model attributes ``.read`` and ``.saved`` have been replaced
     by ``.state``, with corresponding constants in ``constants.py``
