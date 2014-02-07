@@ -5,7 +5,10 @@ Django Yarr Changes
 Changelog
 =========
 
-0.4.0       2014-02-05  See UPGRADE
+0.4.1       2014-02-07  See UPGRADE
+            Bugfix:     Expiry dates are reset when item state changes
+
+0.4.0       2014-02-06  See UPGRADE
             Feature:    Simplified control bar
             Feature:    Can now change feeds without reloading page (fixes #27)
             Feature:    Can now change filter and order without reloading page

@@ -168,8 +168,17 @@ def entry_state(
     
     # Process
     if request.POST:
+        
+        # Change state and update unread count
         qs.update(state=state)
         qs.update_feed_unread()
+        
+        # If they're not marked as read, they can't ever expire
+        # If they're marked as read, they will be given an expiry date
+        # when Feed._update_entries determines they can expire
+        if state != constants.ENTRY_READ:
+            qs.clear_expiry()
+        
         if state is constants.ENTRY_UNREAD:
             messages.success(request, 'Marked as unread')
         elif state is constants.ENTRY_READ:
@@ -549,9 +558,16 @@ def api_entry_set(request):
         if state in (
             constants.ENTRY_UNREAD, constants.ENTRY_READ, constants.ENTRY_SAVED,
         ):
+            # Change state and update unread count
             entries.update(state=state)
             entries.update_feed_unread()
             
+            # If they're not marked as read, they can't ever expire
+            # If they're marked as read, they will be given an expiry date
+            # when Feed._update_entries determines they can expire
+            if state != constants.ENTRY_READ:
+                entries.clear_expiry()
+                
             # Find new unread counts
             for feed in entries.feeds():
                 feed_unread[str(feed.pk)] = feed.count_unread

@@ -77,6 +77,22 @@ class EntryQuerySet(models.query.QuerySet):
             id__in=self.values_list('feed_id', flat=True).distinct(),
         )
         
+    def set_expiry(self):
+        "Ensure selected entries are set to expire"
+        return self.filter(
+            expires__isnull=True
+        ).update(
+            expires=datetime.datetime.now() + datetime.timedelta(
+                days=settings.ITEM_EXPIRY,
+            )
+        )
+    
+    def clear_expiry(self):
+        "Ensure selected entries will not expire"
+        return self.exclude(
+            expires__isnull=True
+        ).update(expires=None)
+        
     def update_feed_unread(self):
         "Update feed read count cache"
         self.feeds().update_count_unread()
@@ -98,7 +114,7 @@ class EntryManager(models.Manager):
     def saved(self):
         "Get saved entries"
         return self.get_query_set().saved()
-        
+    
     def update_feed_unread(self):
         "Update feed read count cache"
         return self.get_query_set().update_feed_unread()

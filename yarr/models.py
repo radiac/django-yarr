@@ -445,18 +445,8 @@ class Feed(models.Model):
         #   ITEM_EXPIRY is set to expire entries
         #   they weren't found in the feed
         #   they have been read (excludes those saved)
-        #   they haven't already been marked for expiry
         if settings.ITEM_EXPIRY >= 0:
-            self.entries.exclude(
-                pk__in=found
-            ).read(
-            ).filter(
-                expires__isnull=True
-            ).update(
-                expires=datetime.datetime.now() + datetime.timedelta(
-                    days=settings.ITEM_EXPIRY,
-                )
-            )
+            self.entries.exclude(pk__in=found).read().set_expiry()
             
         return latest
     

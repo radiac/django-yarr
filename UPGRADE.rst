@@ -1,5 +1,5 @@
 ==============================
-Upgrading Django Yarr to 0.4.0
+Upgrading Django Yarr to 0.4.1
 ==============================
 
 1. Check which version of Yarr you are upgrading from:
@@ -19,6 +19,17 @@ Upgrading Django Yarr to 0.4.0
      then 0.3.12, but not 0.3.6 or earlier.
 
 
+Upgrading from 0.4.0 or earlier
+===============================
+
+A bug in older versions may have led to incorrect unread counts on feeds. The
+count will be corrected as soon as an item is read, but you can correct all
+feeds immediately with::
+
+    from yarr.models import Feed
+    Feed.objects.update_count_unread()
+    
+
 Upgrading from 0.3.13 or earlier
 ================================
 
@@ -31,6 +42,7 @@ New settings are available:
 
   * ``YARR_TITLE_TEMPLATE`` to update the document title (window and tabs)
   * ``YARR_TITLE_SELECTOR`` to update the page title (in your template)
+
 
 
 If you have customised your installation of yarr, you may be affected by the
