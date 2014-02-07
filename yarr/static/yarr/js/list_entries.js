@@ -1,5 +1,4 @@
-/** JavaScript for yarr list_entries
-*/
+/** JavaScript for yarr list_entries */
 
 $(function () {
     var Yarr = window.YARR;
@@ -256,7 +255,6 @@ $(function () {
             
             // Clone control bar ready for fixed position
             // Need to clone so the original can stay in position
-            // ++ Padding on .yarr_control shifts off center
             this.$controlFixed = this.$control
                 .clone(true)
                 .insertAfter(this.$control)
