@@ -9,7 +9,9 @@ from django.template import loader, Context
 from django.utils.html import escape
 
 from yarr import constants, settings, utils, models, forms
-from yarr.constants import ENTRY_UNREAD, ENTRY_READ, ENTRY_SAVED
+from yarr.constants import (
+    ENTRY_UNREAD, ENTRY_READ, ENTRY_SAVED, ORDER_ASC, ORDER_DESC,
+)
 
 
 @login_required
@@ -35,11 +37,11 @@ def get_entries(request, feed_pk, state):
         qs = qs.filter(feed=feed)
         
     # Filter further
-    if state == constants.ENTRY_UNREAD:
+    if state == ENTRY_UNREAD:
         qs = qs.unread()
-    elif state == constants.ENTRY_READ:
+    elif state == ENTRY_READ:
         qs = qs.read()
-    elif state == constants.ENTRY_SAVED:
+    elif state == ENTRY_SAVED:
         qs = qs.saved()
         
     return qs, feed
@@ -67,8 +69,8 @@ def list_entries(
     # Get entries queryset
     qs, feed = get_entries(request, feed_pk, state)
     
-    order = request.GET.get('order', constants.ORDER_DESC)
-    if order == constants.ORDER_ASC:
+    order = request.GET.get('order', ORDER_DESC)
+    if order == ORDER_ASC:
         qs = qs.order_by('date')
     else:
         qs = qs.order_by('-date')
@@ -82,9 +84,9 @@ def list_entries(
     # Base title
     if state is None:
         title = 'All items'
-    elif state == constants.ENTRY_UNREAD:
+    elif state == ENTRY_UNREAD:
         title = 'Unread items'
-    elif state == constants.ENTRY_SAVED:
+    elif state == ENTRY_SAVED:
         title = 'Saved items'
     else:
         raise ValueError('Cannot list entries in unknown state')
@@ -99,9 +101,9 @@ def list_entries(
     # Determine current view for reverse
     if state is None:
         current_view = 'yarr-list_all'
-    elif state == constants.ENTRY_UNREAD:
+    elif state == ENTRY_UNREAD:
         current_view = 'yarr-list_unread'
-    elif state == constants.ENTRY_SAVED:
+    elif state == ENTRY_SAVED:
         current_view = 'yarr-list_saved'
     
     return render(request, template, {
@@ -111,7 +113,7 @@ def list_entries(
         'feed':     feed,
         'feeds':    feeds,
         'state':    state,
-        'order_asc':    order == constants.ORDER_ASC,
+        'order_asc':    order == ORDER_ASC,
         'constants':    constants,
         'current_view': current_view,
         'yarr_settings': {
@@ -176,14 +178,14 @@ def entry_state(
         # If they're not marked as read, they can't ever expire
         # If they're marked as read, they will be given an expiry date
         # when Feed._update_entries determines they can expire
-        if state != constants.ENTRY_READ:
+        if state != ENTRY_READ:
             qs.clear_expiry()
         
-        if state is constants.ENTRY_UNREAD:
+        if state is ENTRY_UNREAD:
             messages.success(request, 'Marked as unread')
-        elif state is constants.ENTRY_READ:
+        elif state is ENTRY_READ:
             messages.success(request, 'Marked as read')
-        elif state is constants.ENTRY_SAVED:
+        elif state is ENTRY_SAVED:
             messages.success(request, 'Saved')
         return HttpResponseRedirect(reverse(home))
     
@@ -192,11 +194,11 @@ def entry_state(
         'verb': 'mark',
         'desc': '',
     }
-    if state is constants.ENTRY_UNREAD:
+    if state is ENTRY_UNREAD:
         op_text['desc'] = ' as unread'
-    elif state is constants.ENTRY_READ:
+    elif state is ENTRY_READ:
         op_text['desc'] = ' as read'
-    elif state is constants.ENTRY_SAVED:
+    elif state is ENTRY_SAVED:
         op_text['verb'] = 'save'
         
     if entry_pk:
@@ -430,7 +432,7 @@ def api_feed_pks_get(request):
     """
     feed_pks = request.GET.get('feed_pks', '')
     state = request.GET.get('state', '') or None
-    order = request.GET.get('order', constants.ORDER_DESC)
+    order = request.GET.get('order', ORDER_DESC)
     
     if state is not None:
         state = int(state)
@@ -447,15 +449,15 @@ def api_feed_pks_get(request):
             })
     
     # Filter by state
-    if state == constants.ENTRY_UNREAD:
+    if state == ENTRY_UNREAD:
         entries = entries.unread()
-    elif state == constants.ENTRY_READ:
+    elif state == ENTRY_READ:
         entries = entries.read()
-    elif state == constants.ENTRY_SAVED:
+    elif state == ENTRY_SAVED:
         entries = entries.saved()
     
     # Order them
-    if order == constants.ORDER_ASC:
+    if order == ORDER_ASC:
         entries = entries.order_by('date')
     else:
         entries = entries.order_by('-date')
@@ -486,7 +488,7 @@ def api_entry_get(request, template="yarr/include/entry.html"):
                     html    Entry rendered as HTML using template
     """
     pks = request.GET.get('entry_pks', '')
-    order = request.GET.get('order', constants.ORDER_DESC)
+    order = request.GET.get('order', ORDER_DESC)
     
     # Get entries queryset
     if pks:
@@ -499,7 +501,7 @@ def api_entry_get(request, template="yarr/include/entry.html"):
         entries = models.Entry.objects.none()
     
     # Order them
-    if order == constants.ORDER_ASC:
+    if order == ORDER_ASC:
         entries = entries.order_by('date')
     else:
         entries = entries.order_by('-date')
@@ -555,9 +557,7 @@ def api_entry_set(request):
     if state is not None:
         state = int(state)
     if success:
-        if state in (
-            constants.ENTRY_UNREAD, constants.ENTRY_READ, constants.ENTRY_SAVED,
-        ):
+        if state in (ENTRY_UNREAD, ENTRY_READ, ENTRY_SAVED):
             # Change state and update unread count
             entries.update(state=state)
             entries.update_feed_unread()
@@ -565,7 +565,7 @@ def api_entry_set(request):
             # If they're not marked as read, they can't ever expire
             # If they're marked as read, they will be given an expiry date
             # when Feed._update_entries determines they can expire
-            if state != constants.ENTRY_READ:
+            if state != ENTRY_READ:
                 entries.clear_expiry()
                 
             # Find new unread counts
@@ -573,11 +573,11 @@ def api_entry_set(request):
                 feed_unread[str(feed.pk)] = feed.count_unread
         
             # Decide message
-            if state == constants.ENTRY_UNREAD:
+            if state == ENTRY_UNREAD:
                 msg = 'Marked as unread'
-            elif state == constants.ENTRY_READ:
+            elif state == ENTRY_READ:
                 msg = 'Marked as read'
-            elif state == constants.ENTRY_SAVED:
+            elif state == ENTRY_SAVED:
                 msg = 'Saved'
     
         else:
