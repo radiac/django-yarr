@@ -221,17 +221,22 @@ $(function () {
             
             // Add next/prev buttons
             this.$nav = $('<ul class="yarr_nav"/>')
-                .append($('<li/>').append(
-                    this._mkIconButton('yarr_previous', function () {
-                        return thisLayout.entries.selectPrevious();
-                    })
-                ))
-                .append(' ')
-                .append($('<li/>').append(
-                    this._mkIconButton('yarr_next', function () {
-                        return thisLayout.entries.selectNext();
-                    })
-                ))
+                .append(
+                    (new Button(
+                        '&nbsp;', 'yarr_previous',
+                        function () {
+                            return thisLayout.entries.selectPrevious();
+                        }
+                    )).asLi()
+                )
+                .append(
+                    (new Button(
+                        '&nbsp;', 'yarr_next',
+                        function () {
+                            return thisLayout.entries.selectNext();
+                        }
+                    )).asLi()
+                )
                 .appendTo(this.$control)
             ;
         },
@@ -436,182 +441,9 @@ $(function () {
             if (scrollTop > this.scrollInfiniteTrigger) {
                 this.entries.loadNext();
             }
-        },
-        
-        /* Internal util functions */
-        _mkButton: function (txt, fn) {
-            return $('<a href="#" class="button">' + txt + '</a>')
-                .click(function (e) {
-                    e.preventDefault();
-                    fn();
-                })
-            ;
-        },
-        _mkIconButton: function (className, fn) {
-            return $('<a href="#" class="' + className + '">&nbsp;</a>')
-                .click(function (e) {
-                    e.preventDefault();
-                    fn();
-                })
-            ;
-        }
-       
-    });
-    
-    function Button(label, className, fn) {
-        this.label = label;
-        this.className = className || 'button';
-        this.clickFn = fn;
-        var thisButton = this;
-        this.$el = $(
-            '<a href="#" class="' + this.className + '">' + this.label + '</a>'
-        )
-            .click(function (e) {
-                e.preventDefault();
-                thisButton.clickFn(e);
-            })
-        ;
-    }
-    Button.prototype = $.extend(Button.prototype, {
-        setLabel: function (label) {
-            this.label = label;
-            this.$el.html(label);
-        },
-        asLi: function () {
-            return $('<li/>').append(this.$el);
         }
     });
     
-    function Menu(options, fn, current) {
-        /**
-            options     List of tuples
-                            [label, value, valueIsHref]
-                        If valueIsHref, will be a straight link,
-                        otherwise will try to call fn arg
-            fn          Function to call if option not an href
-                        [label, value]  ->  fn(value, label)
-            current     Current value (undefined for no current value)
-        */
-        var thisMenu = this;
-        this.options = options;
-        this.selectFn = fn;
-        
-        this.$options = $();
-        for (var i=0, $a; i<options.length; i++) {
-            if (options[i][2]) {
-                $a = $('<a href="' + options[i][1] + '">' + options[i][0] + '</a>');
-            } else {
-                $a = $('<a href="#">' + options[i][0] + '</a>').click(
-                    function (e) {
-                        e.preventDefault();
-                        thisMenu.select($(this).parent().index());
-                    }
-                );
-            }
-            this.$options = this.$options.add($a);
-        }
-        if (current !== undefined) {
-            this.setValue(current);
-        }
-    }
-    Menu.prototype = $.extend(Menu.prototype, {
-        setValue: function (value) {
-            this.value = value;
-            for (var i=0; i<this.options.length; i++) {
-                if (this.options[i][1] == value) {
-                    this.render(i);
-                    return this.options[i][0];
-                }
-            }
-        },
-        select: function (index) {
-            this.render(index);
-            this.value = this.options[index][1];
-            this.selectFn(this.value, this.options[index][0]);
-        },
-        render: function (index) {
-            this.$options.removeClass('yarr_selected');
-            $(this.$options[index]).addClass('yarr_selected');
-        },
-        asUl: function () {
-            var $ul = $('<ul/>');
-            for (var i=0, l=this.$options.length; i<l; i++) {
-                $ul.append(
-                    $('<li/>').append($(this.$options[i]))
-                );
-            }
-            return $ul;
-        }
-    });
-    
-    function DropDown(options, fn, current) {
-        var thisDropDown = this;
-        this.isOpen = false;
-        
-        this.detectClick = function (e) {
-            if (e.target == thisDropDown.$el[0]) {
-                return;
-            }
-            thisDropDown.close();
-        };
-        
-        // Create button
-        Button.call(this, '', 'yarr_dropdown', function (e) {
-            if (!thisDropDown.isOpen) {
-                thisDropDown.open();
-            } else {
-                thisDropDown.close();
-            }
-        });
-        
-        // Create menu element
-        this.$menu = $('<div class="yarr_dropdown_menu"/>');
-        this.added = false;
-        
-        this.menus = {};
-        this.addMenu(null, options, fn);
-        this.defaultMenu = this.menus[null];
-        if (current !== undefined) {
-            this.setValue(current);
-        }
-    }
-    DropDown.prototype = $.extend(new Button(), DropDown.prototype, {
-        addMenu: function (id, options, fn, current) {
-            var thisDropDown = this;
-            var menu = new Menu(options, function (value, label) {
-                if (menu == thisDropDown.defaultMenu) {
-                    thisDropDown.setLabel(label);
-                }
-                fn(value, label);
-            }, current);
-            this.menus[id] = menu;
-            this.$menu.append(menu.asUl());
-        },
-        
-        setValue: function (value) {
-            this.value = value;
-            var label = this.defaultMenu.setValue(value);
-            this.setLabel(label);
-        },
-        open: function () {
-            this.isOpen = true;
-            if (!this.added) {
-                this.$menu.appendTo($('body'));
-                this.added = true;
-            }
-            var buttonPos = this.$el.offset();
-            this.$menu.css({
-                'top':  buttonPos.top + this.$el.outerHeight() - 1,
-                'left': buttonPos.left
-            }).show();
-            $(document).on('click', this.detectClick);
-        },
-        close: function () {
-            this.isOpen = false;
-            this.$menu.hide();
-            $(document).off('click', this.detectClick);
-        }
-    });
     
     function FeedList(layout, $el) {
         var thisFeedList = this;
@@ -1307,9 +1139,169 @@ $(function () {
         }
     });
     
+    
+    /**************************************************************************
+    **                                                          UI classes
+    */
+    
+    function Button(label, className, fn) {
+        this.label = label;
+        this.className = className || 'button';
+        this.clickFn = fn;
+        var thisButton = this;
+        this.$el = $(
+            '<a href="#" class="' + this.className + '">' + this.label + '</a>'
+        )
+            .click(function (e) {
+                e.preventDefault();
+                thisButton.clickFn(e);
+            })
+        ;
+    }
+    Button.prototype = $.extend(Button.prototype, {
+        setLabel: function (label) {
+            this.label = label;
+            this.$el.html(label);
+        },
+        asLi: function () {
+            return $('<li/>').append(this.$el);
+        }
+    });
+    
+    function Menu(options, fn, current) {
+        /**
+            options     List of tuples
+                            [label, value, valueIsHref]
+                        If valueIsHref, will be a straight link,
+                        otherwise will try to call fn arg
+            fn          Function to call if option not an href
+                        [label, value]  ->  fn(value, label)
+            current     Current value (undefined for no current value)
+        */
+        var thisMenu = this;
+        this.options = options;
+        this.selectFn = fn;
+        
+        this.$options = $();
+        for (var i=0, $a; i<options.length; i++) {
+            if (options[i][2]) {
+                $a = $('<a href="' + options[i][1] + '">' + options[i][0] + '</a>');
+            } else {
+                $a = $('<a href="#">' + options[i][0] + '</a>').click(
+                    function (e) {
+                        e.preventDefault();
+                        thisMenu.select($(this).parent().index());
+                    }
+                );
+            }
+            this.$options = this.$options.add($a);
+        }
+        if (current !== undefined) {
+            this.setValue(current);
+        }
+    }
+    Menu.prototype = $.extend(Menu.prototype, {
+        setValue: function (value) {
+            this.value = value;
+            for (var i=0; i<this.options.length; i++) {
+                if (this.options[i][1] == value) {
+                    this.render(i);
+                    return this.options[i][0];
+                }
+            }
+        },
+        select: function (index) {
+            this.render(index);
+            this.value = this.options[index][1];
+            this.selectFn(this.value, this.options[index][0]);
+        },
+        render: function (index) {
+            this.$options.removeClass('yarr_selected');
+            $(this.$options[index]).addClass('yarr_selected');
+        },
+        asUl: function () {
+            var $ul = $('<ul/>');
+            for (var i=0, l=this.$options.length; i<l; i++) {
+                $ul.append(
+                    $('<li/>').append($(this.$options[i]))
+                );
+            }
+            return $ul;
+        }
+    });
+    
+    function DropDown(options, fn, current) {
+        var thisDropDown = this;
+        this.isOpen = false;
+        
+        this.detectClick = function (e) {
+            if (e.target == thisDropDown.$el[0]) {
+                return;
+            }
+            thisDropDown.close();
+        };
+        
+        // Create button
+        Button.call(this, '', 'yarr_dropdown', function (e) {
+            if (!thisDropDown.isOpen) {
+                thisDropDown.open();
+            } else {
+                thisDropDown.close();
+            }
+        });
+        
+        // Create menu element
+        this.$menu = $('<div class="yarr_dropdown_menu"/>');
+        this.added = false;
+        
+        this.menus = {};
+        this.addMenu(null, options, fn);
+        this.defaultMenu = this.menus[null];
+        if (current !== undefined) {
+            this.setValue(current);
+        }
+    }
+    DropDown.prototype = $.extend(new Button(), DropDown.prototype, {
+        addMenu: function (id, options, fn, current) {
+            var thisDropDown = this;
+            var menu = new Menu(options, function (value, label) {
+                if (menu == thisDropDown.defaultMenu) {
+                    thisDropDown.setLabel(label);
+                }
+                fn(value, label);
+            }, current);
+            this.menus[id] = menu;
+            this.$menu.append(menu.asUl());
+        },
+        
+        setValue: function (value) {
+            this.value = value;
+            var label = this.defaultMenu.setValue(value);
+            this.setLabel(label);
+        },
+        open: function () {
+            this.isOpen = true;
+            if (!this.added) {
+                this.$menu.appendTo($('body'));
+                this.added = true;
+            }
+            var buttonPos = this.$el.offset();
+            this.$menu.css({
+                'top':  buttonPos.top + this.$el.outerHeight() - 1,
+                'left': buttonPos.left
+            }).show();
+            $(document).on('click', this.detectClick);
+        },
+        close: function () {
+            this.isOpen = false;
+            this.$menu.hide();
+            $(document).off('click', this.detectClick);
+        }
+    });
+    
+    
     /**************************************************************************
     **                                                          Initialise
     */
-    
     var layout = new Layout(options);
 });
