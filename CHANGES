@@ -7,6 +7,8 @@ Changelog
 
 0.4.1       2014-02-07  See UPGRADE
             Bugfix:     Expiry dates are reset when item state changes
+            Bugfix:     Fixed dropdowns in fixed layout
+            Bugfix:     Fixed dropdowns where buttons have children
 
 0.4.0       2014-02-06  See UPGRADE
             Feature:    Simplified control bar
@@ -139,15 +141,17 @@ Roadmap
 =======
 
 Target
-0.4.x       Update URL history to reflect state
+0.4.x       Ajax mark all read
+            Update URL history to reflect state
             Server-side user options
             * Move in cookies and order flag
-            Ajax mark all read
             Customise HTML sanitiser to support:
             * Support whitelist of embedded media (eg youtube)
             * Delay image loading
             * Improve render time
             De-dupe multiple feeds with the same URL before checking
+            Option to ping for unread count updates
+            Refresh button
 0.5.0       Drop support for Django 1.3
             Introduce timezone support for Django 1.4 and later
             Simplify template if statements with elif

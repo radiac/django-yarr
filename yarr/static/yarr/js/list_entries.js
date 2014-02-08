@@ -264,6 +264,18 @@ $(function () {
                 })
                 .hide()
             ;
+            
+            // Bind dropdowns to new buttons
+            this.settingsDropDown.addEl(
+                $(this.$controlFixed.find('.yarr_menu > li')[
+                    this.settingsDropDown.$el.parent().index()
+                ]).find('a')
+            );
+            this.stateDropDown.addEl(
+                $(this.$controlFixed.find('.yarr_menu > li')[
+                    this.stateDropDown.$el.parent().index()
+                ]).find('a')
+            );
         },
         switchMode: function (newMode) {
             /** Switch display mode between expanded and list view */
@@ -1229,22 +1241,25 @@ $(function () {
     });
     
     function DropDown(options, fn, current) {
-        var thisDropDown = this;
+        var thisDd = this;
         this.isOpen = false;
         
+        // Event handler to detect click outside our dropdown
         this.detectClick = function (e) {
-            if (e.target == thisDropDown.$el[0]) {
+            // If clicked element is our button, take no action here
+            if (thisDd.$el.is(e.target) || thisDd.$el.has(e.target).length) {
                 return;
             }
-            thisDropDown.close();
+            thisDd.close();
         };
         
         // Create button
         Button.call(this, '', 'yarr_dropdown', function (e) {
-            if (!thisDropDown.isOpen) {
-                thisDropDown.open();
+            console.log('ddclick', e.currentTarget);
+            if (!thisDd.isOpen) {
+                thisDd.open($(e.currentTarget));
             } else {
-                thisDropDown.close();
+                thisDd.close();
             }
         });
         
@@ -1261,31 +1276,38 @@ $(function () {
     }
     DropDown.prototype = $.extend(new Button(), DropDown.prototype, {
         addMenu: function (id, options, fn, current) {
-            var thisDropDown = this;
+            var thisDd = this;
             var menu = new Menu(options, function (value, label) {
-                if (menu == thisDropDown.defaultMenu) {
-                    thisDropDown.setLabel(label);
+                if (menu == thisDd.defaultMenu) {
+                    thisDd.setLabel(label);
                 }
                 fn(value, label);
             }, current);
             this.menus[id] = menu;
             this.$menu.append(menu.asUl());
         },
-        
+        addEl: function ($el) {
+            /** Add button element which can trigger this dropdown */
+            console.log('adding ', $el);
+            this.$el = this.$el.add($el);
+        },  
         setValue: function (value) {
             this.value = value;
             var label = this.defaultMenu.setValue(value);
             this.setLabel(label);
         },
-        open: function () {
+        open: function ($el) {
+            if (!$el) {
+                $el = this.$el;
+            }
             this.isOpen = true;
             if (!this.added) {
                 this.$menu.appendTo($('body'));
                 this.added = true;
             }
-            var buttonPos = this.$el.offset();
+            var buttonPos = $el.offset();
             this.$menu.css({
-                'top':  buttonPos.top + this.$el.outerHeight() - 1,
+                'top':  buttonPos.top + $el.outerHeight() - 1,
                 'left': buttonPos.left
             }).show();
             $(document).on('click', this.detectClick);
