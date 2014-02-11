@@ -441,6 +441,7 @@ def api_feed_pks_get(request):
     Returns in JSON format:
         success     Boolean indicating success
         pks         Object with feed pk as key, list of entry pks as list value
+        feed_unread Unread counts as dict, { feed.pk: feed.count_unread, ... }
     """
     feed_pks = request.GET.get('feed_pks', '')
     state = GET_state(request, 'state')
@@ -473,11 +474,17 @@ def api_feed_pks_get(request):
     
     # Get a list of remaining pks
     pks = list(entries.values_list('pk', flat=True))
-            
+    
+    # Get unread counts for feeds in this response
+    feed_unread = {}
+    for feed in entries.feeds():
+        feed_unread[str(feed.pk)] = feed.count_unread
+        
     # Respond
     return utils.jsonResponse({
         'success':  True,
         'pks':      pks,
+        'feed_unread': feed_unread,
     })
         
     
@@ -553,6 +560,11 @@ def api_entry_set(request):
     Arguments passed on GET:
         entry_pks   List of entries to update
         state       New state
+    
+    Returns in JSON format:
+        success     Boolean
+        msg         Error message, if success == False
+        feed_unread Unread counts as dict, { feed.pk: feed.count_unread, ... }
     """
     # Start assuming success
     success = True
@@ -595,16 +607,16 @@ def api_entry_set(request):
             entries.update(state=state)
             feeds.update_count_unread()
             
+            # Find new unread counts
+            for feed in feeds:
+                feed_unread[str(feed.pk)] = feed.count_unread
+            
             # If they're not marked as read, they can't ever expire
             # If they're marked as read, they will be given an expiry date
             # when Feed._update_entries determines they can expire
             if state != ENTRY_READ:
                 entries.clear_expiry()
-                
-            # Find new unread counts
-            for feed in feeds:
-                feed_unread[str(feed.pk)] = feed.count_unread
-        
+            
             # Decide message
             if state == ENTRY_UNREAD:
                 msg = 'Marked as unread'

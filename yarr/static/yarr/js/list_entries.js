@@ -783,11 +783,12 @@ $(function () {
                 feed_pks,
                 this.layout.state,
                 this.layout.order,
-                function (pks) {
+                function (pks, feed_unread) {
                     if (loadId < thisEntries.loadId) {
                         return;
                     }
                     thisEntries.loadPks(pks);
+                    thisEntries.layout.feedList.setUnreadBulk(feed_unread);
                     thisEntries.loading = false;
                 },
                 function () {
@@ -807,7 +808,7 @@ $(function () {
             this.entries = [];
             this.$entries.remove();
             this.$entries = $();
-            //this.current = null;
+            this.current = null;
             
             // Reset all other vars
             this.loading = false;

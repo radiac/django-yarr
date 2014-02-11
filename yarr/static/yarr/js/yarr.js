@@ -172,7 +172,7 @@ var YARR = (function () {
                     },
                     function (json) {
                         if (successFn) {
-                            successFn(json.pks);
+                            successFn(json.pks, json.feed_unread);
                         }
                     }, failFn
                 );
