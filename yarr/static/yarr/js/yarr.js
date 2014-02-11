@@ -106,7 +106,7 @@ var YARR = (function () {
         var root_url = config.api;
         function request(api_call, data, successFn, failFn) {
             if (!root_url) {
-                Yarr.Status.set('API disabled');
+                Yarr.Status.set('API not available');
                 return;
             }
             
@@ -221,19 +221,26 @@ var YARR = (function () {
             },
             
             unreadEntries: function (entry_pks, successFn, failFn) {
-                Yarr.API.setEntries(entry_pks, constants.ENTRY_UNREAD, successFn, failFn);
+                Yarr.API.setEntries(
+                    entry_pks, constants.ENTRY_UNREAD, null, successFn, failFn
+                );
             },
             readEntries: function (entry_pks, successFn, failFn) {
-                Yarr.API.setEntries(entry_pks, constants.ENTRY_READ, successFn, failFn);
+                Yarr.API.setEntries(
+                    entry_pks, constants.ENTRY_READ, null, successFn, failFn
+                );
             },
             saveEntries: function (entry_pks, successFn, failFn) {
-                Yarr.API.setEntries(entry_pks, constants.ENTRY_SAVED, successFn, failFn);
+                Yarr.API.setEntries(
+                    entry_pks, constants.ENTRY_SAVED, null, successFn, failFn
+                );
             },
             
-            setEntries: function (entry_pks, state, successFn, failFn) {
+            setEntries: function (entry_pks, state, if_state, successFn, failFn) {
                 request('entry/set', {
                     'entry_pks': entry_pks.join(','),
-                    'state':    state
+                    'state':    state,
+                    'if_state': if_state
                 }, successFn, failFn);
             }
         };

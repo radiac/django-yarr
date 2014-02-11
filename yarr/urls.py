@@ -50,7 +50,7 @@ urlpatterns = patterns('yarr.views',
     
     # Flag management without javascript
     url(r'^state/read/all/$', 'entry_state',
-        {'state': ENTRY_READ},
+        {'state': ENTRY_READ, 'if_state': ENTRY_UNREAD},
         name="yarr-mark_all_read",
     ),
     url(r'^state/read/feed/(?P<feed_pk>\d+)/$', 'entry_state',

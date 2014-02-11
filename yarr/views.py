@@ -137,7 +137,7 @@ def list_entries(
     
 @login_required
 def entry_state(
-    request, feed_pk=None, entry_pk=None, state=None,
+    request, feed_pk=None, entry_pk=None, state=None, if_state=None,
     template="yarr/confirm.html",
 ):
     """
@@ -162,6 +162,18 @@ def entry_state(
         messages.error(request, 'Cannot perform this operation')
         return HttpResponseRedirect(reverse(home))
         
+    # Check for if_state
+    if if_state is not None:
+        if if_state == ENTRY_UNREAD:
+            qs = qs.unread()
+        elif if_state == ENTRY_READ:
+            qs = qs.read()
+        elif if_state == ENTRY_SAVED:
+            qs = qs.saved()
+        else:
+            messages.error(request, 'Unknown condition')
+            return HttpResponseRedirect(reverse(home))
+        
     # Check there's something to change
     count = qs.count()
     if count == 0:
@@ -170,10 +182,10 @@ def entry_state(
     
     # Process
     if request.POST:
-        
         # Change state and update unread count
+        feeds = qs.feeds()
         qs.update(state=state)
-        qs.update_feed_unread()
+        feeds.update_count_unread()
         
         # If they're not marked as read, they can't ever expire
         # If they're marked as read, they will be given an expiry date
@@ -431,11 +443,8 @@ def api_feed_pks_get(request):
         pks         Object with feed pk as key, list of entry pks as list value
     """
     feed_pks = request.GET.get('feed_pks', '')
-    state = request.GET.get('state', '') or None
+    state = GET_state(request, 'state')
     order = request.GET.get('order', ORDER_DESC)
-    
-    if state is not None:
-        state = int(state)
     
     # Get entries queryset, filtered by user and feed
     entries = models.Entry.objects.filter(feed__user=request.user)
@@ -527,6 +536,15 @@ def api_entry_get(request, template="yarr/include/entry.html"):
     })
     
 
+def GET_state(request, param):
+    """
+    Return an entry state constant or None
+    """
+    state = request.GET.get(param, '')
+    if state == '':
+        return None
+    return int(state)
+
 @login_required
 def api_entry_set(request):
     """
@@ -542,25 +560,40 @@ def api_entry_set(request):
     feed_unread = {}
     
     # Get entries queryset
-    pks = request.GET.get('entry_pks', '').split(',')
+    pks = request.GET.get('entry_pks', '')
     if pks:
+        pks = pks.split(',')
         entries = models.Entry.objects.filter(
             feed__user=request.user, pk__in=pks,
         )
     else:
         success = False
         msg = 'No entries found'
-        entries = models.Entry.objects.none()
+    
+    
+    # Check for if_state
+    if_state = GET_state(request, 'if_state')
+    if success and if_state is not None:
+        if_state = int(if_state)
+        if if_state == ENTRY_UNREAD:
+            entries = entries.unread()
+        elif if_state == ENTRY_READ:
+            entries = entries.read()
+        elif if_state == ENTRY_SAVED:
+            entries = entries.saved()
+        else:
+            success = False
+            msg = 'Unknown condition'
+            
     
     # Update new state
-    state = request.GET.get('state', None)
-    if state is not None:
-        state = int(state)
+    state = GET_state(request, 'state')
     if success:
         if state in (ENTRY_UNREAD, ENTRY_READ, ENTRY_SAVED):
             # Change state and update unread count
+            feeds = entries.feeds()
             entries.update(state=state)
-            entries.update_feed_unread()
+            feeds.update_count_unread()
             
             # If they're not marked as read, they can't ever expire
             # If they're marked as read, they will be given an expiry date
@@ -569,7 +602,7 @@ def api_entry_set(request):
                 entries.clear_expiry()
                 
             # Find new unread counts
-            for feed in entries.feeds():
+            for feed in feeds:
                 feed_unread[str(feed.pk)] = feed.count_unread
         
             # Decide message

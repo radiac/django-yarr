@@ -51,7 +51,8 @@ Installation
     pip install -e git+https://github.com/radiac/django-yarr.git#egg=django-yarr
 
    Note: The master branch may sometimes contain minor changes made since the
-   version was incremented. It will always be safe to use, but versions will be
+   version was incremented. These changes will be listed in
+   `CHANGES <CHANGES>`_. It will always be safe to use, but versions will be
    tagged if you only want to follow releases.
 
 2. Add Yarr to ``INSTALLED_APPS``::

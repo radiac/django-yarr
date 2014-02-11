@@ -73,9 +73,10 @@ class EntryQuerySet(models.query.QuerySet):
         
     def feeds(self):
         "Get feeds associated with entries"
-        return models.loading.get_model('yarr', 'Feed').objects.filter(
-            id__in=self.values_list('feed_id', flat=True).distinct(),
+        feeds = models.loading.get_model('yarr', 'Feed').objects.filter(
+            id__in=list(self.values_list('feed_id', flat=True).distinct()),
         )
+        return feeds
         
     def set_expiry(self):
         "Ensure selected entries are set to expire"

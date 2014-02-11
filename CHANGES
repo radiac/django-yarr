@@ -6,9 +6,14 @@ Changelog
 =========
 
 0.4.1       2014-02-07  See UPGRADE
+            Feature:    Can now mark all read without reloading page
+            Bugfix:     Static read all button only changes state of unread
+            Bugfix:     Fixed load status appearing at wrong time
+            Bugfix:     Fixed list mode click having incorrect effect
+            Bugfix:     Fixed scrollTo error
             Bugfix:     Expiry dates are reset when item state changes
-            Bugfix:     Fixed dropdowns in fixed layout
-            Bugfix:     Fixed dropdowns where buttons have children
+            Bugfix:     Unread count updates correctly when marking all read
+            Bugfix:     Fixed dropdown bugs
 
 0.4.0       2014-02-06  See UPGRADE
             Feature:    Simplified control bar

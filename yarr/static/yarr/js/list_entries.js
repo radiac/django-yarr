@@ -100,7 +100,6 @@ $(function () {
         ;
         this.listItemHeight = $dummyListItem.outerHeight();
         $dummyListItem.remove();
-        
         // Initialise related classes
         this.keys = new KeyHandler($base);
         this.feedList = new FeedList(this, $base.find('.yarr_feed_list'));
@@ -121,6 +120,11 @@ $(function () {
             .resize(function () { thisLayout.onResize(); })
             .scroll(function () { thisLayout.onScroll(); })
         ;
+        
+        // Find margin between the control bar and the first entry
+        this.controlMargin = parseInt(this.feedList.$el.css('margin-top'), 10);
+        
+        // Trigger a resize
         this.onResize();
     }
     Layout.prototype = $.extend(Layout.prototype, {
@@ -131,10 +135,13 @@ $(function () {
         displayMode: MODE_EXPANDED,
         layoutFixed: true,
         controlIsFixed: false,
+        
+        // Control position and bottom margin
         controlTop: null,
         controlBottom: null,
+        controlMargin: null,
+        
         scrollCutoff: null,
-        entryMargin: null,
         
         // Height of an item when in list mode
         listItemHeight: 0,
@@ -216,21 +223,30 @@ $(function () {
             );
             this.$menu.append(this.stateDropDown.asLi());
             
+            // Mark all as read
+            this.allReadButton = new IconButton(
+                'Mark all read', 'yarr_button_all_read',
+                function () {
+                    return thisLayout.entries.markAllRead();
+                }
+            );
+            this.$menu.append(this.allReadButton.asLi());
+            this.toggleAllRead();
             
             
             // Add next/prev buttons
             this.$nav = $('<ul class="yarr_nav"/>')
                 .append(
-                    (new Button(
-                        '&nbsp;', 'yarr_previous',
+                    (new IconButton(
+                        'Previous;', 'yarr_previous',
                         function () {
                             return thisLayout.entries.selectPrevious();
                         }
                     )).asLi()
                 )
                 .append(
-                    (new Button(
-                        '&nbsp;', 'yarr_next',
+                    (new IconButton(
+                        'Next', 'yarr_next',
                         function () {
                             return thisLayout.entries.selectNext();
                         }
@@ -245,9 +261,8 @@ $(function () {
             // Add feed switch and initialise
             var thisLayout = this;
             this.$menu.prepend(
-                (new Button(
-                    '<span class="yarr_button_feeds" title="Feeds">&nbsp;</span>',
-                    null, function () {
+                (new IconButton('Feeds', 'yarr_button_feeds',
+                    function () {
                         thisLayout.feedList.toggle();
                     })
                 ).asLi()
@@ -323,7 +338,14 @@ $(function () {
                 document.title = this.options.titleTemplate.replace('%(feed)s', title);
             }
         },
-        
+        toggleAllRead: function () {
+            /** Toggle visibility of the mark all read button */
+            var fl = this.feedList,
+                count = fl.current ? fl.current.unread : fl.totalUnread
+            ;
+            this.allReadButton.$el.toggle(count !== 0);
+        },
+
         loadScreen: function() {
             /** Ensure that enough entries have loaded to fill the screen.
                 Infinite scroll can't trigger without a full screen to scroll.
@@ -368,8 +390,12 @@ $(function () {
         
         scrollTo: function (y) {
             /** Scroll the container to the given offset */
+            var ctrlHeight = (
+                this.controlIsFixed ? this.$controlFixed : this.$control
+            ).outerHeight();
+            
             this.$scroller.scrollTop(
-                (y - this.$control.outerHeight()) - this.entryMargin
+                (y - ctrlHeight) - this.controlMargin
             );
         },
         
@@ -382,12 +408,9 @@ $(function () {
                 controlHeight = this.$control.outerHeight()
             ;
             
-            // Calculate entry margin for autoscrolling
-            this.controlBottom = this.$control.offset().top + this.$control.outerHeight();
-            this.entryMargin = this.feedList.$el.offset().top - this.controlBottom;
-            
             // Find position of controlTop and scrollCutoff (may have changed)
             this.controlTop = controlOffset.top;
+            this.controlBottom = controlOffset.top + controlHeight;
             this.scrollCutoff = controlHeight + scrollSwitchMargin;
             
             // Move $controlFixed to occupy same horizontal position as $control
@@ -481,13 +504,14 @@ $(function () {
         // Create Feeds from the items
         this.feeds = {};
         var $feedEls=this.$feeds.find('[data-yarr-feed]'),
-            pk, $feedEl
+            pk, feed, $feedEl
         ;
         for (var i=0, l=$feedEls.length; i<l; i++) {
             $feedEl = $($feedEls[i]);
             pk = $feedEl.data('yarr-feed');
-            this.feeds[pk] = Yarr.Feed.get(pk);
-            this.feeds[pk].init(this, $feedEl);
+            feed = this.feeds[pk] = Yarr.Feed.get(pk);
+            feed.init(this, $feedEl);
+            this.totalUnread += feed.unread;
         }
         
         // Find current feed
@@ -500,6 +524,9 @@ $(function () {
     FeedList.prototype = $.extend(FeedList.prototype, {
         // The y offset for the absolute-positioned feeds menu
         feedsOffset: null,
+        
+        // Total unread count
+        totalUnread: 0,
         
         updatePositions: function () {
             // Detect values using dummy elements
@@ -603,11 +630,28 @@ $(function () {
             this.feedListShow = this.isOpen ? FEEDS_VISIBLE : FEEDS_HIDDEN;
             Yarr.Cookie.set('yarr-feedListShow', this.feedListShow);
         },
+        setUnreadBulk: function (counts) {
+            /** Update feed unread counts
+                Expects an object of {pk:count, ...}
+            */
+            for (var pk in counts) {
+                this.setUnread(pk, counts[pk]);
+            }
+        },
         setUnread: function (pk, count) {
             /** Set the unread count for the feed given by pk */
-            if (this.feeds[pk]) {
-                this.feeds[pk].setUnread(count);
+            if (!this.feeds[pk]) {
+                return;
             }
+            
+            // Update the total count
+            this.totalUnread += count - this.feeds[pk];
+            
+            // Update the feed
+            this.feeds[pk].setUnread(count);
+            
+            // Toggle visibility of the mark unread button
+            this.layout.toggleAllRead();
         },
         selectFeed: function (feed) {
             /** Select the specified Feed
@@ -628,6 +672,7 @@ $(function () {
             
             // Tell entries to load this feed
             this.layout.entries.loadFeed(feed);
+            this.layout.toggleAllRead();
         }
     });
 
@@ -636,7 +681,7 @@ $(function () {
             this.feedList = feedList;
             this.$el = $el;
             this.$unread = $el.find('.yarr_count_unread');
-            this.hasUnread = parseInt(this.$unread.text(), 10) === 0;
+            this.unread = parseInt(this.$unread.text(), 10);
             
             var thisFeed = this;
             this.text = this.$el.find('a')
@@ -650,6 +695,7 @@ $(function () {
         setUnread: function (count) {
             this.$el.toggleClass('yarr_feed_unread', count !== 0);
             this.$unread.text(count);
+            this.unread = count;
         }
     });
     
@@ -693,7 +739,7 @@ $(function () {
         // Page length for API requests
         pageLength: null,
         
-        // List of unread pks
+        // List of pks for this view not yet loaded
         pkUnloaded: null,
         
         // Keep track of async requests to allow blocking and superceding
@@ -761,6 +807,7 @@ $(function () {
             this.entries = [];
             this.$entries.remove();
             this.$entries = $();
+            //this.current = null;
             
             // Reset all other vars
             this.loading = false;
@@ -798,8 +845,13 @@ $(function () {
                 isMore = (this.entries.length !== 0)
             ;
             
-            // Don't do anything if already loading, or nothing more to load
-            if (this.loading || this.pkUnloaded.length === 0) {
+            // If already loading, abort
+            if (this.loading) {
+                return;
+            }
+            
+            // If nothing more to load, report and abort
+            if (this.pkUnloaded.length === 0) {
                 if (isMore) {
                     Yarr.Status.set('No more entries to load');
                 } else {
@@ -959,6 +1011,34 @@ $(function () {
                 return;
             }
             this.$current.find('a[class="yarr-link"]')[0].click();
+        },
+        
+        markAllRead: function () {
+            /** Mark all unread entries as read */
+            // Get all PKs for this view - both loaded and unloaded
+            var thisEntries = this,
+                pks = [].concat(this.pkUnloaded),
+                fkAPI = function (entry, fn) {},
+                i, l=this.entries.length, entry
+            ;
+            for (i=0; i<l; i++) {
+                pks.push(this.entries[i].pk);
+            }
+            
+            // Call API and set them all to read, if state currently unread
+            // Tell the feedlist to update returned unread counts
+            Yarr.API.setEntries(pks, ENTRY_READ, ENTRY_UNREAD, function (data) {
+                thisEntries.layout.feedList.setUnreadBulk(data['feed_unread']);
+                
+                // Update visible unread entries
+                for (i=0; i<l; i++) {
+                    entry = thisEntries.entries[i];
+                    if (entry.state == ENTRY_UNREAD) {
+                        // Call _markSet without an API call - already done
+                        entry._markSet(ENTRY_READ, null);
+                    }
+                }
+            });
         }
     });
     
@@ -973,8 +1053,6 @@ $(function () {
             
             // Detect state
             this.state = parseInt($el.data('yarr-state'), 10);
-            this.read = this.state == ENTRY_READ;
-            this.saved = this.state == ENTRY_SAVED;
             
             // Enhance entry with javascript
             this.setup();
@@ -992,8 +1070,8 @@ $(function () {
             var thisEntry = this;
             
             // Build toggle buttons
-            this.$read = this._mkCheckbox('read', ENTRY_READ, this.read);
-            this.$saved = this._mkCheckbox('saved', ENTRY_SAVED, this.saved);
+            this.$read = this._mkCheckbox('read', ENTRY_READ, this.isRead());
+            this.$saved = this._mkCheckbox('saved', ENTRY_SAVED, this.isSaved());
             
             // Add buttons
             this.$el.find('.yarr_entry_control')
@@ -1010,52 +1088,59 @@ $(function () {
         changeState: function (state) {
             /** Handle a read/saved state checkbox change */
             if (state == ENTRY_READ) {
-                if (this.read) {
+                if (this.isRead()) {
                     this.markUnread();
                 } else {
                     this.markRead();
                 }
             } else if (state == ENTRY_SAVED) {
-                if (this.saved) {
+                if (this.isSaved()) {
                     this.markRead();
                 } else {
                     this.markSaved();
                 }
             }
         },
+        isRead: function () {
+            return this.state == ENTRY_READ;
+        },
+        isSaved: function () {
+            return this.state == ENTRY_SAVED;
+        },
         
         markUnread: function () {
-            this._markSet(false, false, Yarr.API.unreadEntry);
+            this._markSet(ENTRY_UNREAD, Yarr.API.unreadEntry);
         },
         markRead: function () {
-            this._markSet(true, false, Yarr.API.readEntry);
+            this._markSet(ENTRY_READ, Yarr.API.readEntry);
         },
         markSaved: function () {
-            this._markSet(false, true, Yarr.API.saveEntry);
+            this._markSet(ENTRY_SAVED, Yarr.API.saveEntry);
         },
-        _markSet: function (read, saved, api) {
+        _markSet: function (state, api) {
             /** Set internal and call API */
             var thisEntry = this;
-            this.read = read;
-            this.saved = saved;
-            this.$read.prop('checked', read);
-            this.$saved.prop('checked', saved);
+            
+            // Update state and flags
+            this.state = state;
+            this.$read.prop('checked', this.isRead());
+            this.$saved.prop('checked', this.isSaved());
             this.$el
                 .removeClass('yarr_read yarr_saved')
-                .addClass(read ? 'yarr_read' : (saved ? 'yarr_saved' : ''))
+                .addClass(
+                    this.isRead() ? 'yarr_read' : (this.isSaved() ? 'yarr_saved' : '')
+                )
             ;
-            api(this, function (data) {
-                thisEntry._markDone(data);
-            });
+            if (api) {
+                api(this, function (data) {
+                    thisEntry._markDone(data);
+                });
+            }
         },
         _markDone: function (data) {
             /** After API success */
             // Update unread count in the feed list.
-            var counts = data['feed_unread'];
-            for (var pk in counts) {
-                var count = counts[pk];
-                this.entries.layout.feedList.setUnread(pk, count);
-            }
+            this.entries.layout.feedList.setUnreadBulk(data['feed_unread']);
         },
         
         onListClick: function (e) {
@@ -1178,6 +1263,16 @@ $(function () {
         }
     });
     
+    function IconButton(title, className, fn) {
+        Button.call(this, '&nbsp;', className, fn);
+        this.setLabel(title);
+    }
+    IconButton.prototype = $.extend(new Button(), IconButton.prototype, {
+        setLabel: function (label) {
+            this.$el.attr('title', label);
+        }
+    });
+    
     function Menu(options, fn, current) {
         /**
             options     List of tuples
@@ -1255,7 +1350,6 @@ $(function () {
         
         // Create button
         Button.call(this, '', 'yarr_dropdown', function (e) {
-            console.log('ddclick', e.currentTarget);
             if (!thisDd.isOpen) {
                 thisDd.open($(e.currentTarget));
             } else {
@@ -1288,7 +1382,6 @@ $(function () {
         },
         addEl: function ($el) {
             /** Add button element which can trigger this dropdown */
-            console.log('adding ', $el);
             this.$el = this.$el.add($el);
         },  
         setValue: function (value) {
