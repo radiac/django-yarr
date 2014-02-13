@@ -10,7 +10,7 @@ Upgrading Django Yarr to 0.4.1
 
 2. Upgrade the yarr package:
 
-    pip install -e git+https://github.com/radiac/django-yarr.git@0.4.0#egg=django-yarr
+    pip install -e git+https://github.com/radiac/django-yarr.git@0.4.1#egg=django-yarr
 
 3. Follow all sections of the the instructions below until you reach an earlier
    version than the one you are upgrading from (found in step 1)
