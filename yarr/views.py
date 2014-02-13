@@ -601,8 +601,7 @@ def api_entry_set(request):
     if success:
         if state in (ENTRY_UNREAD, ENTRY_READ, ENTRY_SAVED):
             # Change state and get updated unread count
-            entries.set_state(state)
-            feed_unread = entries.count_unread()
+            feed_unread = entries.set_state(state, count_unread=True)
             
             # If they're not marked as read, they can't ever expire
             # If they're marked as read, they will be given an expiry date

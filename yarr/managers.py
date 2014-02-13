@@ -140,9 +140,11 @@ class EntryQuerySet(models.query.QuerySet):
         "Filter to saved entries"
         return self.filter(state=ENTRY_SAVED)
     
-    def set_state(self, state):
+    def set_state(self, state, count_unread=False):
         """
         Set a new state for these entries
+        If count_unread=True, returns a dict of the new unread count for the
+        affected feeds, {feed_pk: unread_count, ...}; if False, returns nothing
         """
         # Get list of feed pks before the update changes this queryset
         feed_pks = list(self.feeds().values_list('pk', flat=True))
@@ -156,7 +158,9 @@ class EntryQuerySet(models.query.QuerySet):
         )
         
         # Update the unread counts for affected feeds
-        return feeds.update_count_unread()
+        feeds.update_count_unread()
+        if count_unread:
+            return feeds.count_unread()
         
     def feeds(self):
         "Get feeds associated with entries"
