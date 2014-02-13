@@ -5,7 +5,8 @@ Django Yarr Changes
 Changelog
 =========
 
-0.4.1       2014-02-07  See UPGRADE
+0.4.1       2014-02-13  See UPGRADE
+            Feature:    Added OPML export (#33)
             Feature:    Can now mark all read without reloading page
             Feature:    Added yarr_clean management command for help upgrading
             Bugfix:     Static read all button only changes state of unread
@@ -13,10 +14,12 @@ Changelog
             Bugfix:     Fixed list mode click having incorrect effect
             Bugfix:     Fixed scrollTo error
             Bugfix:     Expiry dates are reset when item state changes
-            Bugfix:     Unread count updates correctly when marking all read
-            Bugfix:     Total count updates correctly when expiring entries
+            Bugfix:     Mark all read updates unread count correctly (#35)
+            Bugfix:     Expiring entries updates total count correctly
             Bugfix:     Fixed dropdown bugs
             Internal:   Optimised unread and total count updates
+            Internal:   All templates have div wrappers (#37)
+            Thanks to:  Tom Most (twm) for #33 and #37
 
 0.4.0       2014-02-06  See UPGRADE
             Feature:    Simplified control bar
@@ -149,10 +152,13 @@ Roadmap
 =======
 
 Target
-0.4.x       Ajax mark all read
-            Update URL history to reflect state
+0.4.x       Update URL history to reflect state
             Server-side user options
-            * Move in cookies and order flag
+            * Move in js cookies
+            * Memorise sort order
+            * Jump on click (#23)
+            * Default sort order
+            * Open links in new tab (#22)
             Customise HTML sanitiser to support:
             * Support whitelist of embedded media (eg youtube)
             * Delay image loading
@@ -164,15 +170,9 @@ Target
             Introduce timezone support for Django 1.4 and later
             Simplify template if statements with elif
             Display times according to user timezone, not server
-            User options page:
-            * Jump on click (#23)
-            * Default sort order
-            * Open links in new tab (#22)
-            * JS options
 0.6.0       Feed categorisation and entry tags
 1.0.0       Stable release, make available on PyPI
 1.1.0       Adaptive feed check frequency, with smarter spacing to spread load
 1.2.0       Support for i18n
 
-The roadmap is subject to change; if a lot of people let me know that something
-is a priority, I will try to move it up the list.
+The roadmap is subject to change; let me know if something is important to you.

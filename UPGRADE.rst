@@ -23,8 +23,8 @@ Upgrading from 0.4.0 or earlier
 ===============================
 
 A bug in older versions may have led to incorrect unread counts on feeds. The
-count will be corrected as soon as an item in that feed is read, but you can
-correct all feeds immediately with::
+count will be corrected as soon as an item in that feed is read or unread, but
+you can correct all feeds immediately with::
 
     python manage.py yarr_clean --update_cache
 
