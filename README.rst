@@ -308,6 +308,22 @@ any OPML file where the feeds are specified using the attribute ``xmlUrl``.
 .. image:: http://radiac.net/projects/django-yarr/logo-large.png
 
 
+Clean Yarr
+----------
+
+Primarily for use during upgrades - performs maintenance tasks to ensure the
+Yarr database is clean. Useful when upgrading (`UPGRADE <UPGRADE.rst>`_ will
+tell you which option to use and when), and can be used to clean up if
+something breaks in an unexpected way.
+
+Usage::
+
+    python manage.py yarr_clean [--delete_read] [--update_cache]
+
+* ``--delete_read`` will delete all read entries which haven't been saved
+* ``--update_cache`` will update the cached feed unread and total counts
+
+
 Usage
 =====
 

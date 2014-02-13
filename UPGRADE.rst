@@ -23,11 +23,11 @@ Upgrading from 0.4.0 or earlier
 ===============================
 
 A bug in older versions may have led to incorrect unread counts on feeds. The
-count will be corrected as soon as an item is read, but you can correct all
-feeds immediately with::
+count will be corrected as soon as an item in that feed is read, but you can
+correct all feeds immediately with::
 
-    from yarr.models import Feed
-    Feed.objects.update_count_unread()
+    python manage.py yarr_clean --update_cache
+
     
 
 Upgrading from 0.3.13 or earlier
@@ -78,20 +78,15 @@ check of all feeds, but also to force a database update, which will set an
 expiry on all entries no longer in a feed. To force expiries onto entries that
 should expire::
 
-    python manage.py manage check_feeds --force
+    python manage.py check_feeds --force
 
 Bear in mind that entries on dead feeds will not be touched; this is the
 intended behaviour (in case the feed is temporarily unavailable), but may mean
 that you are left with some entries which should have expired. If this is an
 issue for you, you can delete the feed (and all entries along with it), or
 manually delete read unsaved entries on inactive feeds with::
-
-    from yarr.models import Feed
-    feeds = Feed.objects.filter(is_active=False)
-    for feed in feeds:
-        feed.entries.read().delete()
-        feed.update_count_total()
-        feed.save()
+    
+    python manage.py yarr_clean --delete_read
 
 
 Upgrading from 0.3.6 or earlier

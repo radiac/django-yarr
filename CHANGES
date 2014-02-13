@@ -7,13 +7,16 @@ Changelog
 
 0.4.1       2014-02-07  See UPGRADE
             Feature:    Can now mark all read without reloading page
+            Feature:    Added yarr_clean management command for help upgrading
             Bugfix:     Static read all button only changes state of unread
             Bugfix:     Fixed load status appearing at wrong time
             Bugfix:     Fixed list mode click having incorrect effect
             Bugfix:     Fixed scrollTo error
             Bugfix:     Expiry dates are reset when item state changes
             Bugfix:     Unread count updates correctly when marking all read
+            Bugfix:     Total count updates correctly when expiring entries
             Bugfix:     Fixed dropdown bugs
+            Internal:   Optimised unread and total count updates
 
 0.4.0       2014-02-06  See UPGRADE
             Feature:    Simplified control bar
