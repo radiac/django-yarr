@@ -136,10 +136,10 @@ class Feed(models.Model):
     
     # Cached data
     count_unread = models.IntegerField(
-        blank=True, null=True, help_text="Cache of number of unread items",
+        default=0, help_text="Cache of number of unread items",
     )
     count_total = models.IntegerField(
-        blank=True, null=True, help_text="Cache of total number of items",
+        default=0, help_text="Cache of total number of items",
     )
     
     objects = managers.FeedManager()

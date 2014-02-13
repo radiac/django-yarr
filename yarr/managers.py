@@ -58,7 +58,7 @@ class FeedQuerySet(models.query.QuerySet):
         cursor = connection.cursor()
         cursor.execute(
             """UPDATE %(feed)s
-                SET %(field)s=IFNULL(
+                SET %(field)s=COALESCE(
                     (
                         SELECT COUNT(1)
                             FROM %(entry)s
