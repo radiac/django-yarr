@@ -20,7 +20,7 @@ Features
 * No social nonsense
 
 
-Version 0.4.1
+Version 0.4.2
 
 * See `CHANGES <CHANGES>`_ for full changelog and roadmap
 * See `UPGRADE <UPGRADE.rst>`_ for how to upgrade from earlier releases

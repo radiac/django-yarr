@@ -5,6 +5,10 @@ Django Yarr Changes
 Changelog
 =========
 
+0.4.2       2014-02-13  See UPGRADE
+            Bugfix:     Improved compatibility of raw SQL to update count cache
+            Internal:   Changed count_unread and count_total to not null in db
+
 0.4.1       2014-02-13  See UPGRADE
             Feature:    Added OPML export (#33)
             Feature:    Can now mark all read without reloading page

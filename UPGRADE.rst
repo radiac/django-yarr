@@ -1,5 +1,5 @@
 ==============================
-Upgrading Django Yarr to 0.4.1
+Upgrading Django Yarr to 0.4.2
 ==============================
 
 1. Check which version of Yarr you are upgrading from:
@@ -10,7 +10,7 @@ Upgrading Django Yarr to 0.4.1
 
 2. Upgrade the yarr package:
 
-    pip install -e git+https://github.com/radiac/django-yarr.git@0.4.1#egg=django-yarr
+    pip install -e git+https://github.com/radiac/django-yarr.git@0.4.2#egg=django-yarr
 
 3. Follow all sections of the the instructions below until you reach an earlier
    version than the one you are upgrading from (found in step 1)
@@ -18,6 +18,14 @@ Upgrading Django Yarr to 0.4.1
    * For example, to upgrade from 0.3.8, follow the instruction for 0.3.13,
      then 0.3.12, but not 0.3.6 or earlier.
 
+
+Upgrading from 0.4.1 or earlier
+===============================
+
+Run::
+
+    python manage.py migrate yarr
+    
 
 Upgrading from 0.4.0 or earlier
 ===============================
@@ -28,21 +36,14 @@ you can correct all feeds immediately with::
 
     python manage.py yarr_clean --update_cache
 
-    
 
 Upgrading from 0.3.13 or earlier
 ================================
-
-Run::
-
-    python manage.py migrate yarr
-    
 
 New settings are available:
 
   * ``YARR_TITLE_TEMPLATE`` to update the document title (window and tabs)
   * ``YARR_TITLE_SELECTOR`` to update the page title (in your template)
-
 
 
 If you have customised your installation of yarr, you may be affected by the
