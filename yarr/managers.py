@@ -4,7 +4,7 @@ Yarr model managers
 import datetime
 import time
 
-from django.db import models
+from django.db import connection, models, transaction
 
 import bleach
 
@@ -24,12 +24,73 @@ class FeedQuerySet(models.query.QuerySet):
         "Check active feeds for updates"
         for feed in self.active():
             feed.check(force, read, logfile)
+        
+        # Update the total and unread counts
+        self.update_count_unread()
+        self.update_count_total()
+        
+        return self
     
+    def _do_update(self, extra):
+        "Perform the update for update_count_total and update_count_unread"
+        # Get IDs for current queries
+        ids = self.values_list('id', flat=True)
+        
+        # If no IDs, no sense trying to do anything
+        if not ids:
+            return self
+        
+        # Prepare query options
+        # IDs and states should only ever be ints, but force them to
+        # ints to be sure we don't introduce injection vulns
+        opts = {
+            'feed':     models.loading.get_model('yarr', 'Feed')._meta.db_table,
+            'entry':    models.loading.get_model('yarr', 'Entry')._meta.db_table,
+            'ids':      ','.join([str(int(id)) for id in ids]),
+            
+            # Fields which should be set in extra
+            'field':    '',
+            'where':    '',
+        }
+        opts.update(extra)
+        
+        # Uses raw query so we can update in a single call to avoid race condition
+        cursor = connection.cursor()
+        cursor.execute(
+            """UPDATE %(feed)s
+                SET %(field)s=IFNULL(
+                    (
+                        SELECT COUNT(1)
+                            FROM %(entry)s
+                            WHERE %(feed)s.id=feed_id%(where)s
+                            GROUP BY feed_id
+                    ), 0
+                )
+                WHERE id IN (%(ids)s)
+            """ % opts
+        )
+        
+        # Ensure changes are committed in Django 1.5 or earlier
+        transaction.commit_unless_managed()
+        
+        return self
+    
+    def update_count_total(self):
+        "Update the cached total counts"
+        return self._do_update({
+            'field':    'count_total',
+        })
+        
     def update_count_unread(self):
         "Update the cached unread counts"
-        for feed in self:
-            feed.update_count_unread()
-            feed.save()
+        return self._do_update({
+            'field':    'count_unread',
+            'where':    ' AND state=%s' % ENTRY_UNREAD,
+        })
+    
+    def count_unread(self):
+        "Get a dict of unread counts, with feed pks as keys"
+        return dict(self.values_list('pk', 'count_unread'))
     
     
 class FeedManager(models.Manager):
@@ -41,9 +102,17 @@ class FeedManager(models.Manager):
         "Check all active feeds for updates"
         return self.get_query_set().check(force, read, logfile)
         
+    def update_count_total(self):
+        "Update the cached total counts"
+        return self.get_query_set().update_count_total()
+    
     def update_count_unread(self):
         "Update the cached unread counts"
         return self.get_query_set().update_count_unread()
+    
+    def count_unread(self):
+        "Get a dict of unread counts, with feed pks as keys"
+        return self.get_query_set().count_unread()
         
     def get_query_set(self):
         "Return a FeedQuerySet"
@@ -70,18 +139,30 @@ class EntryQuerySet(models.query.QuerySet):
     def saved(self):
         "Filter to saved entries"
         return self.filter(state=ENTRY_SAVED)
+    
+    def set_state(self, state):
+        """
+        Set a new state for these entries
+        """
+        # Get list of feed pks before the update changes this queryset
+        feed_pks = list(self.feeds().values_list('pk', flat=True))
+        
+        # Update the state
+        self.update(state=state)
+        
+        # Look up affected feeds
+        feeds = models.loading.get_model('yarr', 'Feed').objects.filter(
+            pk__in=feed_pks
+        )
+        
+        # Update the unread counts for affected feeds
+        return feeds.update_count_unread()
         
     def feeds(self):
         "Get feeds associated with entries"
         return models.loading.get_model('yarr', 'Feed').objects.filter(
             entries__in=self
-        )
-        
-        feeds = models.loading.get_model('yarr', 'Feed').objects.filter(
-            id__in=list(self.values_list('feed_id', flat=True).distinct()),
-        )
-        
-        return feeds
+        ).distinct()
         
     def set_expiry(self):
         "Ensure selected entries are set to expire"
@@ -101,7 +182,7 @@ class EntryQuerySet(models.query.QuerySet):
         
     def update_feed_unread(self):
         "Update feed read count cache"
-        self.feeds().update_count_unread()
+        return self.feeds().update_count_unread()
 
     
 class EntryManager(models.Manager):
@@ -120,6 +201,10 @@ class EntryManager(models.Manager):
     def saved(self):
         "Get saved entries"
         return self.get_query_set().saved()
+        
+    def set_state(self, state):
+        "Set a new state for these entries, and update unread count"
+        return self.get_query_set().set_state(state)
     
     def update_feed_unread(self):
         "Update feed read count cache"

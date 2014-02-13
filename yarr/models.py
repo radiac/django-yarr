@@ -265,12 +265,14 @@ class Feed(models.Model):
         For this reason, and the fact that it could take a relatively long time
         to parse a feed, this method should never be called as a direct result
         of a web request.
+        
+        Note: after this is called, feed unread and total count caches will be
+        incorrect, and must be recalculated with the appropriate management
+        commands.
         """
         # Call _do_check and save if anything has changed
         changed = self._do_check(force, read, logfile)
         if changed:
-            self.update_count_unread()
-            self.update_count_total()
             self.save()
         
         # Remove expired entries

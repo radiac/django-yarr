@@ -103,12 +103,22 @@ var YARR = (function () {
     
     /** API abstraction layer */
     Yarr.API = (function () {
-        var root_url = config.api;
+        var root_url = config.api,
+            requestQueue = [],
+            requesting = false
+        ;
+        
         function request(api_call, data, successFn, failFn) {
             if (!root_url) {
                 Yarr.Status.set('API not available');
                 return;
             }
+            
+            if (requesting) {
+                requestQueue.push([api_call, data, successFn, failFn]);
+                return;
+            }
+            requesting = true;
             
             $.getJSON(root_url + api_call + '/', data)
                 .done(function(json) {
@@ -120,15 +130,25 @@ var YARR = (function () {
                     } else if (failFn) {
                         failFn(json.msg);
                     }
+                    nextRequest();
                 })
                 .fail(function(jqxhr, textStatus, error ) {
                     Yarr.Status.set(textStatus + ': ' + error, true);
                     if (failFn) {
                         failFn(textStatus);
                     }
+                    nextRequest();
                 })
             ;
         }
+        function nextRequest() {
+            requesting = false;
+            if (requestQueue.length === 0) {
+                return;
+            }
+            request.apply(this, requestQueue.shift());
+        }
+        
         // Hash for faster lookup
         var dates = {'last_checked': 1, 'last_updated': 1, 'next_check': 1};
         return {
