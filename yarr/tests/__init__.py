@@ -7,6 +7,10 @@ from django.test import TestCase
 from yarr.models import Feed
 from yarr.decorators import with_socket_timeout
 
+from .opml import ExportTests
+
+__all__ = ['ExportTests', 'FeedTest']
+
 
 class FeedTest(TestCase):
     def setUp(self):
