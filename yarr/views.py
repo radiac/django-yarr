@@ -1,4 +1,3 @@
-from django import views
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
@@ -333,6 +332,19 @@ def feed_delete(request, feed_pk, template="yarr/confirm.html"):
         'message':  'Are you sure you want to delete the feed "%s"?' % feed.title,
         'submit_label': 'Delete feed',
     })
+
+
+@login_required
+def feeds_export(request):
+    """
+    Export the user's feed list as OPML.
+    """
+    response = HttpResponse(
+        utils.export_opml(request.user),
+        mimetype='application/xml',
+    )
+    response['Content-Disposition'] = 'attachment; filename="feeds.opml"'
+    return response
 
 
 @login_required

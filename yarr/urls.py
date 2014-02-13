@@ -1,7 +1,7 @@
 try:
     from django.conf.urls.defaults import patterns, url
 except ImportError:
-    from django.conf.urls import patterns, url, include
+    from django.conf.urls import patterns, url
 
 from yarr.constants import ENTRY_UNREAD, ENTRY_READ, ENTRY_SAVED
 
@@ -47,7 +47,10 @@ urlpatterns = patterns('yarr.views',
     url(r'^feeds/(?P<feed_pk>\d+)/delete/$', 'feed_delete',
         name="yarr-feed_delete",
     ),
-    
+    url(r'^feeds/export/$', 'feeds_export',
+        name="yarr-feeds_export",
+    ),
+
     # Flag management without javascript
     url(r'^state/read/all/$', 'entry_state',
         {'state': ENTRY_READ},
