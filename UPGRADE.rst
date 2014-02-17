@@ -2,21 +2,21 @@
 Upgrading Django Yarr to 0.4.2
 ==============================
 
-1. Check which version of Yarr you are upgrading from:
+1. Check which version of Yarr you are upgrading from::
 
     python
     >>> import yarr
     >>> yarr.__version__
 
-2. Upgrade the yarr package:
+2. Upgrade the Yarr package::
 
     pip install -e git+https://github.com/radiac/django-yarr.git@0.4.2#egg=django-yarr
 
-3. Follow all sections of the the instructions below until you reach an earlier
+3. Follow all sections of the instructions below until you reach an earlier
    version than the one you are upgrading from (found in step 1)
-   
-   * For example, to upgrade from 0.3.8, follow the instruction for 0.3.13,
-     then 0.3.12, but not 0.3.6 or earlier.
+
+   For example, to upgrade from 0.3.8, follow the instruction for 0.3.13,
+   then 0.3.12, but not 0.3.6 or earlier.
 
 
 Upgrading from 0.4.1 or earlier
@@ -25,7 +25,7 @@ Upgrading from 0.4.1 or earlier
 Run::
 
     python manage.py migrate yarr
-    
+
 
 Upgrading from 0.4.0 or earlier
 ===============================
@@ -42,27 +42,29 @@ Upgrading from 0.3.13 or earlier
 
 New settings are available:
 
-  * ``YARR_TITLE_TEMPLATE`` to update the document title (window and tabs)
-  * ``YARR_TITLE_SELECTOR`` to update the page title (in your template)
+* ``YARR_TITLE_TEMPLATE`` to update the document title (window and tabs)
+* ``YARR_TITLE_SELECTOR`` to update the page title (in your template)
 
 
-If you have customised your installation of yarr, you may be affected by the
+If you have customised your installation of Yarr, you may be affected by the
 following changes:
 
-  * In ``list_entries.html``:
-    * The elements ``div.yarr_control`` and ``div.yarr_feed_list`` have had
-      several significant changes to structure, style and js enhancements
-    * The data attributes on ``div.yarr_con`` have been removed
-  * The ``Entry`` model attributes ``.read`` and ``.saved`` have been replaced
-    by ``.state``, with corresponding constants in ``constants.py``
-  * The views ``mark_read`` and ``mark_saved`` have been replaced by
-    ``entry_state``
-  * The named url ``yarr-mark_unsaved`` has been removed, and state urls now
-    start with the prefix ``state/``
-  * The API calls for entries have changed to use the new state attribute
-  * The template ``include/entry.html`` now sets the attr ``data-yarr-state``,
-    instead of ``data-yarr-read`` and ``data-yarr-saved``
-  * The script ``static/yarr/js/list_entries.js`` has been refactored
+* In ``list_entries.html``:
+
+  +  The elements ``div.yarr_control`` and ``div.yarr_feed_list`` have had
+     several significant changes to structure, style and js enhancements
+  +  The data attributes on ``div.yarr_con`` have been removed
+
+* The ``Entry`` model attributes ``.read`` and ``.saved`` have been replaced
+  by ``.state``, with corresponding constants in ``constants.py``
+* The views ``mark_read`` and ``mark_saved`` have been replaced by
+  ``entry_state``
+* The named url ``yarr-mark_unsaved`` has been removed, and state urls now
+  start with the prefix ``state/``
+* The API calls for entries have changed to use the new state attribute
+* The template ``include/entry.html`` now sets the attr ``data-yarr-state``,
+  instead of ``data-yarr-read`` and ``data-yarr-saved``
+* The script ``static/yarr/js/list_entries.js`` has been refactored
 
 
 Upgrading from 0.3.12 or earlier
@@ -86,7 +88,7 @@ intended behaviour (in case the feed is temporarily unavailable), but may mean
 that you are left with some entries which should have expired. If this is an
 issue for you, you can delete the feed (and all entries along with it), or
 manually delete read unsaved entries on inactive feeds with::
-    
+
     python manage.py yarr_clean --delete_read
 
 
