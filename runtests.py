@@ -25,6 +25,7 @@ def configure_django():
             }
         },
         ROOT_URLCONF='yarr.urls',
+        USE_TZ=False,
         INSTALLED_APPS=installed_apps,
     )
 
