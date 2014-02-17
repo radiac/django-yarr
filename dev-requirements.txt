@@ -1,2 +1,1 @@
--r requirements.txt
 tox==1.5.0
