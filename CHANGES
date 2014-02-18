@@ -5,6 +5,11 @@ Django Yarr Changes
 Changelog
 =========
 
+            Feature:    Tox test support (#9, #39)
+            Bugfix:     Fix reST syntax in upgrade notes (#38)
+            Thanks to:  Spencer Herzberg (sherzberg) for #9
+                        Tom Most (twm) for #38 and #39
+
 0.4.2       2014-02-13  See UPGRADE
             Bugfix:     Improved compatibility of raw SQL to update count cache
             Internal:   Changed count_unread and count_total to not null in db
