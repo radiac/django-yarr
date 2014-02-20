@@ -439,6 +439,11 @@ $(function () {
                 topMoved = false
             ;
             
+            // If entries are already loading, ignore this scroll
+            if (this.entries.loading) {
+                return;
+            }
+            
             // Switch control bar between fixed and relative position
             if (this.layoutFixed) {
                 if (scrollTop > this.controlTop) {
@@ -814,6 +819,7 @@ $(function () {
             this.loading = false;
             
             // Load a screen full of entries
+            this.layout.scrollTo(0);
             this.layout.loadScreen();
         },
         
@@ -833,6 +839,7 @@ $(function () {
                 }
             }
         },
+        
         loadNext: function (loadNumber, successFn) {
             /** Load next page of entries, if possible
             
