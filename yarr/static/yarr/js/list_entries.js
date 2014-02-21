@@ -456,11 +456,6 @@ $(function () {
                 topMoved = false
             ;
             
-            // If entries are already loading, ignore this scroll
-            if (this.entries.loading) {
-                return;
-            }
-            
             // Switch control bar between fixed and relative position
             if (this.layoutFixed) {
                 if (scrollTop > this.controlTop) {
@@ -490,11 +485,11 @@ $(function () {
             }
             
             // Tell the entries to handle scrolling
-            this.entries.handleScroll(topCutoff);
+            this.entries.focusScroll(topCutoff);
             
             // Infinite scroll
             if (scrollTop > this.scrollInfiniteTrigger) {
-                this.entries.loadNext();
+                this.entries.loadScroll();
             }
         }
     });
@@ -842,7 +837,7 @@ $(function () {
             this.layout.loadScreen();
         },
         
-        handleScroll: function (top) {
+        focusScroll: function (top) {
             var newCurrent = -1;
             
             // Update selection if in expanded mode
@@ -857,6 +852,15 @@ $(function () {
                     this.selectEntry(newCurrent);
                 }
             }
+        },
+        
+        loadScroll: function () {
+            // This may be called as a result of wiping the entries
+            // If there are no entries, ignore this event
+            if (this.$entries.length === 0) {
+                return;
+            }
+            this.loadNext();
         },
         
         loadNext: function (loadNumber, successFn) {
