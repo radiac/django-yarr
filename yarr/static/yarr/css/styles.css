@@ -385,12 +385,14 @@ ul.yarr_entry_control li label input {
 
 .yarr_mode_list {
     padding-top:    1em;
-    border-bottom:  1px solid #ccc;
 }
 
 .yarr_mode_list .yarr_entry {
     margin: 0;
-    border-bottom: 0;
+    border-top: 0;
+}
+.yarr_mode_list .yarr_entry:first-child {
+    border-top:  1px solid #ccc;
 }
 
 .yarr_entry_li,

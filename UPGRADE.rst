@@ -19,6 +19,15 @@ Upgrading Django Yarr to 0.4.2
    then 0.3.12, but not 0.3.6 or earlier.
 
 
+Upgrading from 0.4.2 or earlier
+===============================
+
+CSS:
+* Horizontal borders on ``.yarr_mode_list`` and ``.yarr_mode_list .yarr_entry``
+  have changed - same visible effect, but allows ``.yarr_content`` to force the
+  scroll element's height in fixed layout.
+
+
 Upgrading from 0.4.1 or earlier
 ===============================
 

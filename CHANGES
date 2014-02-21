@@ -5,8 +5,10 @@ Django Yarr Changes
 Changelog
 =========
 
+                        See UPGRADE
             Feature:    Tox test support (#9, #39)
-            Bugfix:     Fix reST syntax in upgrade notes (#38)
+            Bugfix:     Control bar no longer jumps around when in fixed layout
+            Bugfix:     Fixed reST syntax in upgrade notes (#38)
             Bugfix:     Fixed race condition when changing feeds while scrolled
             Thanks to:  Spencer Herzberg (sherzberg) for #9
                         Tom Most (twm) for #38 and #39

@@ -358,10 +358,13 @@ $(function () {
             */
             // Get the height from the bottom of the loaded entries to the
             // bottom of the viewport, plus the infinite scroll margin
-            var gap = (
-                (this.$scroller.innerHeight() + scrollInfiniteMargin)
-                - (this.$content.offset().top + this.$content.outerHeight())
-            );
+            var $last = this.entries.$entries.last(),
+                gap = (this.$scroller.innerHeight() + scrollInfiniteMargin) - (
+                    $last.length ? (
+                        $last.offset().top + $last.outerHeight()
+                    ) : 0
+                )
+            ;
             if (gap < 0) {
                 return;
             }
@@ -399,6 +402,17 @@ $(function () {
             );
         },
         
+        lockLayout: function () {
+            /** Opportunity to lock the layout when in fixed mode
+                Called before the content element resizes
+                Used to keep fixed bar in position
+            */
+            if (!this.layoutFixed || !this.controlIsFixed) {
+                return;
+            }
+            this.$content.css('min-height', this.feedList.$el.height());
+        },
+        
         onResize: function () {
             /** Event handler for when the scroller resizes
                 Updates the fixed control bar position, and calls entriesResized
@@ -419,6 +433,9 @@ $(function () {
                     left:   controlOffset.left,
                     width:  this.$control.width()
                 });
+                
+                // Reset the content height
+                this.$content.css('min-height', 'auto');
             }
             
             // Update feedlist
@@ -809,6 +826,9 @@ $(function () {
             Yarr.Status.set('Loading entries...');
             this.pkUnloaded = pks;
             
+            // Give layout opportunity to force min-height of content
+            this.layout.lockLayout();
+            
             // Remove entries
             this.entries = [];
             this.$entries.remove();
@@ -819,7 +839,6 @@ $(function () {
             this.loading = false;
             
             // Load a screen full of entries
-            this.layout.scrollTo(0);
             this.layout.loadScreen();
         },
         
