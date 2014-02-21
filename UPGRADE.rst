@@ -30,7 +30,7 @@ following changes:
   scroll element's height in fixed layout.
 * Your Yarr URLs cannot contain a slug ``00``. AJAX mode now adds URLs to the
   browser's history by building URLs in Django with a feed pk of ``00``, then
-  passing them to JavaScript which replaces ``/00/`` with the feed pk. If your
+  passing them to JavaScript which replaces ``/00/`` with the feed pk.
   In the unlikely event your Yarr URL does contain `00``, the AJAX site will
   still work, but the URLs it generates will be invalid.
 
