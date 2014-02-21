@@ -68,7 +68,11 @@ $(function () {
             // Initial state, order and feed for this page
             initialState: Yarr.config.initial_state,
             initialOrder: Yarr.config.initial_order,
-            initialFeed: Yarr.config.initial_feed
+            initialFeed: Yarr.config.initial_feed,
+            
+            // URLs for building history
+            urlAll: Yarr.config.url_all,
+            urlFeed: Yarr.config.url_feed
         }
     ;
     
@@ -89,6 +93,8 @@ $(function () {
         this.order = options.initialOrder;
         this.displayMode = options.displayMode;
         this.layoutFixed = options.layoutFixed;
+        this.urlAll = options.urlAll;
+        this.urlFeed = options.urlFeed;
         
         // Find elements
         this.$control = $base.find('.yarr_control');
@@ -126,6 +132,9 @@ $(function () {
         
         // Trigger a resize
         this.onResize();
+        
+        // Initialse history with current state
+        this.history = new History(this);
     }
     Layout.prototype = $.extend(Layout.prototype, {
         // Settings from options
@@ -149,6 +158,9 @@ $(function () {
         // Control bar menu and nav lists
         $menu: null,
         $nav: null,
+        
+        // Title of current page
+        title: '',
         
         setupControl: function () {
             /** Set up top control bar for JavaScript management */
@@ -217,7 +229,7 @@ $(function () {
                         return;
                     }
                     thisLayout.state = state;
-                    thisLayout.entries.loadFeed(thisLayout.feedList.current);
+                    thisLayout.feedList.selectFeed(thisLayout.feedList.current);
                 },
                 this.state
             );
@@ -319,23 +331,29 @@ $(function () {
             this.order = order;
             this.entries.reload();
         },
-        setTitle: function (feed) {
-            var title = 'all items';
+        updateTitle: function () {
+            // Build the title string
+            var title = 'All items';
             if (this.state == ENTRY_UNREAD) {
                 title = 'Unread items';
             } else if (this.state == ENTRY_SAVED) {
                 title = 'Saved items';
             }
-            
-            if (feed) {
-                title = feed + ' - ' + title;
+            if (this.feedList.current) {
+                title = this.feedList.current + ' - ' + title;
             }
             
+            // Store
+            this.title = title;
+            
+            // Update window and body titles
             if (this.options.titleSelector) {
                 $(this.options.titleSelector).text(title);
             }
             if (this.options.titleTemplate) {
-                document.title = this.options.titleTemplate.replace('%(feed)s', title);
+                document.title = this.options.titleTemplate.replace(
+                    '%(feed)s', title
+                );
             }
         },
         toggleAllRead: function () {
@@ -510,9 +528,6 @@ $(function () {
         this.$feeds = $el.find('.yarr_feed_list_feeds');
         this.$viewAll = $el.find('.yarr_feed_menu .yarr_view_all')
             .click(function (e) {
-                if (thisFeedList.$viewAll.hasClass('yarr_disabled')) {
-                    return;
-                }
                 e.preventDefault();
                 thisFeedList.selectFeed();
             })
@@ -670,6 +685,11 @@ $(function () {
             // Toggle visibility of the mark unread button
             this.layout.toggleAllRead();
         },
+        selectFeedPk: function (feed_pk) {
+            /** Look up a feed pk and pass it to selectFeed
+            */
+            this.selectFeed(feed_pk ? this.feeds[feed_pk] : null);
+        },
         selectFeed: function (feed) {
             /** Select the specified Feed
                 To select all feeds, pass nothing or null
@@ -682,10 +702,10 @@ $(function () {
             }
             
             // Tell the Layout to change the document and page titles
-            layout.setTitle(feed);
+            this.layout.updateTitle();
             
-            // Show or hide the "View all feeds" button
-            this.$viewAll.toggleClass('yarr_disabled', !feed);
+            // Update the history
+            this.layout.history.push();
             
             // Tell entries to load this feed
             this.layout.entries.loadFeed(feed);
@@ -713,6 +733,11 @@ $(function () {
             this.$el.toggleClass('yarr_feed_unread', count !== 0);
             this.$unread.text(count);
             this.unread = count;
+        },
+        getUrl: function () {
+            return this.feedList.layout.urlFeed[this.feedList.layout.state]
+                .replace('/00/', '/' + this.pk + '/')
+            ;
         }
     });
     
@@ -1226,6 +1251,75 @@ $(function () {
         }
     });
     
+    
+    
+    /**************************************************************************
+    **                                                          History manager
+    */
+    
+    function History(layout) {
+        this.layout = layout;
+        this.can = (window.history && window.history.pushState);
+        if (!this.can) {
+            return;
+        }
+        
+        // Register listener
+        var thisHistory = this;
+        $(window).on('popstate', function (e) {
+            thisHistory._pop(e.originalEvent.state);
+        });
+        
+        // Register current state
+        this._setHistory('replaceState');
+    }
+    
+    History.prototype = $.extend(History.prototype, {
+        // History is active if performing an action from history
+        active: false,
+        last_url: null,
+        push: function () {
+            if (!this.can) {
+                return;
+            }
+            this._setHistory('pushState');
+        },
+        _setHistory: function (fnName) {
+            // Only add to history if this is not popping history state
+            if (this.active) {
+                this.active = false;
+                return;
+            }
+            
+            // Look up data
+            var feed = this.layout.feedList.current,
+                state = {
+                    feed_pk: feed ? feed.pk : null,
+                    layout_state: this.layout.state
+                },
+                url = (
+                    feed ? feed.getUrl()
+                    : this.layout.urlAll[this.layout.state]
+                )
+            ;
+            
+            // Only add to history if url is changing
+            if (url == this.last_url) {
+                return;
+            }
+            history[fnName](state, this.layout.title, url);
+            this.last_url = url;
+        },
+        _pop: function (state) {
+            this.active = true;
+            
+            // Change the layout state
+            this.layout.state = state.layout_state;
+            
+            // Select the feed
+            this.layout.feedList.selectFeedPk(state.feed_pk);
+        }
+    });
     
     
     /**************************************************************************

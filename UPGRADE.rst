@@ -1,5 +1,5 @@
 ==============================
-Upgrading Django Yarr to 0.4.2
+Upgrading Django Yarr to 0.4.3
 ==============================
 
 1. Check which version of Yarr you are upgrading from::
@@ -10,7 +10,7 @@ Upgrading Django Yarr to 0.4.2
 
 2. Upgrade the Yarr package::
 
-    pip install -e git+https://github.com/radiac/django-yarr.git@0.4.2#egg=django-yarr
+    pip install -e git+https://github.com/radiac/django-yarr.git#egg=django-yarr
 
 3. Follow all sections of the instructions below until you reach an earlier
    version than the one you are upgrading from (found in step 1)
@@ -22,10 +22,17 @@ Upgrading Django Yarr to 0.4.2
 Upgrading from 0.4.2 or earlier
 ===============================
 
-CSS:
-* Horizontal borders on ``.yarr_mode_list`` and ``.yarr_mode_list .yarr_entry``
-  have changed - same visible effect, but allows ``.yarr_content`` to force the
+If you have customised your installation of Yarr, you may be affected by the
+following changes:
+
+* CSS borders on ``.yarr_mode_list`` and ``.yarr_mode_list .yarr_entry`` have
+  changed - same visible effect, but allows ``.yarr_content`` to force the
   scroll element's height in fixed layout.
+* Your Yarr URLs cannot contain a slug ``00``. AJAX mode now adds URLs to the
+  browser's history by building URLs in Django with a feed pk of ``00``, then
+  passing them to JavaScript which replaces ``/00/`` with the feed pk. If your
+  In the unlikely event your Yarr URL does contain `00``, the AJAX site will
+  still work, but the URLs it generates will be invalid.
 
 
 Upgrading from 0.4.1 or earlier

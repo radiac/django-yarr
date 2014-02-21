@@ -129,6 +129,16 @@ def list_entries(
                 'title_template':   settings.TITLE_TEMPLATE,
                 'title_selector':   settings.TITLE_SELECTOR,
                 'available_pks':    available_pks,
+                'url_all': {
+                    None:           reverse('yarr-list_all'),
+                    ENTRY_UNREAD:   reverse('yarr-list_unread'),
+                    ENTRY_SAVED:    reverse('yarr-list_saved'),
+                },
+                'url_feed': {
+                    None:           reverse('yarr-list_all', kwargs={'feed_pk':'00'}),
+                    ENTRY_UNREAD:   reverse('yarr-list_unread', kwargs={'feed_pk':'00'}),
+                    ENTRY_SAVED:    reverse('yarr-list_saved', kwargs={'feed_pk':'00'}),
+                }
             }),
         },
     })

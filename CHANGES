@@ -5,7 +5,8 @@ Django Yarr Changes
 Changelog
 =========
 
-                        See UPGRADE
+0.4.3       2014-02-21  See UPGRADE
+            Feature:    URL history updates to reflect state
             Feature:    Tox test support (#9, #39)
             Bugfix:     Control bar no longer jumps around when in fixed layout
             Bugfix:     Fixed reST syntax in upgrade notes (#38)
@@ -164,8 +165,7 @@ Roadmap
 =======
 
 Target
-0.4.x       Update URL history to reflect state
-            Server-side user options
+0.4.x       Server-side user options
             * Move in js cookies
             * Memorise sort order
             * Jump on click (#23)

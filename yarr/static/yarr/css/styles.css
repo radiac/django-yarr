@@ -320,13 +320,6 @@ ul.yarr_entry_control li label input {
     text-overflow:  ellipsis;
 }
 
-.yarr_feed_list li a.yarr_disabled {
-    color:  #ccc;
-    cursor: default;
-    text-decoration: none;
-}
-
-
 .yarr_feed_unread {
     font-weight:    bold;
 }
