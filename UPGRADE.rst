@@ -1,6 +1,6 @@
-==============================
-Upgrading Django Yarr to 0.4.3
-==============================
+=====================
+Upgrading Django Yarr
+=====================
 
 1. Check which version of Yarr you are upgrading from::
 

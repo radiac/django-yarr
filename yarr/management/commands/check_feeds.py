@@ -45,21 +45,35 @@ class Command(BaseCommand):
             default=False,
             help='Print information to the console',
         ),
+        make_option(
+            '--url',
+            dest='url',
+            help='Specify the URL to update',
+        ),
     )
     
     @with_socket_timeout
     def handle(self, *args, **options):
+        # Apply url filter
+        entries = models.Entry.objects.all()
+        feeds = models.Feed.objects.all()
+        if options['url']:
+            feeds = feeds.filter(feed_url=options['url'])
+            if feeds.count() == 0:
+                raise ValueError('Specified URL must be a known feed')
+            entries = entries.filter(feed=feeds)
+        
         # Purge current entries
         if options['purge']:
-            models.Entry.objects.all().delete()
-            models.Feed.objects.all().update(
+            entries.delete()
+            feeds.update(
                 last_updated=None,
                 last_checked=None,
                 next_check=None,
             )
         
-        # Check all feeds for updates
-        models.Feed.objects.check(
+        # Check feeds for updates
+        feeds.check(
             force=options['force'],
             read=options['read'],
             logfile=self.stdout if options['verbose'] else None,

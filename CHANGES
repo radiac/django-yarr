@@ -5,6 +5,10 @@ Django Yarr Changes
 Changelog
 =========
 
+0.4.4       2014-04-24
+            Feature:    Added check_feeds --url
+            Bugfix:     Fixed bug triggered when feed entries lacked guids
+
 0.4.3       2014-02-21  See UPGRADE
             Feature:    URL history updates to reflect state
             Feature:    Tox test support (#9, #39)
@@ -176,6 +180,7 @@ Target
             * Delay image loading
             * Improve render time
             De-dupe multiple feeds with the same URL before checking
+            Make ajax pagination more efficient
             Option to ping for unread count updates
             Refresh button
 0.5.0       Drop support for Django 1.3

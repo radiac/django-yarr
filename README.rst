@@ -20,7 +20,7 @@ Features
 * No social nonsense
 
 
-Version 0.4.3
+Version 0.4.4
 
 * See `CHANGES <CHANGES>`_ for full changelog and roadmap
 * See `UPGRADE <UPGRADE.rst>`_ for how to upgrade from earlier releases
@@ -270,12 +270,17 @@ Sees which feeds are due to be checked, and checks them for updates.
 
 Usage::
 
-    python manage.py check_feeds [--force] [--read] [--purge]
+    python manage.py check_feeds [--force] [--read] [--purge] [--url=<URL>]
 
 * ``--force`` forces all feeds to update (slow)
 * ``--read`` marks new items as read (useful when first importing feeds)
 * ``--purge`` purges all existing entries
 * ``--verbose`` displays information about feeds as they are being checked
+* ``--url=<URL>`` specifies the feed URL to update (must be in the database)
+
+Specifying a feed URL will filter the feeds before any action is taken, so if
+used with ``purge``, only that feed will be purged. If no feed URL is
+specified, all feeds will be processed.
 
 Individual feeds can be given a custom checking frequency (default is 24
 hours), so ``check_feeds`` needs to run at least as frequently as that; i.e. if

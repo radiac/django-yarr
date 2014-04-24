@@ -10,7 +10,7 @@ setup(
     name = "django-yarr",
     version = __version__,
     author = "Richard Terry",
-    author_email = "python@radiac.net",
+    author_email = "code@radiac.net",
     description = ("A lightweight customisable RSS reader for Django"),
     license = "BSD",
     url = "http://radiac.net/projects/django-yarr/",

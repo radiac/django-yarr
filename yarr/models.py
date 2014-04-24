@@ -396,6 +396,7 @@ class Feed(models.Model):
         for raw_entry in entries:
             # Create Entry and set feed
             entry = Entry.objects.from_feedparser(raw_entry)
+            
             entry.feed = self
             entry.state = ENTRY_READ if read else ENTRY_UNREAD
             
@@ -404,9 +405,9 @@ class Feed(models.Model):
                 query = {
                     'guid': entry.guid,
                 }
-            elif entry.link:
+            elif entry.url:
                 query = {
-                    'link': entry.link,
+                    'url': entry.url,
                 }
             elif entry.title and entry.date:
                 # If title and date provided, this will match
