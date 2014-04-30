@@ -135,3 +135,5 @@ ALLOWED_ATTRIBUTES = getattr(
 ALLOWED_STYLES = getattr(
     settings, 'YARR_ALLOWED_STYLES', bleach.ALLOWED_STYLES,
 )
+
+STATIC_URL = getattr(settings, 'STATIC_URL')
