@@ -115,6 +115,7 @@ def list_entries(
         'order_asc':    order == ORDER_ASC,
         'constants':    constants,
         'current_view': current_view,
+        'STATIC_URL': settings.STATIC_URL,
         'yarr_settings': {
             'add_jquery':       settings.ADD_JQUERY,
             # JavaScript YARR_CONFIG variables
@@ -259,6 +260,7 @@ def feeds(request, template="yarr/feeds.html"):
         'title':    'Manage feeds',
         'feed_form': add_form,
         'feeds':    feeds,
+        'STATIC_URL': settings.STATIC_URL,
         'yarr_settings': {
             'add_jquery':       settings.ADD_JQUERY,
             # JavaScript YARR_CONFIG variables
@@ -328,6 +330,7 @@ def feed_form(
         'title':    title,
         'feed_form': feed_form,
         'feed':     feed,
+        'STATIC_URL': settings.STATIC_URL,
     })
     
     
@@ -351,6 +354,7 @@ def feed_delete(request, feed_pk, template="yarr/confirm.html"):
         'title':    'Delete feed',
         'message':  'Are you sure you want to delete the feed "%s"?' % feed.title,
         'submit_label': 'Delete feed',
+        'STATIC_URL': settings.STATIC_URL,
     })
 
 
