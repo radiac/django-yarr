@@ -9,7 +9,11 @@ from django.core.paginator import Paginator, EmptyPage, InvalidPage
 from django.core.serializers.json import DjangoJSONEncoder
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse
-from django.utils import simplejson
+
+try:
+    import json
+except ImportError:
+   from django.utils import simplejson as json
 
 from yarr import settings
 from yarr import models
@@ -88,7 +92,7 @@ def paginate(request, qs, adjacent_pages=3):
 
 
 def jsonEncode(data):
-    return simplejson.dumps(data, cls=DjangoJSONEncoder)
+    return json.dumps(data, cls=DjangoJSONEncoder)
 
 def jsonResponse(data):
     """

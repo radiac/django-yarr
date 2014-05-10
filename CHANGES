@@ -5,6 +5,9 @@ Django Yarr Changes
 Changelog
 =========
 
+0.4.5       2014-05-10
+            Bugfix:     Use json instead of deprecated simplejson (fixes #42)
+
 0.4.4       2014-04-24
             Feature:    Added check_feeds --url
             Bugfix:     Fixed bug triggered when feed entries lacked guids
