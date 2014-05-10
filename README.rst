@@ -210,6 +210,10 @@ The bleach settings can also be customised - see bleach docs for details:
 ``YARR_ALLOWED_STYLES``:
     Allowed styles
 
+Note that the default Yarr templates use ``STATIC_URL``, so your
+``TEMPLATE_CONTEXT_PROCESSORS`` should include
+``django.core.context_processors.static`` - it is there by default.
+
 
 Templates
 ---------
