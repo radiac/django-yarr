@@ -10,6 +10,7 @@ from django.core.serializers.json import DjangoJSONEncoder
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse
 
+# ++ Can remove this try/except when Yarr's min req is Django 1.5
 try:
     import json
 except ImportError:
