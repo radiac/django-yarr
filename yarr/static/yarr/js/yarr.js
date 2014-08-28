@@ -110,7 +110,7 @@ var YARR = (function () {
         
         function request(api_call, data, successFn, failFn) {
             if (!root_url) {
-                Yarr.Status.set('API not available');
+                Yarr.Status.set('API not available', true);
                 return;
             }
             

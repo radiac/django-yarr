@@ -1508,7 +1508,7 @@ $(function () {
         addEl: function ($el) {
             /** Add button element which can trigger this dropdown */
             this.$el = this.$el.add($el);
-        },  
+        },
         setValue: function (value) {
             this.value = value;
             var label = this.defaultMenu.setValue(value);
@@ -1541,5 +1541,5 @@ $(function () {
     /**************************************************************************
     **                                                          Initialise
     */
-    var layout = new Layout(options);
+    Yarr.layout = new Layout(options);
 });
