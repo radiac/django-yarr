@@ -4,13 +4,16 @@ Django Yarr - Yet Another RSS Reader
 
 A lightweight customisable RSS reader for Django.
 
-Example: http://radiac.net/projects/django-yarr/example/
+http://radiac.net/projects/django-yarr/
+
+Example: http://radiac.net/projects/django-yarr/demo/
 
 
 Features
 ========
 
-* Import list of feeds from a Google Reader takeaway
+* Easy to install - simple requirements, just drops into your site
+* Import and export list of feeds using OPML
 * View all, by feed, just unread or saved items
 * List or expanded layout
 * Mark items as read or saved
@@ -37,7 +40,9 @@ These packages are required:
 
 
 It is recommended that you use ``South`` to manage schema migrations, as future
-versions of Yarr will need changes to the database.
+versions of Yarr will need changes to the database. This project will switch
+from South to Django's own migrations (introduced in 1.7) in release 0.7.0
+(see the `roadmap <CHANGES>`_ for more details).
 
 You'll also need something to schedule feed updates - these instructions use
 cron.
@@ -312,9 +317,6 @@ Usage::
 
 Only tested with the OPML from a Google Reader takeaway, but should work with
 any OPML file where the feeds are specified using the attribute ``xmlUrl``.
-
-
-.. image:: http://radiac.net/projects/django-yarr/logo-large.png
 
 
 Clean Yarr
