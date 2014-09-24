@@ -41,7 +41,7 @@ These packages are required:
 
 It is recommended that you use ``South`` to manage schema migrations, as future
 versions of Yarr will need changes to the database. This project will switch
-from South to Django's own migrations (introduced in 1.7) in release 0.7.0
+from South to Django's own migrations (introduced in 1.7) in release 0.5.0
 (see the `roadmap <CHANGES>`_ for more details).
 
 You'll also need something to schedule feed updates - these instructions use
