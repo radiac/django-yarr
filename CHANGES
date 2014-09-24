@@ -172,13 +172,15 @@ Roadmap
 =======
 
 Target
-0.6.0       Django requirement to Django 1.4
-            Feed categorisation and entry tags
+0.4.6       Backported bug/security fixes for Django 1.6 and earlier
+0.5.0       Django requirement to Django 1.7
+            Switch from South migrations to Django migrations
             Introduce timezone support
             Display times according to user timezone, not server
-0.6.x       De-dupe multiple feeds with the same URL before checking
-            Support for custom user models
             Simplify template if statements with elif
+0.5.x       Feed categorisation and entry tags
+            De-dupe multiple feeds with the same URL before checking
+            Support for custom user models
             Server-side user options
             * Move in js cookies
             * Memorise sort order
@@ -193,9 +195,6 @@ Target
             Option to ping for unread count updates
             Refresh button
             Adaptive feed check frequency, with smarter spacing to spread load
-0.6.x       Backported bug/security fixes for as long as practical
-0.7.0       Django requirement to 1.7
-            Switch from South migrations to Django migrations
 1.0.0       Stable release, make available on PyPI
 1.1.0       Support for i18n
 
