@@ -237,7 +237,7 @@ class Feed(models.Model):
         # Unknown status
         raise FeedError('Unrecognised HTTP status %s' % status)
     
-    def check(self, force=False, read=False, logfile=None):
+    def check_feed(self, force=False, read=False, logfile=None):
         """
         Check the feed for updates
         

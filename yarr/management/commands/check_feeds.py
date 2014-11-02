@@ -73,7 +73,7 @@ class Command(BaseCommand):
             )
         
         # Check feeds for updates
-        feeds.check(
+        feeds.check_feed(
             force=options['force'],
             read=options['read'],
             logfile=self.stdout if options['verbose'] else None,

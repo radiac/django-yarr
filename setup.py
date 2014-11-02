@@ -25,7 +25,7 @@ setup(
         'Framework :: Django',
     ],
     
-    zip_safe=True,
+    zip_safe=False,
     install_requires=[
         'Django>=1.3.0',
         'bleach>=1.2.1',

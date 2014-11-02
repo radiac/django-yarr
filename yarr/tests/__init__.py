@@ -46,7 +46,7 @@ class FeedTest(TestCase):
         Test wellformed feed
         """
         # Update the feed
-        self.feed_wellformed.check()
+        self.feed_wellformed.check_feed()
 
         # Check the feed data
         self.assertEqual(
@@ -71,7 +71,7 @@ class FeedTest(TestCase):
         Test malformed feed
         """
         # Update the feed
-        self.feed_malformed.check()
+        self.feed_malformed.check_feed()
 
         # Check the feed data
         self.assertEqual(self.feed_malformed.site_url, '')
@@ -87,7 +87,7 @@ class FeedTest(TestCase):
         Test HTTP errors
         """
         # Update the feed
-        self.feed_missing_server.check()
+        self.feed_missing_server.check_feed()
 
         # Check the feed object
         self.assertEqual(self.feed_missing_server.is_active, True)
@@ -107,7 +107,7 @@ class FeedTest(TestCase):
             ``src``, ``alt``, ``title``, ``width``, and ``height`` attributes.
             """
             # Update the feed.
-            self.feed_with_img.check()
+            self.feed_with_img.check_feed()
             (entry,) = self.feed_with_img.entries.all()
 
             self.assertHTMLEqual(
