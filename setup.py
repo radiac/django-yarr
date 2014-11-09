@@ -27,7 +27,7 @@ setup(
     
     zip_safe=False,
     install_requires=[
-        'Django>=1.3.0',
+        'Django>=1.7.0',
         'bleach>=1.2.1',
         'feedparser>=5.1.3',
     ],

@@ -23,7 +23,10 @@ Features
 * No social nonsense
 
 
-Version 0.4.5
+Version 0.4.5-django17 (branch introducing Django 1.7 support)
+
+When ready, this branch will be released as 0.5.0
+(see the `roadmap <CHANGES>`_ for details).
 
 * See `CHANGES <CHANGES>`_ for full changelog and roadmap
 * See `UPGRADE <UPGRADE.rst>`_ for how to upgrade from earlier releases
@@ -34,15 +37,14 @@ Requirements
 
 These packages are required:
 
-* Django >= 1.3
+* Django >= 1.7
 * feedparser >= 5.1.3
 * bleach >= 1.2.1
 
 
-It is recommended that you use ``South`` to manage schema migrations, as future
-versions of Yarr will need changes to the database. This project will switch
-from South to Django's own migrations (introduced in 1.7) in release 0.5.0
-(see the `roadmap <CHANGES>`_ for more details).
+This branch uses Django migrations (introduced in Django 1.7). If you are
+using an earlier version of Django, use the main branch (which supports
+Django 1.3).
 
 You'll also need something to schedule feed updates - these instructions use
 cron.
@@ -85,12 +87,9 @@ Installation
    to create a link somewhere to ``yarr-home`` (or ``yarr.views.home``) so
    users can access it.
 
-5. Add the models to the database using South::
+5. Add the models to the database using Django migrations::
 
     python manage.py migrate yarr
-
-   If you don't have South, you will use ``python manage.py syncdb``, and
-   later regret your decision
 
 6. **Optional**: Import feeds for a user from an OPML file, load all items, and
    mark them as read::

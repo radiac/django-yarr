@@ -19,6 +19,16 @@ Upgrading Django Yarr
    then 0.3.12, but not 0.3.6 or earlier.
 
 
+Upgrading to 0.4.5-django17
+===========================
+
+This branch introduces Django 1.7 support. You will need to switch from
+South migrations to Django's new built-in migrations:
+
+1. Remove ``south`` from your ``INSTALLED_APPS``
+2. Run ``python manage.py migrate yarr``
+
+
 Upgrading from 0.4.2 or earlier
 ===============================
 
