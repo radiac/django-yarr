@@ -44,6 +44,8 @@ versions of Yarr will need changes to the database. This project will switch
 from South to Django's own migrations (introduced in 1.7) in release 0.5.0
 (see the `roadmap <CHANGES>`_ for more details).
 
+There is early support for Django 1.7 in the branch ``django17``.
+
 You'll also need something to schedule feed updates - these instructions use
 cron.
 
