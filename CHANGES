@@ -5,6 +5,10 @@ Django Yarr Changes
 Changelog
 =========
 
+0.5.0       
+            Feature:    Add support for Django 1.7 (#44)
+            Thanks to:  windedge for #44.
+
 0.4.5       2014-05-10
             Bugfix:     Use json instead of deprecated simplejson (fixes #42)
 
