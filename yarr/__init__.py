@@ -12,4 +12,5 @@ __credits__ = [
     "Tom Most (twm)",
     "Tuk Bredsdorff (tiktuk)",
     "Chris Franklin (chrisfranklin)",
+    "windedge",
 ]

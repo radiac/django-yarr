@@ -99,7 +99,7 @@ def jsonResponse(data):
     """
     Return a JSON HttpResponse
     """
-    return HttpResponse(jsonEncode(data), mimetype='application/json')
+    return HttpResponse(jsonEncode(data), content_type='application/json')
 
 def import_opml(file_path, user, purge=False):
     if purge:

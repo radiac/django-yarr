@@ -5,6 +5,7 @@ import datetime
 import time
 
 from django.db import connection, models, transaction
+from django.db.models.loading import get_model
 
 import bleach
 
@@ -20,10 +21,10 @@ class FeedQuerySet(models.query.QuerySet):
         "Filter to active feeds"
         return self.filter(is_active=True)
         
-    def check(self, force=False, read=False, logfile=None):
+    def check_feed(self, force=False, read=False, logfile=None):
         "Check active feeds for updates"
         for feed in self.active():
-            feed.check(force, read, logfile)
+            feed.check_feed(force, read, logfile)
         
         # Update the total and unread counts
         self.update_count_unread()
@@ -44,8 +45,8 @@ class FeedQuerySet(models.query.QuerySet):
         # IDs and states should only ever be ints, but force them to
         # ints to be sure we don't introduce injection vulns
         opts = {
-            'feed':     models.loading.get_model('yarr', 'Feed')._meta.db_table,
-            'entry':    models.loading.get_model('yarr', 'Entry')._meta.db_table,
+            'feed':     get_model('yarr', 'Feed')._meta.db_table,
+            'entry':    get_model('yarr', 'Entry')._meta.db_table,
             'ids':      ','.join([str(int(id)) for id in ids]),
             
             # Fields which should be set in extra
@@ -71,7 +72,7 @@ class FeedQuerySet(models.query.QuerySet):
         )
         
         # Ensure changes are committed in Django 1.5 or earlier
-        transaction.commit_unless_managed()
+        #transaction.commit_unless_managed()
         
         return self
     
@@ -96,25 +97,25 @@ class FeedQuerySet(models.query.QuerySet):
 class FeedManager(models.Manager):
     def active(self):
         "Active feeds"
-        return self.get_query_set().active()
+        return self.get_queryset().active()
         
-    def check(self, force=False, read=False, logfile=None):
+    def check_feed(self, force=False, read=False, logfile=None):
         "Check all active feeds for updates"
-        return self.get_query_set().check(force, read, logfile)
+        return self.get_queryset().check_feed(force, read, logfile)
         
     def update_count_total(self):
         "Update the cached total counts"
-        return self.get_query_set().update_count_total()
+        return self.get_queryset().update_count_total()
     
     def update_count_unread(self):
         "Update the cached unread counts"
-        return self.get_query_set().update_count_unread()
+        return self.get_queryset().update_count_unread()
     
     def count_unread(self):
         "Get a dict of unread counts, with feed pks as keys"
-        return self.get_query_set().count_unread()
+        return self.get_queryset().count_unread()
         
-    def get_query_set(self):
+    def get_queryset(self):
         "Return a FeedQuerySet"
         return FeedQuerySet(self.model)
 
@@ -153,7 +154,7 @@ class EntryQuerySet(models.query.QuerySet):
         self.update(state=state)
         
         # Look up affected feeds
-        feeds = models.loading.get_model('yarr', 'Feed').objects.filter(
+        feeds = get_model('yarr', 'Feed').objects.filter(
             pk__in=feed_pks
         )
         
@@ -164,7 +165,7 @@ class EntryQuerySet(models.query.QuerySet):
         
     def feeds(self):
         "Get feeds associated with entries"
-        return models.loading.get_model('yarr', 'Feed').objects.filter(
+        return get_model('yarr', 'Feed').objects.filter(
             entries__in=self
         ).distinct()
         
@@ -192,27 +193,27 @@ class EntryQuerySet(models.query.QuerySet):
 class EntryManager(models.Manager):
     def user(self, user):
         "Filter by user"
-        return self.get_query_set().user(user)
+        return self.get_queryset().user(user)
     
     def read(self):
         "Get read entries"
-        return self.get_query_set().read()
+        return self.get_queryset().read()
         
     def unread(self):
         "Get unread entries"
-        return self.get_query_set().unread()
+        return self.get_queryset().unread()
         
     def saved(self):
         "Get saved entries"
-        return self.get_query_set().saved()
+        return self.get_queryset().saved()
         
     def set_state(self, state):
         "Set a new state for these entries, and update unread count"
-        return self.get_query_set().set_state(state)
+        return self.get_queryset().set_state(state)
     
     def update_feed_unread(self):
         "Update feed read count cache"
-        return self.get_query_set().update_feed_unread()
+        return self.get_queryset().update_feed_unread()
         
     def from_feedparser(self, raw):
         """
@@ -299,7 +300,7 @@ class EntryManager(models.Manager):
         
         return entry
         
-    def get_query_set(self):
+    def get_queryset(self):
         """
         Return an EntryQuerySet
         """
