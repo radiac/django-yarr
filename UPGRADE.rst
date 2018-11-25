@@ -19,14 +19,18 @@ Upgrading Django Yarr
    then 0.3.12, but not 0.3.6 or earlier.
 
 
-Upgrading to 0.4.5-django17
-===========================
+Upgrading from 0.4.5
+====================
 
-This branch introduces Django 1.7 support. You will need to switch from
-South migrations to Django's new built-in migrations:
+1.  This version switches from South migrations to Django migrations:
 
-1. Remove ``south`` from your ``INSTALLED_APPS``
-2. Run ``python manage.py migrate yarr``
+    1. Remove ``south`` from your ``INSTALLED_APPS``
+    2. Run ``python manage.py migrate yarr``
+
+2.  URLs are now namespaced; the ``yarr-home`` page is now renamed to
+    ``yarr:index``
+
+3.  The setting ``YARR_HOME`` is now ``YARR_INDEX_URL``
 
 
 Upgrading from 0.4.2 or earlier

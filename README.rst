@@ -23,9 +23,8 @@ Features
 * No social nonsense
 
 
-Version 0.4.5-django17 (branch introducing Django 1.7 support)
+Version 0.5.0
 
-When ready, this branch will be released as 0.5.0
 (see the `roadmap <CHANGES>`_ for details).
 
 * See `CHANGES <CHANGES>`_ for full changelog and roadmap
@@ -35,19 +34,14 @@ When ready, this branch will be released as 0.5.0
 Requirements
 ============
 
-These packages are required:
+Yarr supports Django 1.11 or later on Python 2.7 and 3.4+.
 
-* Django >= 1.7
+These additional packages are required:
+
 * feedparser >= 5.1.3
 * bleach >= 1.2.1
 
-
-This branch uses Django migrations (introduced in Django 1.7). If you are
-using an earlier version of Django, use the main branch (which supports
-Django 1.3).
-
-You'll also need something to schedule feed updates - these instructions use
-cron.
+You'll need something to schedule feed updates - these instructions use cron.
 
 
 Installation
@@ -69,23 +63,13 @@ Installation
         'yarr',
     )
 
-   Note: If you are using Django 1.4 or later, you will need to set
-   ``USE_TZ = False``, until support for Django 1.3 is dropped from Yarr.
-   Unless you are using PostgreSQL, also set ``TIME_ZONE = 'UTC'`` to ease
-   the `migration`_ later.
-
-   You may also want to change some settings here (see `Settings`_ below)
-   
-.. _migration: https://docs.djangoproject.com/en/1.5/topics/i18n/timezones/#migration-guide
-
 3. Include the URLconf in your project's urls.py::
 
-    url(r'^yarr/', include('yarr.urls')),
+    url(r'^yarr/', include('yarr.urls', namespace='yarr')),
 
 4. Make sure your ``base.html`` template has the necessary blocks, or override
    Yarr's base, ``yarr/base.html`` (see `Templates`_ below). You will also want
-   to create a link somewhere to ``yarr-home`` (or ``yarr.views.home``) so
-   users can access it.
+   to create a link somewhere to ``yarr:index`` so users can access it.
 
 5. Add the models to the database using Django migrations::
 
@@ -134,26 +118,26 @@ To manage the web interface:
 
 ``YARR_PAGE_LENGTH``:
     The maximum number of entries to show on one page
-    
+
     Default: ``25``
 
 ``YARR_API_PAGE_LENGTH``:
     The maximum number of entries to return when infinite scrolling with AJAX
-    
+
     Default: ``5``
 
 ``YARR_LAYOUT_FIXED``:
     If True, use the default fixed layout - control bar at the top, feed list
     on the left, and content to the right.
-    
+
     The control bar and will switch to ``position: fixed`` when scrolling down
     moves it off the page, the feed list will grow to take up the full
     available height, and a button will be added to the control bar to slide
     the feed list on or off to the left (changing the width of
     ``yarr_feed_list`` and the left margin of ``#yarr_content``.
-    
+
     Default: ``True``
-  
+
 ``YARR_ADD_JQUERY``:
     If True, adds the bundled version of jQuery when required
 
@@ -164,41 +148,41 @@ To control feed updates:
 
 ``YARR_SOCKET_TIMEOUT``:
     The default socket timeout, in seconds
-    
+
     Highly recommended that this is **not** set to ``None``, which would block
-    
+
     Default: ``30``
-    
+
 
 ``YARR_MINIMUM_INTERVAL``:
     The minimum interval for checking a feed, in minutes.
-    
+
     This should match the interval that the cron job runs at, to ensure all
     feeds are checked on time.
-    
+
     Default: ``60``
 
 ``YARR_MAXIMUM_INTERVAL``:
     The maximum interval for checking a feed, in minutes - no feeds should go
     longer than this without a check.
-    
+
     Default: ``24 * 60``
 
 ``YARR_FREQUENCY``:
     The default frequency to check a feed, in minutes
 
     Default: ``24 * 60``
-    
+
 ``YARR_ITEM_EXPIRY``:
     The number of days to keep a read item which is no longer in the feed.
-    
+
     Set this to ``0`` to expire immediately, ``-1`` to never expire.
-    
+
     If changing this from ``-1``, you will probably want to add expiry dates to
     all relevant entries by forcing an update:
-    
+
         python manage.py check_feeds --force
-    
+
     Default: ``1``
 
 
@@ -253,7 +237,7 @@ blocks for you to override:
 * ``yarr_content`` for the list of entries
 
 Note: the url to the arrow sprite is hard-coded in styles.css for the default
-static url, ``/static/yarr/images/arrows.png``. Override 
+static url, ``/static/yarr/images/arrows.png``. Override
 ``.yarr_control .yarr_nav a`` in your stylesheet if your static url is
 different.
 

@@ -1,4 +1,5 @@
 import os
+import six
 
 import django
 from django.contrib.auth.models import User
@@ -6,10 +7,6 @@ from django.test import TestCase
 
 from yarr.models import Feed
 from yarr.decorators import with_socket_timeout
-
-from .opml import ExportTests
-
-__all__ = ['ExportTests', 'FeedTest']
 
 
 class FeedTest(TestCase):
@@ -76,7 +73,8 @@ class FeedTest(TestCase):
         # Check the feed data
         self.assertEqual(self.feed_malformed.site_url, '')
         self.assertEqual(self.feed_malformed.is_active, True)
-        self.assertRegexpMatches(
+        six.assertRegex(
+            self,
             self.feed_malformed.error,
             r'^Feed error: SAXParseException - '
         )
@@ -91,27 +89,23 @@ class FeedTest(TestCase):
 
         # Check the feed object
         self.assertEqual(self.feed_missing_server.is_active, True)
-        self.assertRegexpMatches(
+        six.assertRegex(
+            self,
             self.feed_missing_server.error,
             r'^URL error: .+?Name or service not known',
         )
 
-    # assertHTMLEqual was introduced in Django 1.5.  And of course skipIf was
-    # introduced in Python 2.7 or Django 1.5, so we have to do this the jank
-    # way in case of Django < 1.5 on Python 2.6 (we don't care about Python
-    # 2.5, do we?)
-    if django.VERSION >= (1, 5):
-        def test_feed_with_img(self):
-            """
-            With the default settings, an ``<img>`` tag should be permitted
-            ``src``, ``alt``, ``title``, ``width``, and ``height`` attributes.
-            """
-            # Update the feed.
-            self.feed_with_img.check_feed()
-            (entry,) = self.feed_with_img.entries.all()
+    def test_feed_with_img(self):
+        """
+        With the default settings, an ``<img>`` tag should be permitted
+        ``src``, ``alt``, ``title``, ``width``, and ``height`` attributes.
+        """
+        # Update the feed.
+        self.feed_with_img.check_feed()
+        (entry,) = self.feed_with_img.entries.all()
 
-            self.assertHTMLEqual(
-                entry.content,
-                '<img src="http://example.com/webcomic.png" alt="alt text" '
-                    'title="annoying in-joke" width="100" height="200">'
-            )
+        self.assertHTMLEqual(
+            entry.content,
+            '<img src="http://example.com/webcomic.png" alt="alt text" '
+                'title="annoying in-joke" width="100" height="200">'
+        )

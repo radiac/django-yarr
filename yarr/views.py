@@ -7,17 +7,17 @@ from django.shortcuts import get_object_or_404, render
 from django.template import loader, Context
 from django.utils.html import escape
 
-from yarr import constants, settings, utils, models, forms
-from yarr.constants import (
+from . import constants, settings, utils, models, forms
+from .constants import (
     ENTRY_UNREAD, ENTRY_READ, ENTRY_SAVED, ORDER_ASC, ORDER_DESC,
 )
 
 
 @login_required
-def home(request):
-    if settings.HOME == 'yarr-home':
+def index(request):
+    if settings.INDEX_URL == 'yarr:index':
         raise Http404
-    return HttpResponseRedirect(reverse(settings.HOME))
+    return HttpResponseRedirect(reverse(settings.INDEX_URL))
 
 
 def get_entries(request, feed_pk, state):
@@ -26,7 +26,7 @@ def get_entries(request, feed_pk, state):
     """
     # Start building querystring
     qs = models.Entry.objects.select_related()
-    
+
     # Look up feed
     feed = None
     if feed_pk is None:
@@ -34,7 +34,7 @@ def get_entries(request, feed_pk, state):
     else:
         feed = get_object_or_404(models.Feed, pk=feed_pk, user=request.user)
         qs = qs.filter(feed=feed)
-        
+
     # Filter further
     if state == ENTRY_UNREAD:
         qs = qs.unread()
@@ -42,9 +42,10 @@ def get_entries(request, feed_pk, state):
         qs = qs.read()
     elif state == ENTRY_SAVED:
         qs = qs.saved()
-        
+
     return qs, feed
-    
+
+
 @login_required
 def list_entries(
     request, feed_pk=None, state=None, template="yarr/list_entries.html",
@@ -67,7 +68,7 @@ def list_entries(
     """
     # Get entries queryset
     qs, feed = get_entries(request, feed_pk, state)
-    
+
     order = request.GET.get('order', ORDER_DESC)
     if order == ORDER_ASC:
         qs = qs.order_by('date')
@@ -76,10 +77,10 @@ def list_entries(
 
     # Make list of available pks for this page
     available_pks = list(qs.values_list('pk', flat=True))
-    
+
     # Paginate
     entries, pagination = utils.paginate(request, qs)
-    
+
     # Base title
     if state is None:
         title = 'All items'
@@ -89,22 +90,22 @@ def list_entries(
         title = 'Saved items'
     else:
         raise ValueError('Cannot list entries in unknown state')
-        
+
     # Add tag feed to title
     if feed:
         title = '%s - %s' % (feed.title, title)
-    
+
     # Get list of feeds for feed list
     feeds = models.Feed.objects.filter(user=request.user)
-    
+
     # Determine current view for reverse
     if state is None:
-        current_view = 'yarr-list_all'
+        current_view = 'list_all'
     elif state == ENTRY_UNREAD:
-        current_view = 'yarr-list_unread'
+        current_view = 'list_unread'
     elif state == ENTRY_SAVED:
-        current_view = 'yarr-list_saved'
-    
+        current_view = 'list_saved'
+
     return render(request, template, {
         'title':    title,
         'entries':  entries,
@@ -114,12 +115,12 @@ def list_entries(
         'state':    state,
         'order_asc':    order == ORDER_ASC,
         'constants':    constants,
-        'current_view': current_view,
+        'current_view': 'yarr:{}'.format(current_view),
         'yarr_settings': {
             'add_jquery':       settings.ADD_JQUERY,
             # JavaScript YARR_CONFIG variables
             'config':   utils.jsonEncode({
-                'api':  reverse('yarr-api_base'),
+                'api':  reverse('yarr:api_base'),
                 'con':  '#yarr_con',
                 'initial_state':    state,
                 'initial_order':    order,
@@ -130,20 +131,20 @@ def list_entries(
                 'title_selector':   settings.TITLE_SELECTOR,
                 'available_pks':    available_pks,
                 'url_all': {
-                    None:           reverse('yarr-list_all'),
-                    ENTRY_UNREAD:   reverse('yarr-list_unread'),
-                    ENTRY_SAVED:    reverse('yarr-list_saved'),
+                    None:           reverse('yarr:list_all'),
+                    ENTRY_UNREAD:   reverse('yarr:list_unread'),
+                    ENTRY_SAVED:    reverse('yarr:list_saved'),
                 },
                 'url_feed': {
-                    None:           reverse('yarr-list_all', kwargs={'feed_pk':'00'}),
-                    ENTRY_UNREAD:   reverse('yarr-list_unread', kwargs={'feed_pk':'00'}),
-                    ENTRY_SAVED:    reverse('yarr-list_saved', kwargs={'feed_pk':'00'}),
+                    None:           reverse('yarr:list_all', kwargs={'feed_pk':'00'}),
+                    ENTRY_UNREAD:   reverse('yarr:list_unread', kwargs={'feed_pk':'00'}),
+                    ENTRY_SAVED:    reverse('yarr:list_saved', kwargs={'feed_pk':'00'}),
                 }
             }),
         },
     })
-    
-    
+
+
 @login_required
 def entry_state(
     request, feed_pk=None, entry_pk=None, state=None, if_state=None,
@@ -157,20 +158,20 @@ def entry_state(
     if entry_pk is not None:
         # Changing specific entry
         qs = qs.filter(pk=entry_pk)
-        
+
     elif state == ENTRY_READ:
         if feed_pk is not None:
             # Changing all entries in a feed
             qs = qs.filter(feed__pk=feed_pk)
-            
+
         # Only mark unread as read - don't change saved
         qs = qs.unread()
-        
+
     else:
         # Either unknown state, or trying to bulk unread/save
         messages.error(request, 'Cannot perform this operation')
-        return HttpResponseRedirect(reverse(home))
-        
+        return HttpResponseRedirect(reverse(settings.INDEX_URL))
+
     # Check for if_state
     if if_state is not None:
         if if_state == ENTRY_UNREAD:
@@ -181,33 +182,33 @@ def entry_state(
             qs = qs.saved()
         else:
             messages.error(request, 'Unknown condition')
-            return HttpResponseRedirect(reverse(home))
-        
+            return HttpResponseRedirect(reverse(settings.INDEX_URL))
+
     # Check there's something to change
     count = qs.count()
     if count == 0:
         messages.error(request, 'No entries found to change')
-        return HttpResponseRedirect(reverse(home))
-    
+        return HttpResponseRedirect(reverse(settings.INDEX_URL))
+
     # Process
     if request.POST:
         # Change state and update unread count
         qs.set_state(state)
-        
+
         # If they're not marked as read, they can't ever expire
         # If they're marked as read, they will be given an expiry date
         # when Feed._update_entries determines they can expire
         if state != ENTRY_READ:
             qs.clear_expiry()
-        
+
         if state is ENTRY_UNREAD:
             messages.success(request, 'Marked as unread')
         elif state is ENTRY_READ:
             messages.success(request, 'Marked as read')
         elif state is ENTRY_SAVED:
             messages.success(request, 'Saved')
-        return HttpResponseRedirect(reverse(home))
-    
+        return HttpResponseRedirect(reverse(settings.INDEX_URL))
+
     # Prep messages
     op_text = {
         'verb': 'mark',
@@ -219,7 +220,7 @@ def entry_state(
         op_text['desc'] = ' as read'
     elif state is ENTRY_SAVED:
         op_text['verb'] = 'save'
-        
+
     if entry_pk:
         title = '%(verb)s item%(desc)s'
         msg = 'Are you sure you want to %(verb)s this item%(desc)s?'
@@ -229,18 +230,18 @@ def entry_state(
     else:
         title = '%(verb)s all items%(desc)s'
         msg = 'Are you sure you want to %(verb)s all items in every feed%(desc)s?'
-    
+
     title = title % op_text
     title = title[0].upper() + title[1:]
-    
+
     return render(request, template, {
         'title':    title,
         'message':  msg % op_text,
         'submit_label': title,
     })
-    
 
-    
+
+
 @login_required
 def feeds(request, template="yarr/feeds.html"):
     """
@@ -252,9 +253,9 @@ def feeds(request, template="yarr/feeds.html"):
     """
     # Get list of feeds for feed list
     feeds = models.Feed.objects.filter(user=request.user)
-    
+
     add_form = forms.AddFeedForm()
-    
+
     return render(request, template, {
         'title':    'Manage feeds',
         'feed_form': add_form,
@@ -263,11 +264,11 @@ def feeds(request, template="yarr/feeds.html"):
             'add_jquery':       settings.ADD_JQUERY,
             # JavaScript YARR_CONFIG variables
             'config':   utils.jsonEncode({
-                'api':  reverse('yarr-api_base'),
+                'api':  reverse('yarr:api_base'),
             }),
         },
     })
-    
+
 
 @login_required
 def feed_form(
@@ -290,11 +291,11 @@ def feed_form(
         feed = get_object_or_404(models.Feed, user=request.user, pk=feed_pk)
         title = "Edit feed"
         template = template_edit
-    
+
     # Process request
     if request.POST:
         feed_form = form_class(request.POST, instance=feed)
-        
+
         if feed_form.is_valid():
             # Save changes
             if is_add:
@@ -309,7 +310,7 @@ def feed_form(
                 feed.save()
             else:
                 feed = feed_form.save()
-            
+
             # Report and redirect
             if success_url is None:
                 messages.success(
@@ -317,20 +318,20 @@ def feed_form(
                     'Feed added.' if is_add else 'Changes saved',
                 )
             return HttpResponseRedirect(
-                reverse('yarr-feeds') if success_url is None else success_url
+                reverse('yarr:feeds') if success_url is None else success_url
             )
     elif 'feed_url' in request.GET:
         feed_form = form_class(request.GET, instance=feed)
     else:
         feed_form = form_class(instance=feed)
-    
+
     return render(request, template, {
         'title':    title,
         'feed_form': feed_form,
         'feed':     feed,
     })
-    
-    
+
+
 @login_required
 def feed_delete(request, feed_pk, template="yarr/confirm.html"):
     """
@@ -340,13 +341,13 @@ def feed_delete(request, feed_pk, template="yarr/confirm.html"):
     """
     # Look up entry
     feed = get_object_or_404(models.Feed, pk=feed_pk, user=request.user)
-    
+
     # Update entry
     if request.POST:
         feed.delete()
         messages.success(request, 'Feed deleted')
-        return HttpResponseRedirect(reverse(home))
-    
+        return HttpResponseRedirect(reverse(settings.INDEX_URL))
+
     return render(request, template, {
         'title':    'Delete feed',
         'message':  'Are you sure you want to delete the feed "%s"?' % feed.title,
@@ -380,14 +381,14 @@ def api_base(request):
 def api_feed_get(request):
     """
     JSON API to get feed data
-    
+
     Arguments passed on GET:
         feed_pks    List of feeds to get information about
         fields      List of model fields to get
                     If not provided, returns all fields
                     Excluded fields: id, user, all related fields
                     The pk (id) is provided as the key
-    
+
     Returns in JSON format:
         success     Boolean indicating success
         feeds       Object with feed pk as key, feed data as object in value
@@ -402,7 +403,7 @@ def api_feed_get(request):
     else:
         success = False
         feeds = models.Feed.objects.none()
-    
+
     # Get safe list of attributes
     fields_available = [
         field.name for field in models.Feed._meta.fields
@@ -418,7 +419,7 @@ def api_feed_get(request):
         ]
     else:
         fields = fields_available
-    
+
     # Prep list of safe fields which don't need to be escaped
     safe_fields = [
         field.name for field in models.Feed._meta.fields if (
@@ -429,7 +430,7 @@ def api_feed_get(request):
             ))
         )
     ]
-    
+
     # Get data
     data = {}
     for feed in feeds.values('pk', *fields):
@@ -438,26 +439,26 @@ def api_feed_get(request):
             (key, val if key in safe_fields else escape(val))
             for key, val in feed.items()
         ])
-    
+
     # Respond
     return utils.jsonResponse({
         'success':  success,
         'feeds':    data,
     })
-    
-    
+
+
 @login_required
 def api_feed_pks_get(request):
     """
     JSON API to get entry pks for given feeds
-    
+
     Arguments passed on GET:
         feed_pks    List of feeds to get entry pks for about
                     If none, returns entry pks for all feeds
         state       The state of entries to read
         order       The order to sort entries in
                     Defaults to ORDER_DESC
-    
+
     Returns in JSON format:
         success     Boolean indicating success
         pks         Object with feed pk as key, list of entry pks as list value
@@ -466,7 +467,7 @@ def api_feed_pks_get(request):
     feed_pks = request.GET.get('feed_pks', '')
     state = GET_state(request, 'state')
     order = request.GET.get('order', ORDER_DESC)
-    
+
     # Get entries queryset, filtered by user and feed
     entries = models.Entry.objects.filter(feed__user=request.user)
     if feed_pks:
@@ -477,7 +478,7 @@ def api_feed_pks_get(request):
                 'success':  False,
                 'msg':      'Invalid request',
             })
-    
+
     # Filter by state
     if state == ENTRY_UNREAD:
         entries = entries.unread()
@@ -485,39 +486,39 @@ def api_feed_pks_get(request):
         entries = entries.read()
     elif state == ENTRY_SAVED:
         entries = entries.saved()
-    
+
     # Order them
     if order == ORDER_ASC:
         entries = entries.order_by('date')
     else:
         entries = entries.order_by('-date')
-    
+
     # Get a list of remaining pks
     pks = list(entries.values_list('pk', flat=True))
-    
+
     # Get unread counts for feeds in this response
     feed_unread = {}
     for feed in entries.feeds():
         feed_unread[str(feed.pk)] = feed.count_unread
-        
+
     # Respond
     return utils.jsonResponse({
         'success':  True,
         'pks':      pks,
         'feed_unread': feed_unread,
     })
-        
-    
+
+
 @login_required
 def api_entry_get(request, template="yarr/include/entry.html"):
     """
     JSON API to get entry data
-    
+
     Arguments passed on GET:
         entry_pks   List of entries to get
         order       Order to send them back in
                     Defaults to ORDER_DESC
-        
+
     Returns in JSON format:
         success     Boolean indicating success
         entries     List of entries, rendered entry as object in value:
@@ -525,7 +526,7 @@ def api_entry_get(request, template="yarr/include/entry.html"):
     """
     pks = request.GET.get('entry_pks', '')
     order = request.GET.get('order', ORDER_DESC)
-    
+
     # Get entries queryset
     if pks:
         success = True
@@ -535,13 +536,13 @@ def api_entry_get(request, template="yarr/include/entry.html"):
     else:
         success = False
         entries = models.Entry.objects.none()
-    
+
     # Order them
     if order == ORDER_ASC:
         entries = entries.order_by('date')
     else:
         entries = entries.order_by('-date')
-    
+
     # Render
     data = []
     compiled = loader.get_template(template)
@@ -555,13 +556,13 @@ def api_entry_get(request, template="yarr/include/entry.html"):
                 'entry':        entry,
             }))
         })
-    
+
     # Respond
     return utils.jsonResponse({
         'success':  success,
         'entries':  data,
     })
-    
+
 
 def GET_state(request, param):
     """
@@ -576,11 +577,11 @@ def GET_state(request, param):
 def api_entry_set(request):
     """
     JSON API to set entry data
-    
+
     Arguments passed on GET:
         entry_pks   List of entries to update
         state       New state
-    
+
     Returns in JSON format:
         success     Boolean
         msg         Error message, if success == False
@@ -590,7 +591,7 @@ def api_entry_set(request):
     success = True
     msg = ''
     feed_unread = {}
-    
+
     # Get entries queryset
     pks = request.GET.get('entry_pks', '')
     if pks:
@@ -601,8 +602,8 @@ def api_entry_set(request):
     else:
         success = False
         msg = 'No entries found'
-    
-    
+
+
     # Check for if_state
     if_state = GET_state(request, 'if_state')
     if success and if_state is not None:
@@ -616,21 +617,21 @@ def api_entry_set(request):
         else:
             success = False
             msg = 'Unknown condition'
-            
-    
+
+
     # Update new state
     state = GET_state(request, 'state')
     if success:
         if state in (ENTRY_UNREAD, ENTRY_READ, ENTRY_SAVED):
             # Change state and get updated unread count
             feed_unread = entries.set_state(state, count_unread=True)
-            
+
             # If they're not marked as read, they can't ever expire
             # If they're marked as read, they will be given an expiry date
             # when Feed._update_entries determines they can expire
             if state != ENTRY_READ:
                 entries.clear_expiry()
-            
+
             # Decide message
             if state == ENTRY_UNREAD:
                 msg = 'Marked as unread'
@@ -638,11 +639,11 @@ def api_entry_set(request):
                 msg = 'Marked as read'
             elif state == ENTRY_SAVED:
                 msg = 'Saved'
-    
+
         else:
             success = False
             msg = 'Unknown operation'
-        
+
     # Respond
     return utils.jsonResponse({
         'success':  success,

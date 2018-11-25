@@ -1,14 +1,12 @@
 {% extends "yarr/base_all.html" %}
 
-{% load url from future %}
-
 {% block content %}
 
 <div class="yarr_control yarr_control_manage">
     <ul>
-        <li><a href="{% url "yarr-home" %}">Browse items</a></li>
+        <li><a href="{% url "yarr:index" %}">Browse items</a></li>
         {% if not feeds %}
-            <li><a href="{% url "yarr-feeds" %}">Manage feeds</a></li>
+            <li><a href="{% url "yarr:feeds" %}">Manage feeds</a></li>
         {% endif %}
     </ul>
 </div>

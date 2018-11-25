@@ -1,11 +1,10 @@
 {% extends "yarr/base_manage.html" %}
-
-{% load url from future %}
+{% load static %}
 
 {% block js %}
 {{ block.super }}
-<script src="{{ STATIC_URL }}yarr/js/yarr.js"></script>
-<script src="{{ STATIC_URL }}yarr/js/feeds.js"></script>
+<script src="{% static "yarr/js/yarr.js" %} "></script>
+<script src="{% static "yarr/js/feeds.js" %}></script>
 {% endblock %}
 
 {% block content %}
@@ -20,14 +19,14 @@
 <h2>Manage feeds</h2>
 
 <table class="yarr_feed_manage">
-    
+
     <colgroup>
         <col class="yarr_name">
         <col class="yarr_unread">
         <col class="yarr_status">
         <col class="yarr_next_check">
     </colgroup>
-    
+
     <thead>
         <tr>
             <th>Feed</th>
@@ -45,20 +44,20 @@
             data-yarr-last-checked="{{ feed.last_checked|default:"Not checked yet" }}"
             data-yarr-is-active="{{ feed.is_active|lower }}"
         >
-            <td><a href="{% url "yarr-feed_edit" feed_pk=feed.pk %}">{{ feed }}</a></td>
-            
+            <td><a href="{% url "yarr:feed_edit" feed_pk=feed.pk %}">{{ feed }}</a></td>
+
             <td>{{ feed.count_unread }}/{{ feed.count_total }}</td>
-            
+
             {% if feed.is_active %}
                 {% if feed.error %}
-                    <td><img src="{{ STATIC_URL }}yarr/images/warning.png" alt="Problem" title="Problem"></td>
+                    <td><img src="{% static "yarr/images/warning.png" %}" alt="Problem" title="Problem"></td>
                 {% else %}
-                    <td><img src="{{ STATIC_URL }}yarr/images/success.png" alt="Active" title="Active"></td>
+                    <td><img src="{% static "yarr/images/success.png" %}" alt="Active" title="Active"></td>
                 {% endif %}
             {% else %}
-                <td><img src="{{ STATIC_URL }}yarr/images/error.png" alt="Inactive" title="Inactive"></td>
+                <td><img src="{% static "yarr/images/error.png" %}" alt="Inactive" title="Inactive"></td>
             {% endif %}
-            
+
             {% if feed.is_active %}
                 <td>{{ feed.next_check|default:"As soon as possible" }}</td>
             {% else %}
@@ -71,7 +70,7 @@
 
 <h2>Export feeds</h2>
 
-<p><a href="{% url "yarr-feeds_export" %}" rel="nofollow">Export feeds as OPML</a>
+<p><a href="{% url "yarr:feeds_export" %}" rel="nofollow">Export feeds as OPML</a>
 
 </div>
 

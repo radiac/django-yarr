@@ -1,23 +1,18 @@
 """
 Utils for yarr
 """
+import json
+import six
 from xml.dom import minidom
 from xml.etree.ElementTree import Element, SubElement, ElementTree
-from cStringIO import StringIO
 
 from django.core.paginator import Paginator, EmptyPage, InvalidPage
 from django.core.serializers.json import DjangoJSONEncoder
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse
 
-# ++ Can remove this try/except when Yarr's min req is Django 1.5
-try:
-    import json
-except ImportError:
-   from django.utils import simplejson as json
-
-from yarr import settings
-from yarr import models
+from . import settings
+from . import models
 
 
 def paginate(request, qs, adjacent_pages=3):
@@ -166,6 +161,6 @@ def export_opml(user):
         if feed.site_url:
             item.set('htmlUrl', feed.site_url)
 
-    buf = StringIO()
+    buf = six.BytesIO()
     ElementTree(root).write(buf, encoding="UTF-8")
     return buf.getvalue()

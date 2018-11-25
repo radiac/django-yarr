@@ -8,7 +8,7 @@ import bleach
 #
 
 # Page to open at Yarr root url (resolved using reverse)
-HOME = getattr(settings, 'YARR_HOME', 'yarr-list_unread')
+INDEX_URL = getattr(settings, 'YARR_INDEX_URL', 'yarr:list_unread')
 
 # Pagination limits
 PAGE_LENGTH = getattr(settings, 'YARR_PAGE_LENGTH', 25)

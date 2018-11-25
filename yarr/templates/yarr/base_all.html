@@ -1,14 +1,15 @@
 {% extends "yarr/base.html" %}
+{% load static %}
 
 {% block css %}
-<link rel="stylesheet" href="{{ STATIC_URL }}yarr/css/styles.css" type="text/css" />
+<link rel="stylesheet" href="{% static "yarr/css/styles.css" %}" type="text/css" />
 {{ block.super }}
 {% endblock %}
 
 {% block js %}
 {{ block.super }}
 {% if yarr_settings.add_jquery %}
-<script src="{{ STATIC_URL }}yarr/js/jquery-1.10.1.min.js"></script>
+<script src="{% static "yarr/js/jquery-1.10.1.min.js" %}"></script>
 {% endif %}
 <script>YARR_CONFIG={{ yarr_settings.config|safe|default:'{}' }};</script>
 {% endblock %}

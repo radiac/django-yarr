@@ -1,20 +1,19 @@
-{% load url from future %}
 
 {% if feed.error %}
     <h2>Problem with feed</h2>
     <p>Last time it was checked, the feed had the following error:</p>
     <blockquote><pre><code>{{ feed.error }}</code></pre></blockquote>
-    
+
     {% if feed.is_active %}
         <p>The feed is still being checked.</p>
     {% else %}
         <p>The feed is no longer being checked.</p>
     {% endif %}
-    
+
     <h2>Edit feed</h2>
 {% endif %}
 
-<form action="{% url "yarr-feed_edit" feed_pk=feed.pk %}" method="POST" class="yarr_form">
+<form action="{% url "yarr:feed_edit" feed_pk=feed.pk %}" method="POST" class="yarr_form">
 {% csrf_token %}
 
 <table>
@@ -25,4 +24,4 @@
 
 </form>
 
-<p><a href="{% url "yarr-feed_delete" feed_pk=feed.pk %}">Delete this feed</a></p>
+<p><a href="{% url "yarr:feed_delete" feed_pk=feed.pk %}">Delete this feed</a></p>
