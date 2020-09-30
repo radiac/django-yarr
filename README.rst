@@ -242,8 +242,9 @@ own templates folder and map them; for example::
 
     {% block script %}
         {{ block.super }}
-        {% block js %}{% endblock %}
-    {% endblock %}
+    {% block js %}
+    {% endblock script %}
+    {% endblock js %}
 
 Once you have mapped these blocks, the default settings and templates should
 work out of the box with most designs.
