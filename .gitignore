@@ -3,3 +3,7 @@ django_yarr.egg-info
 .tox
 build
 dist
+.coverage*
+htmlcov
+docs/_*
+node_modules/*

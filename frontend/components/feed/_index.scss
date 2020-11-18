@@ -1,0 +1,16 @@
+$colour-feed-unread: $colour-grey-dark;
+
+.yarr {
+    .feed-list {
+        .selected {
+            .name {
+                font-weight: $weight-bold;
+            }
+        }
+        .unread {
+            margin-left: 0.5rem;
+            font-size: 0.9rem;
+            color: $colour-feed-unread;
+        }
+    }
+}

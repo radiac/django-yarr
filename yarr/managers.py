@@ -6,6 +6,7 @@ import time
 
 from django.apps import apps
 from django.db import connection, models, transaction
+from django.utils import timezone
 
 import bleach
 
@@ -171,7 +172,7 @@ class EntryQuerySet(models.query.QuerySet):
         return self.filter(
             expires__isnull=True
         ).update(
-            expires=datetime.datetime.now() + datetime.timedelta(
+            expires=timezone.now() + datetime.timedelta(
                 days=settings.ITEM_EXPIRY,
             )
         )
@@ -278,8 +279,10 @@ class EntryManager(models.Manager):
             )
         )
         if date is not None:
-            entry.date = datetime.datetime.fromtimestamp(
-                time.mktime(date)
+            entry.date = timezone.make_aware(
+                datetime.datetime.fromtimestamp(
+                    time.mktime(date)
+                )
             )
 
         entry.url = raw.get('link', '')

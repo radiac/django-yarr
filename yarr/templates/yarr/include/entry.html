@@ -1,50 +1,65 @@
 
-<div class="yarr_entry{% if entry.state == constants.ENTRY_READ %} yarr_read{% endif %}{% if entry.state == constants.ENTRY_SAVED %} yarr_saved{% endif %}"
+<div class="entry{% if entry.state == constants.ENTRY_READ %} read{% endif %}{% if entry.state == constants.ENTRY_SAVED %} saved{% endif %}"
     data-yarr-feed="{{ entry.feed.pk }}"
     data-yarr-pk="{{ entry.pk }}"
     data-yarr-state="{{ entry.state }}"
 >
-    <div class="yarr_entry_li">
-        <div class="yarr_li_feed">{{ entry.feed.title }}</div>
-        <div class="yarr_li_date">{{ entry.date|date:"M d Y, H:i" }}</div>
-        <div class="yarr_li_entry">
-            <span>{{ entry.title|default:"Untitled" }}</span>
-            — {{ entry.content|truncatewords_html:30|striptags|default:"…" }}
-        </div>
-    </div>
-    <div class="yarr_entry_content">
+    {% if not layout_article %}
+    <input type="radio" name="layout_list" id="layout_list-{{ entry.pk }}">
+    <label class="summary" for="layout_list-{{ entry.pk }}" aria-hidden="true">
+        <span class="feed">{{ entry.feed.title }}</span>
+        <span class="title">{{ entry.title|default:"Untitled" }}</span>
+        <span class="date">{{ entry.date|date:"M d Y, H:i" }}</span>
+    </label>
+    <div class="article">
+        <label class="summary--close" for="layout_list-0" aria-hidden="true">
+        &nbsp;
+        </label>
+    {% endif %}
+
+    <div class="header">
         <h2>
             {% if entry.url %}<a href="{{ entry.url }}" target="_blank" class="yarr:link">{% endif %}
             {{ entry.title|default:"Untitled" }}
             {% if entry.url %}</a>{% endif %}
         </h2>
-        <p class="yarr_date">{{ entry.date|date:"M d Y, H:i" }}</p>
-        <p class="yarr_feed">from
-            {% if entry.feed.site_url %}<a href="{{ entry.feed.site_url }}" target="_blank">{% endif %}
-            {{ entry.feed.title }}
-            {% if entry.feed.site_url %}</a>{% endif %}
-            {% if entry.author %}by <span class="yarr_author">{{ entry.author }}</span>{% endif %}
-        </p>
-
-        {{ entry.content|safe }}
-
-        {% if entry.tags %}<p class="yarr_tags">{{ entry.tags }}</p>{% endif %}
-        {% if entry.comments_url %}<p class="yarr_comments"><a href="{{ entry.comments_url }}" target="_blank">Comments</a></p>{% endif %}
+        <div class="meta">
+            <p class="date">{{ entry.date|date:"M d Y, H:i" }}</p>
+            <p class="feed">from
+                {% if entry.feed.site_url %}<a href="{{ entry.feed.site_url }}" target="_blank">{% endif %}
+                {{ entry.feed.title }}
+                {% if entry.feed.site_url %}</a>{% endif %}
+                {% if entry.author %}by <span class="author">{{ entry.author }}</span>{% endif %}
+            </p>
+        </div>
     </div>
 
-    <ul class="yarr_entry_control">
+    <div class="content">
+        {{ entry.content|safe }}
+
+        {% if entry.tags %}<p class="tags">{{ entry.tags }}</p>{% endif %}
+        {% if entry.comments_url %}<p class="comments"><a href="{{ entry.comments_url }}" target="_blank">Comments</a></p>{% endif %}
+    </div>
+
+    <div class="control">
+        <ul>
         {% if entry.state == constants.ENTRY_READ %}
-            <li><a href="{% url 'yarr:mark_saved' entry_pk=entry.pk %}">Save</a></li>
             <li><a href="{% url 'yarr:mark_unread' entry_pk=entry.pk %}">Mark as unread</a></li>
+            <li><a href="{% url 'yarr:mark_saved' entry_pk=entry.pk %}">Save</a></li>
         {% else %}
             {% if entry.state == constants.ENTRY_SAVED %}
-                <li>Saved</li>
                 <li><a href="{% url 'yarr:mark_read' entry_pk=entry.pk %}">Discard as read</a></li>
+                <li>Saved</li>
             {% else %}
-                <li><a href="{% url 'yarr:mark_saved' entry_pk=entry.pk %}">Save</a></li>
                 <li><a href="{% url 'yarr:mark_read' entry_pk=entry.pk %}">Mark as read</a></li>
+                <li><a href="{% url 'yarr:mark_saved' entry_pk=entry.pk %}">Save</a></li>
             {% endif %}
         {% endif %}
-    </ul>
+        </ul>
+    </div>
+
+    {% if not layout_article %}
+    </div>
+    {% endif %}
 
 </div>

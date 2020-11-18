@@ -1,0 +1,290 @@
+/*
+** Styles for entry
+*/
+
+$colour-border: $colour-grey !default;
+$colour-border-unread: $colour-blue !default;
+$colour-border-read: $colour-grey !default;
+$colour-border-saved: $colour-green !default;
+
+$colour-header-link: $colour-blue !default;
+$colour-control-fg: $colour-grey-dark !default;
+$colour-control-bg: $colour-grey-light !default;
+
+$font-size-h2: 1.8rem !default;
+$line-height-h2: 1.8rem !default;
+$font-size-control: 0.9rem !default;
+
+$colour-active: $colour-red-dark !default;
+$colour-active-border: $colour-active !default;
+
+$colour-unread: $colour-blue !default;
+$colour-unread-border: $colour-unread !default;
+$colour-unread-header-bg: lighten($colour-unread, 50%) !default;
+$colour-unread-header-border: lighten($colour-unread, 40%) !default;
+$colour-unread-h2: $colour-unread !default;
+$colour-unread-header-link: $colour-unread !default;
+
+$colour-read: $colour-grey !default;
+$colour-read-border: $colour-read !default;
+$colour-read-header-bg: lighten($colour-read, 50%) !default;
+$colour-read-header-border: lighten($colour-read, 40%) !default;
+$colour-read-h2: $colour-read !default;
+$colour-read-header-link: $colour-read !default;
+
+$colour-saved: $colour-green !default;
+$colour-saved-border: $colour-saved !default;
+$colour-saved-header-bg: lighten($colour-saved, 50%) !default;
+$colour-saved-header-border: lighten($colour-saved, 40%) !default;
+$colour-saved-h2: $colour-saved !default;
+$colour-saved-header-link: $colour-saved !default;
+
+$colour-content-a: $colour-blue !default;
+$colour-content-a-hover: lighten($colour-blue, 15%) !default;
+
+.yarr {
+    .entry {
+        // Define entry as unread as default
+        margin: $padding-content 0;
+        border: 1px solid $colour-border;
+        border-radius: 0;
+
+        &:first-child {
+            margin-top: 0;
+        }
+        &:last-child {
+            margin-bottom: 0;
+        }
+
+        .header,
+        .content {
+            padding: $padding-content;
+        }
+
+        .header {
+            h2 {
+                margin: 0;
+                padding: 0 0 0.3rem 0;
+                font-size: $font-size-h2;
+                line-height: $line-height-h2;
+
+                a {
+                    color: $colour-unread-h2;
+                }
+            }
+
+            a {
+                text-decoration: none;
+
+                &:hover {
+                    text-decoration: underline;
+                }
+            }
+
+            @include media('>=tablet') {
+                .meta {
+                    // Use flex to manage layout
+                    display: flex;
+                    flex-direction: row;
+                    width: 100%;
+
+                    p.date {
+                        order: 2;
+                        flex: 0 0 10rem;
+                        text-align: right;
+                    }
+
+                    p.feed {
+                        order: 1;
+                        flex: 1 0 auto;
+
+                        // Set width to 0 so flex only grows to parent width
+                        width: 0;
+                    }
+                }
+            }
+        }
+
+        .control {
+            border-top: 1px solid $colour-border;
+            background: $colour-control-bg;
+            padding: ($padding-content / 2) $padding-content;
+
+            ul {
+                display: flex;
+                flex-direction: row;
+                flex-wrap: wrap;
+
+                li {
+                    flex: 0 0 auto;
+
+                    a, span {
+                        margin-right: 1rem;
+                        text-decoration: none;
+                        font-size: $font-size-control;
+                        color: $colour-control-fg;
+                    }
+
+                    span {
+                        font-weight: $weight-bold;
+                    }
+
+                    a:hover {
+                        text-decoration: underline;
+                    }
+                }
+            }
+        }
+
+
+        /*
+        ** State-based styles
+        */
+
+        & {
+            border-left: 3px solid $colour-unread-border;
+
+            .header {
+                border-bottom: 1px solid $colour-unread-header-border;
+
+                h2 {
+                    a {
+                        color: $colour-unread-h2;
+                    }
+                }
+
+                .meta {
+                    a {
+                        color: $colour-unread-header-link;
+                    }
+                }
+            }
+
+            &.active {
+                border-left-color: $colour-active-border;
+
+                .header {
+                    background: $colour-unread-header-bg;
+                }
+            }
+        }
+
+        &.read {
+            border-left-color: $colour-read-border;
+
+            .header {
+                border-bottom-color: $colour-read-header-border;
+
+                h2 {
+                    a {
+                        color: $colour-read-h2;
+                    }
+                }
+
+                .meta {
+                    a {
+                        color: $colour-read-header-link;
+                    }
+                }
+            }
+
+            &.active {
+                border-left-color: $colour-active-border;
+
+                .header {
+                    background: $colour-read-header-bg;
+                }
+            }
+        }
+
+        &.saved {
+            border-left-color: $colour-saved-border;
+
+            .header {
+                border-bottom-color: $colour-saved-header-border;
+
+                h2 {
+                    a {
+                        color: $colour-saved-h2;
+                    }
+                }
+
+                .meta {
+                    a {
+                        color: $colour-saved-header-link;
+                    }
+                }
+            }
+
+            &.active {
+                border-left-color: $colour-active-border;
+
+                .header {
+                    background: $colour-saved-header-bg;
+                }
+            }
+        }
+
+
+        /*
+        ** Entry content
+        */
+
+        .content {
+            h1, h2, h3, h4, h5, h6 {
+                font-weight: $weight-bold;
+                margin-top: $padding-content * 1.5;
+
+                &:first-child {
+                    margin-top: 0;
+                }
+            }
+
+            h1 {
+                font-size: $font-size-h2 * 0.95;
+            }
+
+            h2 {
+                font-size: $font-size-h2 * 0.90;
+            }
+
+            h3 {
+                font-size: $font-size-h2 * 0.85;
+            }
+
+            p {
+                margin: $padding-content 0;
+
+                &:first-child {
+                    margin-top: 0;
+                }
+
+                &:last-child {
+                    margin-bottom: 0;
+                }
+            }
+
+            img {
+                max-width: 100%;
+            }
+
+            ul {
+                list-style: initial;
+                margin: $padding-content $padding-content * 2;
+
+                li {
+                    display: list-item;
+                }
+            }
+
+            a {
+                color: $colour-content-a;
+
+                &:hover {
+                    color: $colour-content-a-hover;
+                }
+            }
+
+        }
+    }
+}

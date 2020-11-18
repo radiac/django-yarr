@@ -104,6 +104,7 @@ setup(
         'bleach>=1.2.1',
         'feedparser>=5.1.3',
         'six',
+        'django-yaa-settings',
     ],
     extras_require={
         'dev': [

@@ -1,0 +1,49 @@
+.yarr {
+    form {
+        table {
+            width: 100%;
+
+            tr {
+                td:first-child {
+                    width: 6rem;
+                }
+            }
+            input[type="text"] {
+                width: 100%;
+            }
+            .helptext {
+                font-size: 0.8rem;
+                color: $colour-grey-dark;
+            }
+        }
+    }
+
+    table.feed_manage {
+        width: 100%;
+
+        tr {
+            th {
+                background-color: $colour-grey-dark;
+                color: $colour-white;
+                padding: 0.2rem;
+            }
+            td {
+                padding: 0.2rem;
+            }
+
+            &:nth-child(2n) {
+                background-color: $colour-grey-mid;
+            }
+
+            td:nth-child(2) {
+                width: 4rem;
+            }
+            td:nth-child(3) {
+                width: 4rem;
+            }
+            td:nth-child(4) {
+                width: 11rem;
+            }
+        }
+    }
+}

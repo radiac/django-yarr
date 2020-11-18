@@ -1,14 +1,28 @@
 {% extends "yarr/base_all.html" %}
 
-{% block content %}
+{% block yarr_control %}
+<ul class="menu_manage">
+    <li>
+        <a
+            href="{% url "yarr:index" %}"
+            class="menu_manage-read_feeds"
+        >Read feeds</a>
+    </li>
+    {% if not feeds %}
+        <li>
+            <a
+                href="{% url "yarr:feeds" %}"
+                class="menu_manage-manage_feeds"
+            >Manage feeds</a>
+        </li>
+    {% endif %}
+</ul>
+{% endblock %}
 
-<div class="yarr_control yarr_control_manage">
-    <ul>
-        <li><a href="{% url "yarr:index" %}">Browse items</a></li>
-        {% if not feeds %}
-            <li><a href="{% url "yarr:feeds" %}">Manage feeds</a></li>
-        {% endif %}
-    </ul>
-</div>
-
+{% block yarr_body %}
+    <div class="body">
+        <div class="content">
+            {% block yarr_content %}{% endblock %}
+        </div>
+    </div>
 {% endblock %}

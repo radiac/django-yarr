@@ -14,6 +14,7 @@ except:
 from django.conf import settings as django_settings
 from django.core.validators import URLValidator
 from django.db import models
+from django.utils import timezone
 from django.utils.encoding import python_2_unicode_compatible
 
 import feedparser
@@ -289,7 +290,7 @@ class Feed(models.Model):
             self.save()
 
         # Remove expired entries
-        self.entries.filter(expires__lte=datetime.datetime.now()).delete()
+        self.entries.filter(expires__lte=timezone.now()).delete()
 
     def _do_check(self, force, read, logfile):
         """
@@ -306,7 +307,7 @@ class Feed(models.Model):
         logfile.write("[%s] %s" % (self.pk, self.feed_url))
 
         # Check it's due for a check before the next poll
-        now = datetime.datetime.now()
+        now = timezone.now()
         next_poll = now + datetime.timedelta(minutes=settings.MINIMUM_INTERVAL)
         if (
             not force
@@ -359,8 +360,10 @@ class Feed(models.Model):
             feed.get('published_parsed', None),
         )
         if updated:
-            updated = datetime.datetime.fromtimestamp(
-                time.mktime(updated)
+            updated = timezone.make_aware(
+                datetime.datetime.fromtimestamp(
+                    time.mktime(updated)
+                )
             )
 
         # Stop if we now know it hasn't updated recently
@@ -544,7 +547,7 @@ class Entry(models.Model):
     def save(self, *args, **kwargs):
         # Default the date
         if self.date is None:
-            self.date = datetime.datetime.now()
+            self.date = timezone.now()
 
         # Save
         super(Entry, self).save(*args, **kwargs)

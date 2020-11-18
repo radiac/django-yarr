@@ -1,0 +1,27 @@
+/*
+** Status notifications
+*/
+
+$colour-status-fg: $colour-white !default;
+$colour-status-bg-ok: $colour-green !default;
+$colour-status-bg-error: $colour-red-dark !default;
+
+
+.yarr {
+    .status {
+        padding: 0.6rem 1rem;
+        font-weight:    bold;
+        color: $colour-status-fg;
+        background-color: $colour-status-bg-ok;
+        box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.7);
+
+        &.error {
+            background-color: $colour-status-bg-error;
+        }
+
+        @include media('<=tablet') {
+            top: auto;
+            bottom: 0;
+        }
+    }
+}

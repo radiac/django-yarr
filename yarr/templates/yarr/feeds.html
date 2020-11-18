@@ -7,10 +7,8 @@
 <script src="{% static "yarr/js/feeds.js" %}></script>
 {% endblock %}
 
-{% block content %}
-<div id="yarr_feeds">
-
-{{ block.super }}
+{% block yarr_content %}
+<div id="feeds">
 
 <h2>Add feed</h2>
 {% include "yarr/include/form_feed_add.html" %}
@@ -18,13 +16,13 @@
 
 <h2>Manage feeds</h2>
 
-<table class="yarr_feed_manage">
+<table class="feed_manage">
 
     <colgroup>
-        <col class="yarr_name">
-        <col class="yarr_unread">
-        <col class="yarr_status">
-        <col class="yarr_next_check">
+        <col class="name">
+        <col class="unread">
+        <col class="feed_status">
+        <col class="next_check">
     </colgroup>
 
     <thead>

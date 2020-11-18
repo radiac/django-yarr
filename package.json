@@ -1,0 +1,41 @@
+{
+    "name": "yarr",
+    "version": "0.5.0",
+    "description": "django-yarr",
+    "main": "index.js",
+    "author": "Richard Terry",
+    "license": "BSD",
+    "private": true,
+    "devDependencies": {
+        "@babel/cli": "^7.2.0",
+        "@babel/core": "^7.2.0",
+        "@babel/preset-env": "^7.2.0",
+        "@rushstack/set-webpack-public-path-plugin": "^2.3.4",
+        "babel-loader": "^8.0.4",
+        "clean-webpack-plugin": "^3.0.0",
+        "css-loader": "^4.3.0",
+        "image-webpack-loader": "^7.0.0",
+        "mini-css-extract-plugin": "^0.11.2",
+        "node-sass": "^4.11.0",
+        "optimize-css-assets-webpack-plugin": "^5.0.1",
+        "resolve-url-loader": "^3.1.0",
+        "sass-loader": "^10.0.2",
+        "source-map-loader": "^1.1.0",
+        "style-loader": "^1.1.3",
+        "svg-url-loader": "^6.0.0",
+        "url-loader": "^4.1.0",
+        "webpack": "^4.27.1",
+        "webpack-cli": "^3.1.2",
+        "webpack-dev-server": "^3.1.10"
+    },
+    "scripts": {
+        "watch": "webpack-dev-server --host 0 --mode development",
+        "dev": "webpack --mode development",
+        "build": "webpack --mode production",
+        "test": "jest"
+    },
+    "dependencies": {
+        "include-media": "^1.4.9",
+        "jquery": "^3.5.1"
+    }
+}

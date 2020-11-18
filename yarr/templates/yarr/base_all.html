@@ -2,16 +2,38 @@
 {% load static %}
 
 {% block css %}
-<link rel="stylesheet" href="{% static "yarr/css/styles.css" %}" type="text/css" />
-{{ block.super }}
-{% endblock %}
-
-{% block js %}
-{{ block.super }}
-{% if yarr_settings.add_jquery %}
-<script src="{% static "yarr/js/jquery-1.10.1.min.js" %}"></script>
+{% if not DEV_MODE %}
+    <link rel="stylesheet" href="{% static "yarr/index.css" %}" type="text/css" />
 {% endif %}
-<script>YARR_CONFIG={{ yarr_settings.config|safe|default:'{}' }};</script>
+{{ block.super }}
 {% endblock %}
 
 {% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="yarr {% block page_class %}{% endblock %}">
+    <div class="control">
+        {% block yarr_control %}{% endblock %}
+    </div>
+
+    {% block yarr_body %}
+    <div class="body with-sidebar">
+            <div class="sidebar">
+                {% block yarr_sidebar %}{% endblock %}
+            </div>
+
+            <div class="content">
+                {% block yarr_content %}{% endblock %}
+            </div>
+        </div>
+    </div>
+    {% endblock %}
+</div>
+
+<script>YARR_CONFIG={{ yarr_settings.config|safe|default:'{}' }};</script>
+{% if DEV_MODE %}
+    <script src="http://localhost:8080/index.js"></script>
+{% else %}
+    <script src="{% static "js/index.js" %}"></script>
+{% endif %}
+{% endblock %}

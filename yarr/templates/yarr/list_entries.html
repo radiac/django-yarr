@@ -1,43 +1,118 @@
 {% extends "yarr/base_all.html" %}
 {% load static %}
 
-{% block js %}
-{{ block.super }}
-<script src="{% static "yarr/js/yarr.js" %}"></script>
-<script src="{% static "yarr/js/list_entries.js" %}"></script>
-{% endblock %}
-
-{% block content %}
-
-<div id="yarr_con">
+{% block page_class %}yarr-list-entries{% if not sidebar_default %} yarr__conf-sidebar_override{% endif %}{% if not layout_article %} yarr__conf-layout_list{% endif %}{% endblock %}
 
 {% block yarr_control %}
-    <div class="yarr_control">
-        <ul class="yarr_menu_state">
-            <li><a href="{% url 'yarr:list_all' %}{% if order_asc %}?order={{ constants.ORDER_ASC }}{% endif %}"{% if state == None %} class="yarr_selected"{% endif %}>All</a></li>
-            <li><a href="{% url 'yarr:list_unread' %}{% if order_asc %}?order={{ constants.ORDER_ASC }}{% endif %}"{% if state == constants.ENTRY_UNREAD %} class="yarr_selected"{% endif %}>Unread</a></li>
-            <li><a href="{% url 'yarr:list_saved' %}{% if order_asc %}?order={{ constants.ORDER_ASC }}{% endif %}"{% if state == constants.ENTRY_SAVED %} class="yarr_selected"{% endif %}>Saved</a></li>
+{% spaceless %}
+    <div class="menu">
+        <ul class="menu_ctl">
+            <li>
+                <a
+                    href="?sidebar={% if sidebar_default %}{{ constants.SIDEBAR_OVERRIDE }}{% else %}{{ constants.SIDEBAR_DEFAULT }}{% endif %}"
+                    class="menu_ctl-sidebar_toggle{% if sidebar_default %} selected{% endif %}"
+                ></a>
+            </li>
         </ul>
-        <ul class="yarr_menu_op">
+
+        <div class="menu_state">
+            <span class="menu_state-{% if state == constants.ENTRY_UNREAD %}unread{% elif state == constants.ENTRY_SAVED %}saved{% else %}all{% endif %}"></span>
+            <ul>
+                <li>
+                    <a
+                        href="{% url 'yarr:list_all' %}"
+                        class="menu_state-all{% if state is None %} selected{% endif %}"
+                    >All</a>
+                </li>
+                <li>
+                    <a
+                        href="{% url 'yarr:list_unread' %}"
+                        class="menu_state-unread{% if state == constants.ENTRY_UNREAD %} selected{% endif %}"
+                    >Unread</a>
+                </li>
+                <li>
+                    <a
+                        href="{% url 'yarr:list_saved' %}"
+                        class="menu_state-saved{% if state == constants.ENTRY_SAVED %} selected{% endif %}"
+                    >Saved</a>
+                </li>
+            </ul>
+        </div>
+
+        <div class="menu_sort">
+            <span class="menu_sort-{% if order_asc %}asc{% else %}desc{% endif %}"></span>
+            <ul>
+                <li>
+                    <a
+                        href="?order={{ constants.ORDER_DESC }}"
+                        class="menu_sort-desc{% if not order_asc %} selected{% endif %}"
+                    >Latest first</a>
+                </li>
+                <li>
+                    <a
+                        href="?order={{ constants.ORDER_ASC }}"
+                        class="menu_sort-asc{% if order_asc %} selected{% endif %}"
+                    >Oldest first</a>
+                </li>
+            </ul>
+        </div>
+
+        <div class="menu_layout">
+            <span class="menu_layout-{% if layout_article %}article{% else %}list{% endif %}"></span>
+            <ul>
+                <li>
+                    <a
+                        href="?layout={{ constants.LAYOUT_ARTICLE}}"
+                        class="menu_layout-article{% if layout_article %} selected{% endif %}"
+                    >Article view</a>
+                </li>
+                <li>
+                    <a
+                        href="?layout={{ constants.LAYOUT_LIST }}"
+                        class="menu_layout-list{% if not layout_article %} selected{% endif %}"
+                    >List view</a>
+                </li>
+            </ul>
+        </div>
+
+        <div class="menu_op">
+            <span class="menu_op-mark_read"></span>
+            <ul>
             {% if feed %}
-                <li><a href="{% url 'yarr:mark_feed_read' feed_pk=feed.pk %}">Mark feed read</a></li>
+                <li>
+                    <a
+                        href="{% url 'yarr:mark_feed_read' feed_pk=feed.pk %}"
+                        class="menu_op-mark_read"
+                    >Mark feed read</a>
+                </li>
             {% else %}
-                <li><a href="{% url 'yarr:mark_all_read' %}">Mark all read</a></li>
+                <li>
+                    <a
+                        href="{% url 'yarr:mark_all_read' %}"
+                        class="menu_op-mark_read"
+                    >Mark all read</a>
+                </li>
+            </ul>
             {% endif %}
+        </div>
+
+        <ul class="menu_manage">
+            <li>
+                <a
+                    href="{% url "yarr:feeds" %}"
+                    class="menu_manage-manage_feeds"
+                ></a>
+            </li>
         </ul>
 
-        <ul class="yarr_menu_sort">
-            {% if order_asc %}
-                <li><a href="./">Latest first</a></li>
-            {% else %}
-                <li><a href="?order={{ constants.ORDER_ASC }}">Oldest first</a></li>
-            {% endif %}
-        </ul>
+    </div>
 
+{% endspaceless %}
+    <div class="feednav">
         {% if entries.paginator.num_pages > 1 %}
-            <ul class="yarr_paginated">
+            <ul class="paginated">
                 {% if pagination.has_previous %}
-                    <li><a href="?{{ pagination.previous.query }}">&laquo;</a></li>
+                    <li><a href="?{{ pagination.previous.query }}" class="paginated-previous">&laquo;</a></li>
                 {% endif %}
 
                 {% if pagination.first %}
@@ -47,7 +122,7 @@
 
                 {% for linkpage in pagination.pages %}
                     {% if linkpage.current %}
-                        <li><span class="yarr_selected">{{ linkpage.number }}</span></li>
+                        <li><span class="selected">{{ linkpage.number }}</span></li>
                     {% else %}
                         <li><a href="?{{ linkpage.query }}">{{ linkpage.number }}</a></li>
                     {% endif %}
@@ -59,46 +134,45 @@
                 {% endif %}
 
                 {% if pagination.has_next %}
-                    <li><a href="?{{ pagination.next.query }}">&raquo;</a></li>
+                    <li><a href="?{{ pagination.next.query }}" class="paginated-next">&raquo;</a></li>
                 {% endif %}
             </ul>
         {% endif %}
     </div>
+
+    {# List mode needs a detached radio to close items #}
+    {% if not layout_article %}
+    <input type="radio" name="layout_list" id="layout_list-0">
+    {% endif %}
+
 {% endblock %}
 
-{% block yarr_feed_list %}
-    <div class="yarr_feed_list">
-        <ul class="yarr_feed_menu">
-            <li><a href="{% url 'yarr:feed_add' %}" class="yarr_add_feed">Add feed</a></li>
-            <li><a href="{% url 'yarr:feeds' %}" class="yarr_manage_feeds">Manage feeds</a></li>
-            <li><a href="{% url current_view %}" class="yarr_view_all{% if not feed %} yarr_disabled{% endif %}">View all feeds</a></li>
-        </ul>
 
-        <ul class="yarr_feed_list_feeds">
-            {% for feed in feeds %}
-            <li data-yarr-feed="{{ feed.pk }}" {% if feed.count_unread %}class="yarr_feed_unread"{% endif %}>
-                <a href="{% url current_view feed_pk=feed.pk %}">{{ feed }}</a><span class="yarr_count_unread">{{ feed.count_unread }}</span>
-            </li>
-            {% endfor %}
-        </ul>
-    </div>
-{% endblock %}
+{% block yarr_sidebar %}
+<div class="sidebar-body">
+    <ul class="feed_menu">
+        <li><a href="{% url current_view %}" class="view_all{% if not feed %} disabled{% endif %}">View all feeds</a></li>
+    </ul>
 
-{% block yarr_content %}
-    <div class="yarr_content">
-        {% if entries.object_list|length == 0 %}
-            <p>No {% if state == constants.ENTRY_UNREAD %}unread {% endif %}{% if state == constants.ENTRY_SAVED %}saved {% endif %}items</p>
-
-        {% else %}
-
-            {% for entry in entries.object_list %}
-                {% include "yarr/include/entry.html" %}
-            {% endfor %}
-
-        {% endif %}
-    </div>
-
+    <ul class="feed_list_feeds">
+        {% for feed in feeds %}
+        <li data-yarr-feed="{{ feed.pk }}" {% if feed.count_unread %}class="feed_unread"{% endif %}>
+            <a href="{% url current_view feed_pk=feed.pk %}">{{ feed }}</a><span class="count_unread">{{ feed.count_unread }}</span>
+        </li>
+        {% endfor %}
+    </ul>
 </div>
 {% endblock %}
 
+{% block yarr_content %}
+    {% if entries.object_list|length == 0 %}
+        <p>No {% if state == constants.ENTRY_UNREAD %}unread {% endif %}{% if state == constants.ENTRY_SAVED %}saved {% endif %}items</p>
+
+    {% else %}
+
+        {% for entry in entries.object_list %}
+            {% include "yarr/include/entry.html" %}
+        {% endfor %}
+
+    {% endif %}
 {% endblock %}
