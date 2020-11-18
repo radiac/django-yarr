@@ -342,9 +342,20 @@ Shortcut keys
 * ``p`` or ``k``: Previous item
 * ``v`` or ``ENTER``: View original (in new window)
 
+Contributing
+============
+
+Contributions are welcome, preferably via pull request. Check the github
+issues and project `roadmap <CHANGES>`_ to see what needs work.
+
+When submitting UI changes, please aim to support the latest versions of
+Chrome, Firefox and Internet Explorer through progressive enhancement; ideally
+old browsers should still be able to access all functionality, even if the
+experience isn't quite as smooth.
+
 
 Credits
-=======
+-------
 
 Thanks to all contributors, who are listed in CHANGES.
 
