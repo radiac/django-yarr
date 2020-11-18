@@ -5,7 +5,12 @@ Django Yarr Changes
 Changelog
 =========
 
-0.5.0       
+0.6.0       2020-11-18
+            Feature:    Add support for Django 2.2 - 3.1
+            Feature:    Reimplement frontend to use a CSS-based layout
+            Change:     Drop support for Django <2.1
+
+0.5.0       2014-11-09
             Feature:    Add support for Django 1.7 (#44)
             Thanks to:  windedge for #44.
 
@@ -138,7 +143,7 @@ Changelog
             Bugfix:     Fixed mark as read to change item style without reload
             Bugfix:     Fixed double parsing by disabling feedparser sanitizer
             Note:       Changed roadmap
-            
+
 0.2.0       2013-07-05  See UPGRADE
             Feature:    Added list view
             Feature:    Replaced API with more sensible get/set model

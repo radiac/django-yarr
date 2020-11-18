@@ -4,9 +4,14 @@ Django Yarr - Yet Another RSS Reader
 
 A lightweight customisable RSS reader for Django.
 
-http://radiac.net/projects/django-yarr/
+* Project site: http://radiac.net/projects/django-yarr/
+* Source code: https://github.com/radiac/django-yarr
 
-Example: http://radiac.net/projects/django-yarr/demo/
+.. image:: https://travis-ci.org/radiac/django-yarr.svg?branch=master
+    :target: https://travis-ci.org/radiac/django-yarr
+
+.. image:: https://coveralls.io/repos/radiac/django-yarr/badge.svg?branch=master&service=github
+    :target: https://coveralls.io/github/radiac/django-yarr?branch=master
 
 
 Features
@@ -22,26 +27,10 @@ Features
 * Manage subscriptions through user views or admin site
 * No social nonsense
 
-
-Version 0.5.0
-
 (see the `roadmap <CHANGES>`_ for details).
 
 * See `CHANGES <CHANGES>`_ for full changelog and roadmap
 * See `UPGRADE <UPGRADE.rst>`_ for how to upgrade from earlier releases
-
-
-Requirements
-============
-
-Yarr supports Django 1.11 or later on Python 2.7 and 3.4+.
-
-These additional packages are required:
-
-* feedparser >= 5.1.3
-* bleach >= 1.2.1
-
-You'll need something to schedule feed updates - these instructions use cron.
 
 
 Installation
@@ -207,8 +196,7 @@ Templates
 ---------
 
 The Yarr templates extend ``yarr/base.html``, which in turn extends
-``base.html``. To minimise the risk of interfering with your site templates,
-they use HTML4.
+``base.html``.
 
 They will expect the following blocks:
 

@@ -19,6 +19,13 @@ Upgrading Django Yarr
    then 0.3.12, but not 0.3.6 or earlier.
 
 
+Upgrading from 0.5.0
+====================
+
+Since 0.6.0, Yarr uses a pure CSS for its layout, and will fit within its container
+element. It's recommended to make this full width and height of the page.
+
+
 Upgrading from 0.4.5
 ====================
 
