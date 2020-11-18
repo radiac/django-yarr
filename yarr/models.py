@@ -3,25 +3,20 @@ Yarr models
 """
 
 import datetime
-import six
 import time
-try:
-    from urllib.error import URLError
-except:
-    # Python 2
-    from urllib2 import URLError
+from urllib.error import URLError
 
+import feedparser
+import six
 from django.conf import settings as django_settings
 from django.core.validators import URLValidator
 from django.db import models
 from django.utils import timezone
-from django.utils.encoding import python_2_unicode_compatible
 
-import feedparser
+from yarr import managers, settings
+from yarr.constants import ENTRY_READ, ENTRY_SAVED, ENTRY_UNREAD
+
 # ++ TODO: tags
-
-from yarr import settings, managers
-from yarr.constants import ENTRY_UNREAD, ENTRY_READ, ENTRY_SAVED
 
 
 ###############################################################################
@@ -30,15 +25,20 @@ from yarr.constants import ENTRY_UNREAD, ENTRY_READ, ENTRY_SAVED
 # Disable feedparser's sanitizer - FeedManager will be using bleach instead
 feedparser.SANITIZE_HTML = 0
 
+
 class NullFile(object):
     """Fake file object for disabling logging in Feed.check"""
+
     def write(self, str):
         pass
+
+
 nullfile = NullFile()
 
 
 ###############################################################################
 #                                                               Exceptions
+
 
 class FeedError(Exception):
     """
@@ -48,9 +48,10 @@ class FeedError(Exception):
         e.feed      None if not parsed
         e.entries   Empty list if not parsed
     """
+
     def __init__(self, *args, **kwargs):
-        self.feed = kwargs.pop('feed', None)
-        self.entries = kwargs.pop('entries', [])
+        self.feed = kwargs.pop("feed", None)
+        self.entries = kwargs.pop("entries", [])
         super(FeedError, self).__init__(*args, **kwargs)
 
 
@@ -62,14 +63,14 @@ class EntryError(Exception):
     """
     An error occurred when processing an entry
     """
-    pass
 
+    pass
 
 
 ###############################################################################
 #                                                               Feed model
 
-@python_2_unicode_compatible
+
 class Feed(models.Model):
     """
     A feed definition
@@ -103,10 +104,13 @@ class Feed(models.Model):
         title
         ttl
     """
+
     # Compulsory data fields
     title = models.TextField(help_text="Published title of the feed")
-    feed_url = models.TextField("Feed URL",
-        validators=[URLValidator()], help_text="URL of the RSS feed",
+    feed_url = models.TextField(
+        "Feed URL",
+        validators=[URLValidator()],
+        help_text="URL of the RSS feed",
     )
     text = models.TextField(
         "Custom title",
@@ -115,8 +119,10 @@ class Feed(models.Model):
     )
 
     # Optional data fields
-    site_url = models.TextField("Site URL",
-        validators=[URLValidator()], help_text="URL of the HTML site",
+    site_url = models.TextField(
+        "Site URL",
+        validators=[URLValidator()],
+        help_text="URL of the HTML site",
     )
 
     # Internal fields
@@ -125,35 +131,47 @@ class Feed(models.Model):
         on_delete=models.CASCADE,
     )
     added = models.DateTimeField(
-        auto_now_add=True, help_text="Date this feed was added",
+        auto_now_add=True,
+        help_text="Date this feed was added",
     )
     is_active = models.BooleanField(
         default=True,
         help_text="A feed will become inactive when a permanent error occurs",
     )
     check_frequency = models.IntegerField(
-        blank=True, null=True,
+        blank=True,
+        null=True,
         help_text="How often to check the feed for changes, in minutes",
     )
     last_updated = models.DateTimeField(
-        blank=True, null=True, help_text="Last time the feed says it changed",
+        blank=True,
+        null=True,
+        help_text="Last time the feed says it changed",
     )
     last_checked = models.DateTimeField(
-        blank=True, null=True, help_text="Last time the feed was checked",
+        blank=True,
+        null=True,
+        help_text="Last time the feed was checked",
     )
     next_check = models.DateTimeField(
-        blank=True, null=True, help_text="When the next feed check is due",
+        blank=True,
+        null=True,
+        help_text="When the next feed check is due",
     )
     error = models.CharField(
-        blank=True, max_length=255, help_text="When a problem occurs",
+        blank=True,
+        max_length=255,
+        help_text="When a problem occurs",
     )
 
     # Cached data
     count_unread = models.IntegerField(
-        default=0, help_text="Cache of number of unread items",
+        default=0,
+        help_text="Cache of number of unread items",
     )
     count_total = models.IntegerField(
-        default=0, help_text="Cache of total number of items",
+        default=0,
+        help_text="Cache of total number of items",
     )
 
     objects = managers.FeedManager()
@@ -180,26 +198,31 @@ class Feed(models.Model):
             FetchError  Feed fetch suffered permanent failure
         """
         # Request and parse the feed
-        d = feedparser.parse(self.feed_url)
-        status  = d.get('status', 200)
-        feed    = d.get('feed', None)
-        entries = d.get('entries', [])
-
-        # Handle certain feedparser exceptions (bozo):
-        #   URLError    The server wasn't found
-        # Other exceptions will raise a FeedError, but the feed may have been
-        # parsed anyway, so feed and entries will be available on the exception
-        if d.get('bozo') == 1:
-            bozo = d['bozo_exception']
-            if isinstance(bozo, URLError):
-                raise FeedError('URL error: %s' % bozo)
-
+        try:
+            d = feedparser.parse(self.feed_url)
+        except URLError as e:
+            raise FeedError(f"URL error: {e.reason}")
+        except Exception as e:
             # Unrecognised exception
-            # Most of these will be SAXParseException, which doesn't convert
-            # to a string cleanly, so explicitly mention the exception class
+            raise FeedError(f"Feed error: {e.__class__.__name__} - {e}")
+
+        status = d.get("status", 200)
+        feed = d.get("feed", None)
+        entries = d.get("entries", [])
+
+        # Handle feedparser exceptions (bozo):
+        #
+        # Raise a FeedError, but the feed may have been parsed anyway, so feed and
+        # entries will be available on the exception.
+        #
+        # Most of these will be SAXParseException, which doesn't convert to a string
+        # cleanly, so explicitly mention the exception class
+        if d.get("bozo") == 1:
+            bozo = d["bozo_exception"]
             raise FeedError(
-                'Feed error: %s - %s' % (bozo.__class__.__name__, bozo),
-                feed=feed, entries=entries,
+                "Feed error: %s - %s" % (bozo.__class__.__name__, bozo),
+                feed=feed,
+                entries=entries,
             )
 
         # Accepted status:
@@ -209,12 +232,8 @@ class Feed(models.Model):
         #   307 Temporary redirect
         if status in (200, 302, 304, 307):
             # Check for valid feed
-            if (
-                feed is None
-                or 'title' not in feed
-                or 'link' not in feed
-            ):
-                raise FeedError('Feed parsed but with invalid contents')
+            if feed is None or "title" not in feed or "link" not in feed:
+                raise FeedError("Feed parsed but with invalid contents")
 
             # OK
             return feed, entries
@@ -226,7 +245,7 @@ class Feed(models.Model):
         #   503 Service Unavailable
         #   504 Gateway Timeout
         if status in (404, 500, 502, 503, 504):
-            raise FeedError('Temporary error %s' % status)
+            raise FeedError("Temporary error %s" % status)
 
         # Follow permanent redirection
         if status == 301:
@@ -236,9 +255,9 @@ class Feed(models.Model):
             url_history.append(self.feed_url)
 
             # Avoid circular redirection
-            self.feed_url = d.get('href', self.feed_url)
+            self.feed_url = d.get("href", self.feed_url)
             if self.feed_url in url_history:
-                raise InactiveFeedError('Circular redirection found')
+                raise InactiveFeedError("Circular redirection found")
 
             # Update feed and try again
             self.save()
@@ -246,10 +265,10 @@ class Feed(models.Model):
 
         # Feed gone
         if status == 410:
-            raise InactiveFeedError('Feed has gone')
+            raise InactiveFeedError("Feed has gone")
 
         # Unknown status
-        raise FeedError('Unrecognised HTTP status %s' % status)
+        raise FeedError("Unrecognised HTTP status %s" % status)
 
     def check_feed(self, force=False, read=False, logfile=None):
         """
@@ -309,12 +328,8 @@ class Feed(models.Model):
         # Check it's due for a check before the next poll
         now = timezone.now()
         next_poll = now + datetime.timedelta(minutes=settings.MINIMUM_INTERVAL)
-        if (
-            not force
-            and self.next_check is not None
-            and self.next_check >= next_poll
-        ):
-            logfile.write('Not due yet')
+        if not force and self.next_check is not None and self.next_check >= next_poll:
+            logfile.write("Not due yet")
             # Return False, because nothing has changed yet
             return False
 
@@ -326,54 +341,47 @@ class Feed(models.Model):
         # Note: from now on always return True, because something has changed
 
         # Fetch feed
-        logfile.write('Fetching...')
+        logfile.write("Fetching...")
         try:
             feed, entries = self._fetch_feed()
         except FeedError as e:
-            logfile.write('Error: %s' % e)
+            logfile.write("Error: %s" % e)
 
             # Update model to reflect the error
             if isinstance(e, InactiveFeedError):
-                logfile.write('Deactivating feed')
+                logfile.write("Deactivating feed")
                 self.is_active = False
             self.error = str(e)
 
             # Check for a valid feed despite error
             if e.feed is None or len(e.entries) == 0:
-                logfile.write('No valid feed')
+                logfile.write("No valid feed")
                 return True
-            logfile.write('Valid feed found')
+            logfile.write("Valid feed found")
             feed = e.feed
             entries = e.entries
 
         else:
             # Success
-            logfile.write('Feed fetched')
+            logfile.write("Feed fetched")
 
             # Clear error if necessary
-            if self.error != '':
-                self.error = ''
+            if self.error != "":
+                self.error = ""
 
         # Try to find the updated time
         updated = feed.get(
-            'updated_parsed',
-            feed.get('published_parsed', None),
+            "updated_parsed",
+            feed.get("published_parsed", None),
         )
         if updated:
             updated = timezone.make_aware(
-                datetime.datetime.fromtimestamp(
-                    time.mktime(updated)
-                )
+                datetime.datetime.fromtimestamp(time.mktime(updated))
             )
 
         # Stop if we now know it hasn't updated recently
-        if (
-            not force
-            and updated
-            and self.last_updated
-            and updated <= self.last_updated
-        ):
-            logfile.write('Has not updated')
+        if not force and updated and self.last_updated and updated <= self.last_updated:
+            logfile.write("Has not updated")
             return True
 
         # Add or update any entries, and get latest timestamp
@@ -381,7 +389,7 @@ class Feed(models.Model):
             latest = self._update_entries(entries, read)
         except EntryError as e:
             if self.error:
-                self.error += '. '
+                self.error += ". "
             self.error += "Entry error: %s" % e
             return True
 
@@ -392,14 +400,14 @@ class Feed(models.Model):
         self.last_updated = updated
 
         # Update feed fields
-        title = feed.get('title', None)
-        site_url = feed.get('link', None)
+        title = feed.get("title", None)
+        site_url = feed.get("link", None)
         if title:
             self.title = title
         if site_url:
             self.site_url = site_url
 
-        logfile.write('Feed updated')
+        logfile.write("Feed updated")
 
         return True
 
@@ -419,25 +427,23 @@ class Feed(models.Model):
             # Try to match by guid, then link, then title and date
             if entry.guid:
                 query = {
-                    'guid': entry.guid,
+                    "guid": entry.guid,
                 }
             elif entry.url:
                 query = {
-                    'url': entry.url,
+                    "url": entry.url,
                 }
             elif entry.title and entry.date:
                 # If title and date provided, this will match
                 query = {
-                    'title':    entry.title,
-                    'date':     entry.date,
+                    "title": entry.title,
+                    "date": entry.date,
                 }
             else:
                 # No guid, no link, no title and date - no way to match
                 # Can never de-dupe this entry, so to avoid the risk of adding
                 # it more than once, declare this feed invalid
-                raise EntryError(
-                    'No guid, link, and title or date; cannot import'
-                )
+                raise EntryError("No guid, link, and title or date; cannot import")
 
             # Update existing, or delete old
             try:
@@ -455,9 +461,7 @@ class Feed(models.Model):
             found.append(entry.pk)
 
             # Update latest tracker
-            if latest is None or (
-                entry.date is not None and entry.date > latest
-            ):
+            if latest is None or (entry.date is not None and entry.date > latest):
                 latest = entry.date
 
         # Mark entries for expiry if:
@@ -470,14 +474,16 @@ class Feed(models.Model):
         return latest
 
     class Meta:
-        ordering = ('title', 'added',)
-
+        ordering = (
+            "title",
+            "added",
+        )
 
 
 ###############################################################################
 #                                                               Entry model
 
-@python_2_unicode_compatible
+
 class Entry(models.Model):
     """
     A cached entry
@@ -488,15 +494,21 @@ class Entry(models.Model):
     To add tags for an entry before saving, add them to _tags, and they will be
     set by save().
     """
+
     # Internal fields
-    feed = models.ForeignKey(Feed, related_name='entries', on_delete=models.CASCADE)
-    state = models.IntegerField(default=ENTRY_UNREAD, choices=(
-        (ENTRY_UNREAD,  'Unread'),
-        (ENTRY_READ,    'Read'),
-        (ENTRY_SAVED,   'Saved'),
-    ))
+    feed = models.ForeignKey(Feed, related_name="entries", on_delete=models.CASCADE)
+    state = models.IntegerField(
+        default=ENTRY_UNREAD,
+        choices=(
+            (ENTRY_UNREAD, "Unread"),
+            (ENTRY_READ, "Read"),
+            (ENTRY_SAVED, "Saved"),
+        ),
+    )
     expires = models.DateTimeField(
-        blank=True, null=True, help_text="When the entry should expire",
+        blank=True,
+        null=True,
+        help_text="When the entry should expire",
     )
 
     # Compulsory data fields
@@ -536,8 +548,13 @@ class Entry(models.Model):
         An old entry has been re-published; update with new data
         """
         fields = [
-            'title', 'content', 'date', 'author', 'url', 'comments_url',
-            'guid',
+            "title",
+            "content",
+            "date",
+            "author",
+            "url",
+            "comments_url",
+            "guid",
         ]
         for field in fields:
             setattr(self, field, getattr(entry, field))
@@ -561,5 +578,5 @@ class Entry(models.Model):
         """
 
     class Meta:
-        ordering = ('-date',)
-        verbose_name_plural = 'entries'
+        ordering = ("-date",)
+        verbose_name_plural = "entries"
