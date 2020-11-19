@@ -1,12 +1,9 @@
-from django.conf import settings
-
 import bleach
-
 from yaa_settings import AppSettings
 
 
 class Settings(AppSettings):
-    prefix = 'YARR'
+    prefix = "YARR"
 
     #
     # To manage the web interface
@@ -16,7 +13,7 @@ class Settings(AppSettings):
     DEV_MODE = False
 
     # Page to open at Yarr root url (resolved using reverse)
-    INDEX_URL = 'yarr:list_unread'
+    INDEX_URL = "yarr:list_unread"
 
     # Pagination limits
     PAGE_LENGTH = 25
@@ -29,13 +26,12 @@ class Settings(AppSettings):
     # Template string for document title (shown on the browser window and tabs).
     # If set, used to update the title when changing feeds in list view.
     # Use ``%(feed)s`` as a placeholder for the feed title (case sensitive)
-    TITLE_TEMPLATE = '%(feed)s'
+    TITLE_TEMPLATE = "%(feed)s"
 
     # jQuery Selector for page title (an element in your page template)
     # If set, this element's content will be replaced with the feed title when
     # changing feeds in list view.
-    TITLE_SELECTOR = ''
-
+    TITLE_SELECTOR = ""
 
     #
     # To control feed updates
@@ -63,7 +59,6 @@ class Settings(AppSettings):
     # Set this to 0 to expire immediately, -1 to never expire
     ITEM_EXPIRY = 1
 
-
     #
     # Bleach settings for Yarr
     #
@@ -73,64 +68,76 @@ class Settings(AppSettings):
     # <http://wiki.whatwg.org/wiki/Sanitization_rules>, but without form elements.
     # A few common HTML 5 elements have been added as well.
     ALLOWED_TAGS = [
-        'a',
-        'abbr',
-        'acronym',
-        'aside',
-        'b',
-        'bdi',
-        'bdo',
-        'blockquote',
-        'br',
-        'code',
-        'data',
-        'dd',
-        'del',
-        'dfn',
-        'div',  # Why not?
-        'dl',
-        'dt',
-        'em',
-        'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-        'hr',
-        'i',
-        'img',
-        'ins',
-        'kbd',
-        'li',
-        'ol',
-        'p',
-        'pre',
-        'q',
-        's',
-        'samp',
-        'small',
-        'span',
-        'strike',
-        'strong',
-        'sub', 'sup',
-        'table', 'tbody', 'td', 'tfoot', 'th', 'thead', 'tr',
-        'time',
-        'tt',  # Obsolete, but docutils likes to generate these.
-        'u',
-        'var',
-        'wbr',
-        'ul',
+        "a",
+        "abbr",
+        "acronym",
+        "aside",
+        "b",
+        "bdi",
+        "bdo",
+        "blockquote",
+        "br",
+        "code",
+        "data",
+        "dd",
+        "del",
+        "dfn",
+        "div",  # Why not?
+        "dl",
+        "dt",
+        "em",
+        "h1",
+        "h2",
+        "h3",
+        "h4",
+        "h5",
+        "h6",
+        "hr",
+        "i",
+        "img",
+        "ins",
+        "kbd",
+        "li",
+        "ol",
+        "p",
+        "pre",
+        "q",
+        "s",
+        "samp",
+        "small",
+        "span",
+        "strike",
+        "strong",
+        "sub",
+        "sup",
+        "table",
+        "tbody",
+        "td",
+        "tfoot",
+        "th",
+        "thead",
+        "tr",
+        "time",
+        "tt",  # Obsolete, but docutils likes to generate these.
+        "u",
+        "var",
+        "wbr",
+        "ul",
     ]
 
     ALLOWED_ATTRIBUTES = {
-        '*':        ['lang', 'dir'],  # lang is necessary for hyphentation.
-        'a':        ['href', 'title'],
-        'abbr':     ['title'],
-        'acronym':  ['title'],
-        'data':     ['value'],
-        'dfn':      ['title'],
-        'img':      ['src', 'alt', 'width', 'height', 'title'],
-        'li':       ['value'],
-        'ol':       ['reversed', 'start', 'type'],
-        'td':       ['align', 'valign', 'width', 'colspan', 'rowspan'],
-        'th':       ['align', 'valign', 'width', 'colspan', 'rowspan'],
-        'time':     ['datetime'],
+        "*": ["lang", "dir"],  # lang is necessary for hyphentation.
+        "a": ["href", "title"],
+        "abbr": ["title"],
+        "acronym": ["title"],
+        "data": ["value"],
+        "dfn": ["title"],
+        "img": ["src", "alt", "width", "height", "title"],
+        "li": ["value"],
+        "ol": ["reversed", "start", "type"],
+        "td": ["align", "valign", "width", "colspan", "rowspan"],
+        "th": ["align", "valign", "width", "colspan", "rowspan"],
+        "time": ["datetime"],
     }
 
     ALLOWED_STYLES = bleach.ALLOWED_STYLES

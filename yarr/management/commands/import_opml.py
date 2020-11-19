@@ -1,22 +1,22 @@
 import os
 
-from django.core.management.base import BaseCommand, CommandError
 from django.contrib.auth.models import User
+from django.core.management.base import BaseCommand, CommandError
 
 from yarr import models
 from yarr.utils import import_opml
 
 
 class Command(BaseCommand):
-    help = 'Import subscriptions from an OPML file'
+    help = "Import subscriptions from an OPML file"
 
     def add_arguments(self, parser):
         parser.add_argument(
-            '--purge',
-            action='store_true',
-            dest='purge',
+            "--purge",
+            action="store_true",
+            dest="purge",
             default=False,
-            help='Purge current feeds for this user',
+            help="Purge current feeds for this user",
         )
 
     def handle(self, subscription_file, username, *args, **options):
@@ -33,16 +33,17 @@ class Command(BaseCommand):
             raise CommandError('User "%s" does not exist' % username)
 
         # Purge current entries
-        if options['purge']:
+        if options["purge"]:
             print(("Purging feeds for %s..." % user))
             models.Feed.objects.filter(user=user).delete()
 
         # Parse subscription
         print("Importing feeds...")
-        new_count, old_count = import_opml(
-            subscription_file,
-            user,
-            options['purge']
-        )
+        new_count, old_count = import_opml(subscription_file, user, options["purge"])
 
-        print(("Imported %s new feeds and %s already existed for %s" % (new_count, old_count, user)))
+        print(
+            (
+                "Imported %s new feeds and %s already existed for %s"
+                % (new_count, old_count, user)
+            )
+        )

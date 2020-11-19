@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.db import models as django_models
 from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
-from django.template import Context, loader
+from django.template import loader
 from django.urls import reverse
 from django.utils.html import escape
 
@@ -13,11 +13,9 @@ from .constants import (
     ENTRY_SAVED,
     ENTRY_UNREAD,
     LAYOUT_ARTICLE,
-    LAYOUT_LIST,
     ORDER_ASC,
     ORDER_DESC,
     SIDEBAR_DEFAULT,
-    SIDEBAR_OVERRIDE,
 )
 
 
@@ -62,12 +60,7 @@ def get_or_cookie(request, name, default):
 
 
 @login_required
-def list_entries(
-    request,
-    feed_pk=None,
-    state=None,
-    template="yarr/list_entries.html",
-):
+def list_entries(request, feed_pk=None, state=None, template="yarr/list_entries.html"):
     """
     Display a list of entries
     Takes optional arguments to determine which entries to list:
@@ -172,7 +165,7 @@ def list_entries(
                             ),
                         },
                     }
-                ),
+                )
             },
         },
     )
@@ -253,10 +246,7 @@ def entry_state(
         return HttpResponseRedirect(reverse(settings.INDEX_URL))
 
     # Prep messages
-    op_text = {
-        "verb": "mark",
-        "desc": "",
-    }
+    op_text = {"verb": "mark", "desc": ""}
     if state is ENTRY_UNREAD:
         op_text["desc"] = " as unread"
     elif state is ENTRY_READ:
@@ -313,11 +303,7 @@ def feeds(request, template="yarr/feeds.html"):
             "DEV_MODE": settings.DEV_MODE,
             "yarr_settings": {
                 # JavaScript YARR_CONFIG variables
-                "config": utils.jsonEncode(
-                    {
-                        "api": reverse("yarr:api_base"),
-                    }
-                ),
+                "config": utils.jsonEncode({"api": reverse("yarr:api_base")})
             },
         },
     )
@@ -369,10 +355,7 @@ def feed_form(
 
             # Report and redirect
             if success_url is None:
-                messages.success(
-                    request,
-                    "Feed added." if is_add else "Changes saved",
-                )
+                messages.success(request, "Feed added." if is_add else "Changes saved")
             return HttpResponseRedirect(
                 reverse("yarr:feeds") if success_url is None else success_url
             )
@@ -426,10 +409,7 @@ def feeds_export(request):
     """
     Export the user's feed list as OPML.
     """
-    response = HttpResponse(
-        utils.export_opml(request.user),
-        mimetype="application/xml",
-    )
+    response = HttpResponse(utils.export_opml(request.user), mimetype="application/xml")
     response["Content-Disposition"] = 'attachment; filename="feeds.opml"'
     return response
 
@@ -463,10 +443,7 @@ def api_feed_get(request):
     pks = request.GET.get("feed_pks", "")
     if pks:
         success = True
-        feeds = models.Feed.objects.filter(
-            user=request.user,
-            pk__in=pks.split(","),
-        )
+        feeds = models.Feed.objects.filter(user=request.user, pk__in=pks.split(","))
     else:
         success = False
         feeds = models.Feed.objects.none()
@@ -494,11 +471,7 @@ def api_feed_get(request):
         if (
             field.name in fields
             and isinstance(
-                field,
-                (
-                    django_models.DateTimeField,
-                    django_models.IntegerField,
-                ),
+                field, (django_models.DateTimeField, django_models.IntegerField)
             )
         )
     ]
@@ -515,12 +488,7 @@ def api_feed_get(request):
         )
 
     # Respond
-    return utils.jsonResponse(
-        {
-            "success": success,
-            "feeds": data,
-        }
-    )
+    return utils.jsonResponse({"success": success, "feeds": data})
 
 
 @login_required
@@ -550,12 +518,7 @@ def api_feed_pks_get(request):
         try:
             entries = entries.filter(feed__pk__in=feed_pks.split(","))
         except Exception:
-            return utils.jsonResponse(
-                {
-                    "success": False,
-                    "msg": "Invalid request",
-                }
-            )
+            return utils.jsonResponse({"success": False, "msg": "Invalid request"})
 
     # Filter by state
     if state == ENTRY_UNREAD:
@@ -580,13 +543,7 @@ def api_feed_pks_get(request):
         feed_unread[str(feed.pk)] = feed.count_unread
 
     # Respond
-    return utils.jsonResponse(
-        {
-            "success": True,
-            "pks": pks,
-            "feed_unread": feed_unread,
-        }
-    )
+    return utils.jsonResponse({"success": True, "pks": pks, "feed_unread": feed_unread})
 
 
 @login_required
@@ -611,8 +568,7 @@ def api_entry_get(request, template="yarr/include/entry.html"):
     if pks:
         success = True
         entries = models.Entry.objects.filter(
-            feed__user=request.user,
-            pk__in=pks.split(","),
+            feed__user=request.user, pk__in=pks.split(",")
         )
     else:
         success = False
@@ -633,22 +589,12 @@ def api_entry_get(request, template="yarr/include/entry.html"):
                 "pk": entry.pk,
                 "feed": entry.feed_id,
                 "state": entry.state,
-                "html": compiled.render(
-                    {
-                        "constants": constants,
-                        "entry": entry,
-                    }
-                ),
+                "html": compiled.render({"constants": constants, "entry": entry}),
             }
         )
 
     # Respond
-    return utils.jsonResponse(
-        {
-            "success": success,
-            "entries": data,
-        }
-    )
+    return utils.jsonResponse({"success": success, "entries": data})
 
 
 def GET_state(request, param):
@@ -684,10 +630,7 @@ def api_entry_set(request):
     pks = request.GET.get("entry_pks", "")
     if pks:
         pks = pks.split(",")
-        entries = models.Entry.objects.filter(
-            feed__user=request.user,
-            pk__in=pks,
-        )
+        entries = models.Entry.objects.filter(feed__user=request.user, pk__in=pks)
     else:
         success = False
         msg = "No entries found"
@@ -733,9 +676,5 @@ def api_entry_set(request):
 
     # Respond
     return utils.jsonResponse(
-        {
-            "success": success,
-            "msg": msg,
-            "feed_unread": feed_unread,
-        }
+        {"success": success, "msg": msg, "feed_unread": feed_unread}
     )

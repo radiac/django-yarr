@@ -5,17 +5,18 @@ import datetime
 import time
 
 from django.apps import apps
-from django.db import connection, models, transaction
+from django.db import connection, models
 from django.utils import timezone
 
 import bleach
 
 from . import settings
-from .constants import ENTRY_UNREAD, ENTRY_READ, ENTRY_SAVED
+from .constants import ENTRY_READ, ENTRY_SAVED, ENTRY_UNREAD
 
 
 ###############################################################################
 #                                                               Feed model
+
 
 class FeedQuerySet(models.query.QuerySet):
     def active(self):
@@ -36,7 +37,7 @@ class FeedQuerySet(models.query.QuerySet):
     def _do_update(self, extra):
         "Perform the update for update_count_total and update_count_unread"
         # Get IDs for current queries
-        ids = self.values_list('id', flat=True)
+        ids = self.values_list("id", flat=True)
 
         # If no IDs, no sense trying to do anything
         if not ids:
@@ -46,13 +47,12 @@ class FeedQuerySet(models.query.QuerySet):
         # IDs and states should only ever be ints, but force them to
         # ints to be sure we don't introduce injection vulns
         opts = {
-            'feed':     apps.get_model('yarr', 'Feed')._meta.db_table,
-            'entry':    apps.get_model('yarr', 'Entry')._meta.db_table,
-            'ids':      ','.join([str(int(id)) for id in ids]),
-
+            "feed": apps.get_model("yarr", "Feed")._meta.db_table,
+            "entry": apps.get_model("yarr", "Entry")._meta.db_table,
+            "ids": ",".join([str(int(id)) for id in ids]),
             # Fields which should be set in extra
-            'field':    '',
-            'where':    '',
+            "field": "",
+            "where": "",
         }
         opts.update(extra)
 
@@ -69,27 +69,25 @@ class FeedQuerySet(models.query.QuerySet):
                     ), 0
                 )
                 WHERE id IN (%(ids)s)
-            """ % opts
+            """
+            % opts
         )
 
         return self
 
     def update_count_total(self):
         "Update the cached total counts"
-        return self._do_update({
-            'field':    'count_total',
-        })
+        return self._do_update({"field": "count_total"})
 
     def update_count_unread(self):
         "Update the cached unread counts"
-        return self._do_update({
-            'field':    'count_unread',
-            'where':    ' AND state=%s' % ENTRY_UNREAD,
-        })
+        return self._do_update(
+            {"field": "count_unread", "where": " AND state=%s" % ENTRY_UNREAD}
+        )
 
     def count_unread(self):
         "Get a dict of unread counts, with feed pks as keys"
-        return dict(self.values_list('pk', 'count_unread'))
+        return dict(self.values_list("pk", "count_unread"))
 
 
 class FeedManager(models.Manager):
@@ -118,9 +116,9 @@ class FeedManager(models.Manager):
         return FeedQuerySet(self.model)
 
 
-
 ###############################################################################
 #                                                               Entry model
+
 
 class EntryQuerySet(models.query.QuerySet):
     def user(self, user):
@@ -146,15 +144,13 @@ class EntryQuerySet(models.query.QuerySet):
         affected feeds, {feed_pk: unread_count, ...}; if False, returns nothing
         """
         # Get list of feed pks before the update changes this queryset
-        feed_pks = list(self.feeds().values_list('pk', flat=True))
+        feed_pks = list(self.feeds().values_list("pk", flat=True))
 
         # Update the state
         self.update(state=state)
 
         # Look up affected feeds
-        feeds = apps.get_model('yarr', 'Feed').objects.filter(
-            pk__in=feed_pks
-        )
+        feeds = apps.get_model("yarr", "Feed").objects.filter(pk__in=feed_pks)
 
         # Update the unread counts for affected feeds
         feeds.update_count_unread()
@@ -163,25 +159,19 @@ class EntryQuerySet(models.query.QuerySet):
 
     def feeds(self):
         "Get feeds associated with entries"
-        return apps.get_model('yarr', 'Feed').objects.filter(
-            entries__in=self
-        ).distinct()
+        return (
+            apps.get_model("yarr", "Feed").objects.filter(entries__in=self).distinct()
+        )
 
     def set_expiry(self):
         "Ensure selected entries are set to expire"
-        return self.filter(
-            expires__isnull=True
-        ).update(
-            expires=timezone.now() + datetime.timedelta(
-                days=settings.ITEM_EXPIRY,
-            )
+        return self.filter(expires__isnull=True).update(
+            expires=timezone.now() + datetime.timedelta(days=settings.ITEM_EXPIRY)
         )
 
     def clear_expiry(self):
         "Ensure selected entries will not expire"
-        return self.exclude(
-            expires__isnull=True
-        ).update(expires=None)
+        return self.exclude(expires__isnull=True).update(expires=None)
 
     def update_feed_unread(self):
         "Update feed read count cache"
@@ -254,10 +244,10 @@ class EntryManager(models.Manager):
         entry = self.model()
 
         # Get the title and content
-        entry.title = raw.get('title', '')
-        content = raw.get('content', [{'value': ''}])[0]['value']
+        entry.title = raw.get("title", "")
+        content = raw.get("content", [{"value": ""}])[0]["value"]
         if not content:
-            content = raw.get('description', '')
+            content = raw.get("description", "")
 
         # Sanitise the content
         entry.content = bleach.clean(
@@ -272,24 +262,19 @@ class EntryManager(models.Manager):
         # If not provided, needs to be None for update comparison
         # Will default to current time when saved
         date = raw.get(
-            'updated_parsed', raw.get(
-                'published_parsed', raw.get(
-                    'created_parsed', None
-                )
-            )
+            "updated_parsed",
+            raw.get("published_parsed", raw.get("created_parsed", None)),
         )
         if date is not None:
             entry.date = timezone.make_aware(
-                datetime.datetime.fromtimestamp(
-                    time.mktime(date)
-                )
+                datetime.datetime.fromtimestamp(time.mktime(date))
             )
 
-        entry.url = raw.get('link', '')
-        entry.guid = raw.get('guid', entry.url)
+        entry.url = raw.get("link", "")
+        entry.guid = raw.get("guid", entry.url)
 
-        entry.author = raw.get('author', '')
-        entry.comments_url = raw.get('comments', '')
+        entry.author = raw.get("author", "")
+        entry.comments_url = raw.get("comments", "")
 
         # ++ TODO: tags
         """

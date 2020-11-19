@@ -3,15 +3,16 @@ from django.conf.urls import url
 from . import views
 from .constants import ENTRY_READ, ENTRY_SAVED, ENTRY_UNREAD
 
+
 app_name = "yarr"
 
 urlpatterns = [
-    url(r"^$", views.index, name="index",),
-    url(r"^all/$", views.list_entries, name="list_all",),
-    url(r"^unread/$", views.list_entries, {"state": ENTRY_UNREAD}, name="list_unread",),
-    url(r"^saved/$", views.list_entries, {"state": ENTRY_SAVED}, name="list_saved",),
+    url(r"^$", views.index, name="index"),
+    url(r"^all/$", views.list_entries, name="list_all"),
+    url(r"^unread/$", views.list_entries, {"state": ENTRY_UNREAD}, name="list_unread"),
+    url(r"^saved/$", views.list_entries, {"state": ENTRY_SAVED}, name="list_saved"),
     # Feed views
-    url(r"^all/(?P<feed_pk>\d+)/$", views.list_entries, name="list_all",),
+    url(r"^all/(?P<feed_pk>\d+)/$", views.list_entries, name="list_all"),
     url(
         r"^unread/(?P<feed_pk>\d+)/$",
         views.list_entries,
@@ -26,10 +27,10 @@ urlpatterns = [
     ),
     # Feed management
     url(r"^feeds/$", views.feeds, name="feeds"),
-    url(r"^feeds/add/$", views.feed_form, name="feed_add",),
-    url(r"^feeds/(?P<feed_pk>\d+)/$", views.feed_form, name="feed_edit",),
-    url(r"^feeds/(?P<feed_pk>\d+)/delete/$", views.feed_delete, name="feed_delete",),
-    url(r"^feeds/export/$", views.feeds_export, name="feeds_export",),
+    url(r"^feeds/add/$", views.feed_form, name="feed_add"),
+    url(r"^feeds/(?P<feed_pk>\d+)/$", views.feed_form, name="feed_edit"),
+    url(r"^feeds/(?P<feed_pk>\d+)/delete/$", views.feed_delete, name="feed_delete"),
+    url(r"^feeds/export/$", views.feeds_export, name="feeds_export"),
     # Flag management without javascript
     url(
         r"^state/read/all/$",

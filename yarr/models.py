@@ -6,15 +6,17 @@ import datetime
 import time
 from urllib.error import URLError
 
-import feedparser
-import six
 from django.conf import settings as django_settings
 from django.core.validators import URLValidator
 from django.db import models
 from django.utils import timezone
 
+import feedparser
+import six
+
 from yarr import managers, settings
 from yarr.constants import ENTRY_READ, ENTRY_SAVED, ENTRY_UNREAD
+
 
 # ++ TODO: tags
 
@@ -108,9 +110,7 @@ class Feed(models.Model):
     # Compulsory data fields
     title = models.TextField(help_text="Published title of the feed")
     feed_url = models.TextField(
-        "Feed URL",
-        validators=[URLValidator()],
-        help_text="URL of the RSS feed",
+        "Feed URL", validators=[URLValidator()], help_text="URL of the RSS feed"
     )
     text = models.TextField(
         "Custom title",
@@ -120,19 +120,13 @@ class Feed(models.Model):
 
     # Optional data fields
     site_url = models.TextField(
-        "Site URL",
-        validators=[URLValidator()],
-        help_text="URL of the HTML site",
+        "Site URL", validators=[URLValidator()], help_text="URL of the HTML site"
     )
 
     # Internal fields
-    user = models.ForeignKey(
-        django_settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-    )
+    user = models.ForeignKey(django_settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     added = models.DateTimeField(
-        auto_now_add=True,
-        help_text="Date this feed was added",
+        auto_now_add=True, help_text="Date this feed was added"
     )
     is_active = models.BooleanField(
         default=True,
@@ -144,34 +138,24 @@ class Feed(models.Model):
         help_text="How often to check the feed for changes, in minutes",
     )
     last_updated = models.DateTimeField(
-        blank=True,
-        null=True,
-        help_text="Last time the feed says it changed",
+        blank=True, null=True, help_text="Last time the feed says it changed"
     )
     last_checked = models.DateTimeField(
-        blank=True,
-        null=True,
-        help_text="Last time the feed was checked",
+        blank=True, null=True, help_text="Last time the feed was checked"
     )
     next_check = models.DateTimeField(
-        blank=True,
-        null=True,
-        help_text="When the next feed check is due",
+        blank=True, null=True, help_text="When the next feed check is due"
     )
     error = models.CharField(
-        blank=True,
-        max_length=255,
-        help_text="When a problem occurs",
+        blank=True, max_length=255, help_text="When a problem occurs"
     )
 
     # Cached data
     count_unread = models.IntegerField(
-        default=0,
-        help_text="Cache of number of unread items",
+        default=0, help_text="Cache of number of unread items"
     )
     count_total = models.IntegerField(
-        default=0,
-        help_text="Cache of total number of items",
+        default=0, help_text="Cache of total number of items"
     )
 
     objects = managers.FeedManager()
@@ -336,7 +320,7 @@ class Feed(models.Model):
         # We're about to check, update the counters
         self.last_checked = now
         self.next_check = now + datetime.timedelta(
-            minutes=self.check_frequency or settings.FREQUENCY,
+            minutes=self.check_frequency or settings.FREQUENCY
         )
         # Note: from now on always return True, because something has changed
 
@@ -370,10 +354,7 @@ class Feed(models.Model):
                 self.error = ""
 
         # Try to find the updated time
-        updated = feed.get(
-            "updated_parsed",
-            feed.get("published_parsed", None),
-        )
+        updated = feed.get("updated_parsed", feed.get("published_parsed", None))
         if updated:
             updated = timezone.make_aware(
                 datetime.datetime.fromtimestamp(time.mktime(updated))
@@ -426,19 +407,12 @@ class Feed(models.Model):
 
             # Try to match by guid, then link, then title and date
             if entry.guid:
-                query = {
-                    "guid": entry.guid,
-                }
+                query = {"guid": entry.guid}
             elif entry.url:
-                query = {
-                    "url": entry.url,
-                }
+                query = {"url": entry.url}
             elif entry.title and entry.date:
                 # If title and date provided, this will match
-                query = {
-                    "title": entry.title,
-                    "date": entry.date,
-                }
+                query = {"title": entry.title, "date": entry.date}
             else:
                 # No guid, no link, no title and date - no way to match
                 # Can never de-dupe this entry, so to avoid the risk of adding
@@ -474,10 +448,7 @@ class Feed(models.Model):
         return latest
 
     class Meta:
-        ordering = (
-            "title",
-            "added",
-        )
+        ordering = ("title", "added")
 
 
 ###############################################################################
@@ -506,17 +477,13 @@ class Entry(models.Model):
         ),
     )
     expires = models.DateTimeField(
-        blank=True,
-        null=True,
-        help_text="When the entry should expire",
+        blank=True, null=True, help_text="When the entry should expire"
     )
 
     # Compulsory data fields
     title = models.TextField(blank=True)
     content = models.TextField(blank=True)
-    date = models.DateTimeField(
-        help_text="When this entry says it was published",
-    )
+    date = models.DateTimeField(help_text="When this entry says it was published")
 
     # Optional data fields
     author = models.TextField(blank=True)
@@ -532,8 +499,7 @@ class Entry(models.Model):
         help_text="URL for HTML comment submission page",
     )
     guid = models.TextField(
-        blank=True,
-        help_text="GUID for the entry, according to the feed",
+        blank=True, help_text="GUID for the entry, according to the feed"
     )
 
     # ++ TODO: tags
@@ -547,15 +513,7 @@ class Entry(models.Model):
         """
         An old entry has been re-published; update with new data
         """
-        fields = [
-            "title",
-            "content",
-            "date",
-            "author",
-            "url",
-            "comments_url",
-            "guid",
-        ]
+        fields = ["title", "content", "date", "author", "url", "comments_url", "guid"]
         for field in fields:
             setattr(self, field, getattr(entry, field))
         # ++ Should we mark as unread? Leaving it as is for now.

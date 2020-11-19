@@ -1,16 +1,15 @@
 from django import forms
 
-from . import settings, models
+from . import models, settings
 
 
 class AddFeedForm(forms.ModelForm):
-    required_css_class = 'required'
+    required_css_class = "required"
+
     class Meta:
         model = models.Feed
-        fields = ['feed_url']
-        widgets = {
-            'feed_url':     forms.TextInput(),
-        }
+        fields = ["feed_url"]
+        widgets = {"feed_url": forms.TextInput()}
 
 
 def _build_frequency_choices():
@@ -35,20 +34,20 @@ def _build_frequency_choices():
         if mm > DAY:
             dd = mm / DAY
             mm = mm % DAY
-            parts.append('%s day%s' % (dd, 's' if dd > 1 else ''))
+            parts.append("%s day%s" % (dd, "s" if dd > 1 else ""))
 
         if mm > HOUR:
             hh = mm / HOUR
             mm = mm % HOUR
-            parts.append('%s hour%s' % (hh, 's' if hh > 1 else ''))
+            parts.append("%s hour%s" % (hh, "s" if hh > 1 else ""))
 
         if mm > 0:
-            parts.append('%s minute%s' % (mm, 's' if mm > 1 else ''))
+            parts.append("%s minute%s" % (mm, "s" if mm > 1 else ""))
 
         if len(parts) == 3:
-            human = '%s, %s and %s' % tuple(parts)
+            human = "%s, %s and %s" % tuple(parts)
         elif len(parts) == 2:
-            human = '%s and %s' % tuple(parts)
+            human = "%s and %s" % tuple(parts)
         else:
             human = parts[0]
 
@@ -63,18 +62,19 @@ def _build_frequency_choices():
 
 
 class EditFeedForm(forms.ModelForm):
-    required_css_class = 'required'
+    required_css_class = "required"
     check_frequency = forms.ChoiceField(
         widget=forms.Select,
         choices=_build_frequency_choices(),
-        label='Frequency',
-        help_text=u'How often to check the feed for changes',
+        label="Frequency",
+        help_text=u"How often to check the feed for changes",
     )
+
     class Meta:
         model = models.Feed
-        fields = ['text', 'feed_url', 'is_active', 'check_frequency']
+        fields = ["text", "feed_url", "is_active", "check_frequency"]
         widgets = {
-            'text':    forms.TextInput(),
-            'feed_url': forms.TextInput(),
-            'title':    forms.TextInput(),
+            "text": forms.TextInput(),
+            "feed_url": forms.TextInput(),
+            "title": forms.TextInput(),
         }

@@ -12,6 +12,7 @@ def with_socket_timeout(fn):
 
     Note: This is not thread-safe.
     """
+
     def wrap(*args, **kwargs):
         # Set global socket
         old_timeout = socket.getdefaulttimeout()

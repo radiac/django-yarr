@@ -2,17 +2,17 @@
 Utils for yarr
 """
 import json
-import six
 from xml.dom import minidom
-from xml.etree.ElementTree import Element, SubElement, ElementTree
+from xml.etree.ElementTree import Element, ElementTree, SubElement
 
-from django.core.paginator import Paginator, EmptyPage, InvalidPage
-from django.core.serializers.json import DjangoJSONEncoder
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.paginator import EmptyPage, InvalidPage, Paginator
+from django.core.serializers.json import DjangoJSONEncoder
 from django.http import HttpResponse
 
-from . import settings
-from . import models
+import six
+
+from . import models, settings
 
 
 def paginate(request, qs, adjacent_pages=3):
@@ -24,7 +24,7 @@ def paginate(request, qs, adjacent_pages=3):
     """
     paginator = Paginator(qs, settings.PAGE_LENGTH)
     try:
-        page = int(request.GET.get('p', '1'))
+        page = int(request.GET.get("p", "1"))
     except ValueError:
         page = 1
     try:
@@ -49,11 +49,11 @@ def paginate(request, qs, adjacent_pages=3):
         so nothing else is clobbered.
         """
         query = request.GET.copy()
-        query['p'] = str(number)
+        query["p"] = str(number)
         return {
-            'number': number,
-            'query': query.urlencode(),
-            'current': number == paginated.number,
+            "number": number,
+            "query": query.urlencode(),
+            "current": number == paginated.number,
         }
 
     page_numbers = [
@@ -71,17 +71,19 @@ def paginate(request, qs, adjacent_pages=3):
         last = None
 
     pagination = {
-        'has_next':     paginated.has_next(),
-        'next':         page_dict(paginated.next_page_number()) if paginated.has_next() else None,
-
-        'has_previous': paginated.has_previous(),
-        'previous':     page_dict(paginated.previous_page_number()) if paginated.has_previous() else None,
-
-        'show_first':   first is not None,
-        'first':        first,
-        'pages':        [page_dict(n) for n in page_numbers],
-        'show_last':    last is not None,
-        'last':         last,
+        "has_next": paginated.has_next(),
+        "next": page_dict(paginated.next_page_number())
+        if paginated.has_next()
+        else None,
+        "has_previous": paginated.has_previous(),
+        "previous": page_dict(paginated.previous_page_number())
+        if paginated.has_previous()
+        else None,
+        "show_first": first is not None,
+        "first": first,
+        "pages": [page_dict(n) for n in page_numbers],
+        "show_last": last is not None,
+        "last": last,
     }
 
     return paginated, pagination
@@ -90,11 +92,13 @@ def paginate(request, qs, adjacent_pages=3):
 def jsonEncode(data):
     return json.dumps(data, cls=DjangoJSONEncoder)
 
+
 def jsonResponse(data):
     """
     Return a JSON HttpResponse
     """
-    return HttpResponse(jsonEncode(data), content_type='application/json')
+    return HttpResponse(jsonEncode(data), content_type="application/json")
+
 
 def import_opml(file_path, user, purge=False):
     if purge:
@@ -104,32 +108,24 @@ def import_opml(file_path, user, purge=False):
 
     new = []
     existing = []
-    for node in xmldoc.getElementsByTagName('outline'):
-        url_node = node.attributes.get('xmlUrl', None)
+    for node in xmldoc.getElementsByTagName("outline"):
+        url_node = node.attributes.get("xmlUrl", None)
         if url_node is None:
             continue
         url = url_node.value
 
-        title_node = node.attributes.get('title', None)
+        title_node = node.attributes.get("title", None)
         title = title_node.value if title_node else url
-        site_node = node.attributes.get('htmlUrl', None)
-        site_url = site_node.value if site_node else ''
+        site_node = node.attributes.get("htmlUrl", None)
+        site_url = site_node.value if site_node else ""
 
         try:
             feed = models.Feed.objects.get(
-                title=title,
-                feed_url=url,
-                site_url=site_url,
-                user=user
+                title=title, feed_url=url, site_url=site_url, user=user
             )
             existing.append(feed)
         except ObjectDoesNotExist:
-            feed = models.Feed(
-                title=title,
-                feed_url=url,
-                site_url=site_url,
-                user=user
-            )
+            feed = models.Feed(title=title, feed_url=url, site_url=site_url, user=user)
             new.append(feed)
 
     models.Feed.objects.bulk_create(new)
@@ -143,23 +139,27 @@ def export_opml(user):
     :param user: Django User object
     :param stream: writable file-like object to which the XML is written
     """
-    root = Element('opml', {'version': '1.0'})
+    root = Element("opml", {"version": "1.0"})
 
-    head = SubElement(root, 'head')
-    title = SubElement(head, 'title')
-    title.text = u'{0} subscriptions'.format(user.username)
+    head = SubElement(root, "head")
+    title = SubElement(head, "title")
+    title.text = u"{0} subscriptions".format(user.username)
 
-    body = SubElement(root, 'body')
+    body = SubElement(root, "body")
 
     for feed in user.feed_set.all():
-        item = SubElement(body, 'outline', {
-            'type': 'rss',
-            'text': feed.title,
-            'title': feed.title,
-            'xmlUrl': feed.feed_url,
-        })
+        item = SubElement(
+            body,
+            "outline",
+            {
+                "type": "rss",
+                "text": feed.title,
+                "title": feed.title,
+                "xmlUrl": feed.feed_url,
+            },
+        )
         if feed.site_url:
-            item.set('htmlUrl', feed.site_url)
+            item.set("htmlUrl", feed.site_url)
 
     buf = six.BytesIO()
     ElementTree(root).write(buf, encoding="UTF-8")
