@@ -8,12 +8,12 @@ To set it up and run the live version in a self-contained virtualenv::
 
     virtualenv --python=python3.8 venv
     source venv/bin/activate
-    git clone git+https://github.com/radiac/django-yarr.git repo
+    git clone https://github.com/radiac/django-yarr.git repo
     cd repo/example
     pip install "django<3.0"
     pip install -r ../requirements.txt
 
-To run (still within the ``repo/example`` dir)::
+To run against the local Yarr source (still within the ``repo/example`` dir)::
 
     export PYTHONPATH=".."
     python manage.py migrate
