@@ -114,6 +114,9 @@ $colour-content-a-hover: lighten($colour-blue, 15%) !default;
                 display: flex;
                 flex-direction: row;
                 flex-wrap: wrap;
+                list-style: none;
+                margin: 0;
+                padding: 0;
 
                 li {
                     flex: 0 0 auto;

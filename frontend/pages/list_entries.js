@@ -1049,6 +1049,9 @@ $(function () {
   **                                                          Initialise
   */
   $(() => {
+    if (!$('body').hasClass('yarr-list-entries')) {
+      return;
+    }
     Yarr.layout = new Layout(options);
   });
 });

@@ -1,1 +1,1 @@
-import './pages/list_entries.js';
+import './pages/index.js';

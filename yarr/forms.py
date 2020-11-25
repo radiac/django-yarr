@@ -32,12 +32,12 @@ def _build_frequency_choices():
         parts = []
 
         if mm > DAY:
-            dd = mm / DAY
+            dd = mm // DAY
             mm = mm % DAY
             parts.append("%s day%s" % (dd, "s" if dd > 1 else ""))
 
         if mm > HOUR:
-            hh = mm / HOUR
+            hh = mm // HOUR
             mm = mm % HOUR
             parts.append("%s hour%s" % (hh, "s" if hh > 1 else ""))
 

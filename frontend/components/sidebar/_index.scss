@@ -20,7 +20,9 @@
         }
 
         ul {
-            padding: $padding-content;
+          list-style: none;
+          margin: 0;
+          padding: $padding-content;
         }
 
         .count_unread {

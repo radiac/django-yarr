@@ -13,15 +13,22 @@
     <h2>Edit feed</h2>
 {% endif %}
 
-<form action="{% url "yarr:feed_edit" feed_pk=feed.pk %}" method="POST" class="yarr_form">
+<form action="{% url "yarr:feed_edit" feed_pk=feed.pk %}" method="POST" class="feed_form">
 {% csrf_token %}
 
 <table>
 <tr class="required"><th>Title:</th><td>{{ feed.title }}</td></tr>
+<tr><td>Last check:</td><td>{{ feed.last_checked|default:"Not checked yet" }}</td></tr>
+<tr><td>Next check:</td><td>{{ feed.next_check|default:"As soon as possible" }}</td></tr>
+<tr><td>Last updated:</td><td>{{ feed.last_updated|default:"Not checked yet" }}</td></tr>
 {{ feed_form.as_table }}
-<tr><td></td><td><input type="submit" value="Save changes" /></td></tr>
+<tr>
+  <td></td>
+  <td>
+    <input type="submit" value="Save changes">
+    <a href="{% url "yarr:feed_delete" feed_pk=feed.pk %}">Delete this feed</a>
+  </td>
+</tr>
 </table>
 
 </form>
-
-<p><a href="{% url "yarr:feed_delete" feed_pk=feed.pk %}">Delete this feed</a></p>

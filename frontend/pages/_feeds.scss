@@ -1,11 +1,13 @@
 .yarr {
-    form {
+    form.feed_form {
         table {
             width: 100%;
 
             tr {
-                td:first-child {
-                    width: 6rem;
+                & > *:first-child {
+                    width: 10rem;
+                    text-align: right;
+                    padding-right: 0.5rem;
                 }
             }
             input[type="text"] {
@@ -42,7 +44,7 @@
                 width: 4rem;
             }
             td:nth-child(4) {
-                width: 11rem;
+                width: 12rem;
             }
         }
     }

@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block css %}
-{% if not DEV_MODE %}
+{% if not YARR_WEBPACK_DEV_URL %}
     <link rel="stylesheet" href="{% static "yarr/index.css" %}" type="text/css" />
 {% endif %}
 {{ block.super }}
@@ -31,8 +31,8 @@
 </div>
 
 <script>YARR_CONFIG={{ yarr_settings.config|safe|default:'{}' }};</script>
-{% if DEV_MODE %}
-    <script src="http://localhost:8080/index.js"></script>
+{% if YARR_WEBPACK_DEV_URL %}
+    <script src="{{ YARR_WEBPACK_DEV_URL }}index.js"></script>
 {% else %}
     <script src="{% static "js/index.js" %}"></script>
 {% endif %}
