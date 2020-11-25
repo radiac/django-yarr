@@ -23,6 +23,14 @@
             flex-direction: column;
             height: 100%;
         }
+        body > header {
+          flex: 0 0 auto;
+        }
+        body > main {
+          flex: 1 0 auto;
+          display: flex;
+          flex-direction: column;
+        }
 
         /* Generic example styling */
         body {
@@ -68,7 +76,7 @@
 
 </head>
 
-<body class="{{ body_class }}">
+<body class="{% block page_class %}{% endblock %}">
 
 <header>
     <h1>{{ title }}</h1>

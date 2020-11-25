@@ -117,6 +117,30 @@ STATIC_URL = "/static/"
 
 
 #
+# Add webpack HMR support for developers working on the frontend
+#
+WEBPACK_DEV_HOST = os.getenv("WEBPACK_DEV_HOST", default="localhost")
+WEBPACK_DEV_PORT = int(os.getenv("WEBPACK_DEV_PORT", default=8080))
+WEBPACK_DEV_URL = os.getenv(
+    "WEBPACK_DEV_URL", f"//{WEBPACK_DEV_HOST}:{WEBPACK_DEV_PORT}/static/yarr/"
+)
+LOGGING = {
+    "version": 1,
+    "handlers": {"console": {"class": "logging.StreamHandler"}},
+    "loggers": {
+        "example.context_processors": {
+            "level": "DEBUG",
+            "handlers": ["console"],
+            "propagate": False,
+        }
+    },
+}
+TEMPLATES[0]["OPTIONS"]["context_processors"].append(
+    "example.context_processors.webpack_dev_url"
+)
+
+
+#
 # Settings for using the example project to develop with docker
 #
 # If you are looking at this file to see how to use yarr, you can ignore everything
@@ -134,24 +158,3 @@ if os.getenv("DJANGO_CONFIGURATION") == "docker":
             "CONN_MAX_AGE": 600,
         }
     }
-
-    # Add webpack HMR support for developers working on the frontend
-    WEBPACK_DEV_HOST = os.getenv("WEBPACK_DEV_HOST", default="{host}")
-    WEBPACK_DEV_PORT = int(os.getenv("WEBPACK_DEV_PORT", default=8080))
-    WEBPACK_DEV_URL = os.getenv(
-        "WEBPACK_DEV_URL", f"//{WEBPACK_DEV_HOST}:{WEBPACK_DEV_PORT}/static/yarr/"
-    )
-    LOGGING = {
-        "version": 1,
-        "handlers": {"console": {"class": "logging.StreamHandler"}},
-        "loggers": {
-            "example.context_processors": {
-                "level": "DEBUG",
-                "handlers": ["console"],
-                "propagate": False,
-            }
-        },
-    }
-    TEMPLATES[0]["OPTIONS"]["context_processors"].append(
-        "example.context_processors.webpack_dev_url"
-    )

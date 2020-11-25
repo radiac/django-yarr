@@ -1,9 +1,19 @@
+# Build
 *.pyc
 django_yarr.egg-info
-.tox
 build
 dist
+
+# Test
+.tox
 .coverage*
 htmlcov
-docs/_*
+
+# Frontend
 node_modules/*
+
+# Docs
+docs/_*
+
+# Example
+example/db.sqlite3
