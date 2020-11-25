@@ -2,6 +2,7 @@
 Utils for yarr
 """
 import json
+from io import BytesIO
 from xml.dom import minidom
 from xml.etree.ElementTree import Element, ElementTree, SubElement
 
@@ -9,8 +10,6 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import EmptyPage, InvalidPage, Paginator
 from django.core.serializers.json import DjangoJSONEncoder
 from django.http import HttpResponse
-
-import six
 
 from . import models, settings
 
@@ -161,6 +160,6 @@ def export_opml(user):
         if feed.site_url:
             item.set("htmlUrl", feed.site_url)
 
-    buf = six.BytesIO()
+    buf = BytesIO()
     ElementTree(root).write(buf, encoding="UTF-8")
     return buf.getvalue()

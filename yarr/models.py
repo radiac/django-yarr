@@ -12,7 +12,6 @@ from django.db import models
 from django.utils import timezone
 
 import feedparser
-import six
 
 from yarr import managers, settings
 from yarr.constants import ENTRY_READ, ENTRY_SAVED, ENTRY_UNREAD
@@ -161,7 +160,7 @@ class Feed(models.Model):
     objects = managers.FeedManager()
 
     def __str__(self):
-        return six.text_type(self.text or self.title)
+        return str(self.text or self.title)
 
     def update_count_unread(self):
         """Update the cached unread count"""
@@ -507,7 +506,7 @@ class Entry(models.Model):
     objects = managers.EntryManager()
 
     def __str__(self):
-        return six.text_type(self.title)
+        return str(self.title)
 
     def update(self, entry):
         """
