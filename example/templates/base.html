@@ -8,10 +8,17 @@
 <head>
   <title>{{ title }}</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-    {% if not WEBPACK_DEV_URL %}
-    <link rel="stylesheet" href="{% static "yarr/index.css" %}" type="text/css" />
-    {% endif %}
+
     {% block css %}{% endblock %}
+    {% comment %}
+      When working on the frontend, delete the css block above and uncomment the
+      following to enable HMR:
+
+      {% if not WEBPACK_DEV_URL %}
+      <link rel="stylesheet" href="{% static "yarr/index.css" %}" type="text/css" />
+      {% endif %}
+    {% endcomment %}
+
 
     <style>
         /* Style page to use full height of browser viewport */
@@ -96,13 +103,19 @@
     {% block content %}{% endblock %}
 </main>
 
-{% block js %}
+{% block js %}{% endblock %}
+{% comment %}
+
+When working on the frontend, delete the js block above and uncomment the following to
+enable HMR:
+
   {% if WEBPACK_DEV_URL %}
     <script src="{{ WEBPACK_DEV_URL }}yarr/index.js"></script>
   {% else %}
     <script src="{% static "yarr/index.js" %}"></script>
   {% endif %}
-{% endblock %}
+
+{% endcomment %}
 
 </body>
 

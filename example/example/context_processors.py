@@ -40,5 +40,5 @@ def webpack_dev_url(request):
     # HMR server found
     logger.info("Webpack dev server found, HMR enabled\n")
 
-    context = {"YARR_WEBPACK_DEV_URL": settings.WEBPACK_DEV_URL.format(**data)}
+    context = {"WEBPACK_DEV_URL": settings.WEBPACK_DEV_URL.format(**data)}
     return context

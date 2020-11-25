@@ -2,9 +2,7 @@
 {% load static %}
 
 {% block css %}
-{% if not YARR_WEBPACK_DEV_URL %}
-    <link rel="stylesheet" href="{% static "yarr/index.css" %}" type="text/css" />
-{% endif %}
+<link rel="stylesheet" href="{% static "yarr/index.css" %}" type="text/css" />
 {{ block.super }}
 {% endblock %}
 
@@ -29,11 +27,10 @@
     </div>
     {% endblock %}
 </div>
+{% endblock %}
 
+{% block js %}
 <script>YARR_CONFIG={{ yarr_settings.config|safe|default:'{}' }};</script>
-{% if YARR_WEBPACK_DEV_URL %}
-    <script src="{{ YARR_WEBPACK_DEV_URL }}index.js"></script>
-{% else %}
-    <script src="{% static "js/index.js" %}"></script>
-{% endif %}
+<script src="{% static "yarr/index.js" %}"></script>
+{{ block.super }}
 {% endblock %}

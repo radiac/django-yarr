@@ -1,12 +1,6 @@
 {% extends "yarr/base_manage.html" %}
 {% load static %}
 
-{% block js %}
-{{ block.super }}
-<script src="{% static "yarr/js/yarr.js" %} "></script>
-<script src="{% static "yarr/js/feeds.js" %}></script>
-{% endblock %}
-
 {% block yarr_content %}
 <div id="feeds">
 
