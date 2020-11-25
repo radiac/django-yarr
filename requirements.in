@@ -1,0 +1,31 @@
+#
+# Developer requirements
+#
+# After compiling, remove django from requirements.txt to avoid a clash with tox
+#
+
+# Dev tools
+black
+flake8
+isort
+pip-tools
+
+# Testing
+model_bakery
+pytest
+pytest-black
+pytest-cov
+pytest-django
+pytest-flake8
+pytest-isort
+pytest-mypy
+tox
+
+# Docs
+sphinx
+sphinx-autobuild
+
+# Project (setup.cfg)
+django-yaa-settings
+bleach>=1.2.1
+feedparser>=5.1.3

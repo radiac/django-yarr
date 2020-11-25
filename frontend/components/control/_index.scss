@@ -1,0 +1,231 @@
+/*
+** Styles for non-js control panel
+*/
+
+$li-height: 1.5rem;
+
+.yarr {
+    & > .control {
+        flex: 0 0 auto;
+        order: 1;
+
+        display: flex;
+
+        .menu,
+        .feednav {
+            flex: 1 1 auto;
+            margin: 0.5rem 0;
+
+            @include media('<tablet') {
+                flex: 1 0 auto;
+            }
+        }
+
+        .feednav {
+            text-align: right;
+        }
+
+        ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+    }
+
+    // Styles
+    & > .control {
+        padding: 0 1rem;
+        border-bottom: 1px solid $colour-layout-border;
+
+        span,
+        a {
+            display: block;
+            box-sizing: content-box;
+            height: $li-height;
+            line-height: $li-height;
+            font-size: 0.8em;
+            font-weight: bold;
+            text-decoration: none;
+        }
+        span {
+            padding: 0.5rem 0.5rem;
+        }
+        a {
+            padding: 0.5rem 1rem 0.5rem ($li-height +1rem);
+
+            &:empty {
+                padding-left: 1.5rem;
+            }
+        }
+
+        // Style icons
+        .menu_ctl,
+        .menu_state,
+        .menu_sort,
+        .menu_layout,
+        .menu_op,
+        .menu_manage,
+        .stepper {
+            display: inline-block;
+            vertical-align: top;
+            position: relative;
+
+            span::before,
+            a::before {
+                content: ' ';
+                position: absolute;
+                width: $li-height;
+                height: $li-height;
+                background-color: $colour-grey-dark;
+                mask-size: cover;
+            }
+            span {
+                width: $li-height;
+            }
+
+            span::before,
+            a::before {
+                top: 0.5rem;
+                left: 0.5rem;
+            }
+
+            a,
+            span {
+                cursor: pointer;
+
+                &:hover,
+                &:focus {
+                    background-color: $colour-grey-mid;
+                }
+            }
+
+            a.selected {
+                background-color: $colour-grey-mid;
+            }
+        }
+
+        // Style the toggling icon menu
+        .menu_state,
+        .menu_sort,
+        .menu_layout,
+        .menu_op {
+            position: relative;
+
+            ul {
+                display: none;
+                background-color: $colour-grey-light;
+                width: 10rem;
+
+                li {
+                    display: block;
+                    position: relative;
+                }
+            }
+
+            &:hover,
+            &:focus {
+                ul {
+                    z-index: 1000;
+                    position: absolute;
+                    display: block;
+                    border: 1px solid $colour-layout-border;
+                }
+            }
+        }
+
+        // Style the non-toggled actions
+        .menu_ctl,
+        .menu_manage,
+        .stepper {
+            li {
+                position: relative;
+                display: inline-block;
+            }
+        }
+
+        .menu_ctl {
+            &-sidebar_toggle {
+                &::before {
+                    mask-image: url('./icons/rss-line.svg');
+                }
+            }
+        }
+
+        .menu_state {
+            &-all::before {
+                mask-image: url('./icons/mail-line.svg');
+            }
+            &-unread::before {
+                mask-image: url('./icons/mail-unread-line.svg');
+            }
+            &-saved::before {
+                mask-image: url('./icons/mail-star-line.svg');
+            }
+        }
+
+        .menu_sort {
+            &-asc::before {
+                mask-image: url('./icons/sort-asc.svg');
+            }
+            &-desc::before {
+                mask-image: url('./icons/sort-desc.svg');
+            }
+        }
+
+        .menu_layout {
+            &-article::before {
+                mask-image: url('./icons/article-line.svg');
+            }
+            &-list::before {
+                mask-image: url('./icons/list-check-2.svg');
+            }
+        }
+
+        // menu_layout icons handled in ../entry/layout/
+        .menu_op {
+            &-mark_read::before {
+                mask-image: url('./icons/eye-line.svg');
+            }
+        }
+
+        .menu_manage {
+            &-read_feeds::before {
+                mask-image: url('./icons/article-line.svg');
+            }
+            &-manage_feeds::before {
+                mask-image: url('./icons/settings-3-line.svg');
+            }
+        }
+
+        .stepper {
+            a {
+                padding: 0.5rem 1rem 0.5rem 1.5rem;
+            }
+            &-previous::before {
+                mask-image: url('./icons/arrow-up-s-line.svg');
+            }
+            &-next::before {
+                mask-image: url('./icons/arrow-down-s-line.svg');
+            }
+        }
+
+
+        .feednav {
+            li {
+                display: inline-block;
+            }
+            ul.paginated {
+                span {
+                    padding: 0.5rem 1rem;
+                    background-color: $colour-grey-light;
+                }
+                a {
+                    padding: 0.5rem 1rem;
+                    &:hover {
+                        background-color: $colour-grey-light;
+                    }
+                }
+            }
+        }
+    }
+}

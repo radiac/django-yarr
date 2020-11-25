@@ -1,0 +1,68 @@
+/*
+** Layout
+*/
+
+// Sizes
+$control-height: 3.5rem !default;
+$sidebar-width: 18em !default;
+
+.yarr {
+    /* children are rows */
+    display: flex;
+    flex-flow: column nowrap;
+
+    height: 100%;
+
+    & > .body {
+        /* grow and shrink regardless of content */
+        flex: 1 1 auto;
+        order: 2;
+
+        /* provide an anchor for absolute children */
+        position: relative;
+
+        .status {
+            $status-width: 16rem;
+
+            position: absolute;
+            top: 0;
+            left: 50%;
+            width: $status-width;
+            margin-left: -($status-width / 2);
+            z-index: $z-index-status;
+        }
+
+        &.with-sidebar {
+            /* children are columns */
+            display: flex;
+            flex-flow: row nowrap;
+
+            /* give it a fake height to force flex to calculate it */
+            height: 0;
+
+            .sidebar {
+                flex: 0 0 $sidebar-width;
+                order: 1;
+                z-index: $z-index-content;
+            }
+
+            .content {
+                flex: 1 1 auto;
+                order: 2;
+                overflow-y: auto;
+                z-index: $z-index-content;
+            }
+        }
+
+        /* Content has no horizontal padding unless it's a top level element */
+        .content {
+            padding: $padding-content 0;
+            margin: 0;
+        }
+
+        & > .content  {
+            padding: $padding-content;
+            order: 2;
+        }
+    }
+}

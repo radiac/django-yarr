@@ -1,36 +1,16 @@
-import os
-from setuptools import setup, find_packages
+import re
+from pathlib import Path
 
-from yarr import __version__
+from setuptools import setup
 
-def read(fname):
-    return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
-setup(
-    name = "django-yarr",
-    version = __version__,
-    author = "Richard Terry",
-    author_email = "code@radiac.net",
-    description = ("A lightweight customisable RSS reader for Django"),
-    license = "BSD",
-    url = "http://radiac.net/projects/django-yarr/",
-    long_description=read('README.rst'),
-    classifiers=[
-        'Development Status :: 4 - Beta',
-        'Environment :: Web Environment',
-        'Intended Audience :: Developers',
-        'License :: OSI Approved :: BSD License',
-        'Operating System :: OS Independent',
-        'Programming Language :: Python',
-        'Framework :: Django',
-    ],
-    
-    zip_safe=True,
-    install_requires=[
-        'Django>=1.3.0',
-        'bleach>=1.2.1',
-        'feedparser>=5.1.3',
-    ],
-    packages=find_packages(),
-    include_package_data=True,
-)
+def find_version(*paths):
+    path = Path(*paths)
+    content = path.read_text()
+    match = re.search(r"^__version__\s*=\s*['\"]([^'\"]*)['\"]", content, re.M)
+    if match:
+        return match.group(1)
+    raise RuntimeError("Unable to find version string.")
+
+
+setup(version=find_version("yarr", "__init__.py"))

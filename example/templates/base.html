@@ -1,0 +1,109 @@
+{% spaceless %}
+{% load static %}
+
+<!DOCTYPE html>
+{% endspaceless %}
+<html>
+
+<head>
+  <title>{{ title }}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+    {% if not WEBPACK_DEV_URL %}
+    <link rel="stylesheet" href="{% static "yarr/index.css" %}" type="text/css" />
+    {% endif %}
+    {% block css %}{% endblock %}
+
+    <style>
+        /* Style page to use full height of browser viewport */
+        html {
+            height: 100%;
+        }
+        body.yarr-list-entries {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        body > header {
+          flex: 0 0 auto;
+        }
+        body > main {
+          flex: 1 0 auto;
+          display: flex;
+          flex-direction: column;
+        }
+
+        /* Generic example styling */
+        body {
+            padding: 0;
+            margin: 0;
+            font-family: "Open Sans", sans-serif;
+        }
+        header {
+            border-bottom: 1px solid #888;
+        }
+        header h1 {
+            font-size: 1em;
+            line-height: 1.5em;
+            margin: 0;
+            padding: 0 10px;
+        }
+
+        #messages ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        #messages li {
+            padding: 5px 10px;
+            background: #aaa;
+        }
+        #messages li.success {
+            background: #afa;
+        }
+        #messages li.error {
+            background: #faa;
+        }
+
+        a {
+            color: #008;
+            text-decoration: none;
+        }
+        a:hover {
+            color: #00f;
+            text-decoration: underline;
+        }
+    </style>
+
+</head>
+
+<body class="{% block page_class %}{% endblock %}">
+
+<header>
+    <h1>{{ title }}</h1>
+
+    <div id="messages">
+        <ul>
+            {% for message in messages %}
+            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message|safe }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% if messages %}
+    {% endif %}
+</header>
+
+<main id="content">
+    {% block content %}{% endblock %}
+</main>
+
+{% block js %}
+  {% if WEBPACK_DEV_URL %}
+    <script src="{{ WEBPACK_DEV_URL }}yarr/index.js"></script>
+  {% else %}
+    <script src="{% static "yarr/index.js" %}"></script>
+  {% endif %}
+{% endblock %}
+
+</body>
+
+</html>

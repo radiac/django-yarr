@@ -1,0 +1,22 @@
+/*
+** Variables
+*/
+
+// Media breakpoints
+$breakpoints: (
+    phone: 20rem,
+    tablet: 48rem,
+    desktop: 64rem
+) !default;
+
+
+// Default static path for ``static()``
+$static_path: '/static' !default;
+
+// Layers
+$z-index-content: 1 !default;
+$z-index-status: 2 !default;
+$z-index-dropdown: 3 !default;
+
+// Padding
+$padding-content: 1rem;

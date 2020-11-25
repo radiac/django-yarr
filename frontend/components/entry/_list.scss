@@ -1,0 +1,81 @@
+.yarr__conf-layout_list {
+    $summary-height: 1.4rem;
+
+    input[name="layout_list"] {
+        display: none;
+    }
+
+    .entry {
+        margin: 0;
+
+        &:not(:first-child) {
+            border-top: 0;
+        }
+
+        input[name="layout_list"] {
+            & ~ .article {
+                display: none;
+            }
+
+            // When radio selecteed, show the article
+            // Show the .summary--close over the top of the .summary
+            &:checked {
+                & ~ .article {
+                    position: relative;
+                    display: block;
+                    border-top: 1px solid $colour-border;
+
+                    .summary--close {
+                        position: absolute;
+                        top: -$summary-height;
+                        height: $summary-height;
+                        width: 100%;
+                    }
+                }
+            }
+        }
+
+        .summary {
+            height: $summary-height;
+            line-height: $summary-height;
+            display: flex;
+            padding: 0 0.5rem;
+
+            .feed {
+                flex: 0 0 12rem;
+            }
+
+            .title {
+                flex: 1 1 auto;
+                padding: 0 0.5rem;
+            }
+
+            .feed,
+            .title {
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .date {
+                flex: 0 0 10rem;
+                text-align: right;
+            }
+
+            @include media('<tablet') {
+                .date {
+                    display: none;
+                }
+                .feed {
+                    flex-basis: 8rem;
+                }
+            }
+        }
+
+        &:not(.read) {
+            .title {
+                font-weight: bold;
+            }
+        }
+    }
+}

@@ -1,0 +1,49 @@
+/*
+** Styles for non-js sidebar
+*/
+
+.yarr {
+    .sidebar {
+        display: flex;
+        flex-flow: row nowrap;
+    }
+
+    .sidebar-body {
+        flex: 1 1 auto;
+        // Margin except on right - gap comes from content padding
+        margin: $padding-content 0 $padding-content $padding-content;
+        overflow-y: auto;
+        border: 1px solid $colour-layout-border;
+
+        ul.feed_menu {
+            border-bottom: 1px solid $colour-layout-border;
+        }
+
+        ul {
+          list-style: none;
+          margin: 0;
+          padding: $padding-content;
+        }
+
+        .count_unread {
+            vertical-align: bottom;
+            display:        inline-block;
+            font-size:      0.8em;
+            font-weight:    normal;
+            color:          #666;
+            margin-left:    0.4rem;
+        }
+        .count_unread:before {
+            content: "(";
+        }
+        .count_unread:after {
+            content: ")";
+        }
+    }
+}
+
+.yarr__conf-sidebar_override {
+    .sidebar {
+        display: none;
+    }
+}

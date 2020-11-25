@@ -1,0 +1,7 @@
+/*
+** Utils
+*/
+
+@function static($rel_path) {
+    @return $static_path + '/' + $rel_path;
+}

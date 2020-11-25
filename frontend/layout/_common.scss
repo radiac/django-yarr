@@ -1,0 +1,17 @@
+/**
+    Common styles
+*/
+
+.yarr {
+    table {
+        width: 100%;
+
+        th, td {
+            text-align: left;
+            vertical-align: top;
+        }
+        th {
+            font-weight: $weight-bold;
+        }
+    }
+}

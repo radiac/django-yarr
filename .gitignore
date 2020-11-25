@@ -1,3 +1,19 @@
+# Build
 *.pyc
 django_yarr.egg-info
+build
+dist
+
+# Test
 .tox
+.coverage*
+htmlcov
+
+# Frontend
+node_modules/*
+
+# Docs
+docs/_*
+
+# Example
+example/db.sqlite3
