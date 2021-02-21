@@ -181,6 +181,21 @@ Change the following settings, if you have overridden the defaults:
 Changelog
 =========
 
+0.6.1, 2021-02-21
+-----------------
+
+Changes:
+
+* Restyle active read entries so default title colour is darker
+
+
+Bugfix:
+
+* Remove missing images from manage table
+* Fix JS failure to mark as read
+* Fix ``check_feeds`` when multiple feeds share a url
+
+
 0.6.0, 2020-11-18
 -----------------
 
