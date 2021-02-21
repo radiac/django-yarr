@@ -714,7 +714,8 @@ $(function () {
 
       // Update current and get flag fields
       this.current = index;
-      this.$current = this.entries[this.current].$el
+      const entry = this.entries[this.current];
+      this.$current = entry.$el
         .addClass('active')
         ;
 
@@ -722,7 +723,11 @@ $(function () {
       if (this.layout.displayMode == MODE_LIST) {
         this.$current.find('input[name="layout_list"]').click();
       }
-      //this.entries[this.current].open();
+
+      // Mark as read if unread
+      if (entry.state == ENTRY_UNREAD) {
+        entry.markRead();
+      }
 
       // If this is the last entry, try to load more
       if (index == this.entries.length - 1) {
@@ -897,21 +902,6 @@ $(function () {
     },
     onContentClick: function (e) {
       this.entries.selectEntry(this.$el.index());
-    },
-
-    open: function () {
-      /** Open the specified entry, marking it as read */
-      // Open
-      if (this.entries.layout.displayMode == MODE_LIST) {
-        this.entries.$entries.removeClass('open');
-        this.$el.addClass('open');
-        this.entries.entriesResized();
-      }
-
-      // Mark as read if unread
-      if (this.state == ENTRY_UNREAD) {
-        this.markRead();
-      }
     },
 
     /* Internal util fns */
