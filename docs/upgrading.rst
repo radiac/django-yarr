@@ -181,7 +181,7 @@ Change the following settings, if you have overridden the defaults:
 Changelog
 =========
 
-0.6.1, 2021-02-21
+0.6.2, 2021-02-21
 -----------------
 
 Changes:
@@ -194,6 +194,21 @@ Bugfix:
 * Remove missing images from manage table
 * Fix JS failure to mark as read
 * Fix ``check_feeds`` when multiple feeds share a url
+
+
+0.6.1, 2020-11-25
+-----------------
+
+Changes:
+
+* Update example project
+* Clean source
+
+
+Bugfix:
+
+* Add missing styles
+* Fix JS load order
 
 
 0.6.0, 2020-11-18
