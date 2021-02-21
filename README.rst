@@ -7,11 +7,11 @@ A lightweight customisable RSS reader for Django.
 * Project site: http://radiac.net/projects/django-yarr/
 * Source code: https://github.com/radiac/django-yarr
 
-.. image:: https://travis-ci.org/radiac/django-yarr.svg?branch=main
-    :target: https://travis-ci.org/radiac/django-yarr
+.. image:: https://github.com/radiac/django-yarr/actions/workflows/ci.yml/badge.svg
+    :target: https://github.com/radiac/django-yarr/actions/workflows/ci.yml
 
-.. image:: https://coveralls.io/repos/radiac/django-yarr/badge.svg?branch=main&service=github
-    :target: https://coveralls.io/github/radiac/django-yarr?branch=main
+.. image:: https://codecov.io/gh/radiac/django-yarr/branch/develop/graph/badge.svg?token=5VZNPABZ7E
+    :target: https://codecov.io/gh/radiac/django-yarr
 
 
 Features
