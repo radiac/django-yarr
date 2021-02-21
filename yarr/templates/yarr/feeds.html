@@ -42,12 +42,12 @@
 
             {% if feed.is_active %}
                 {% if feed.error %}
-                    <td><img src="{% static "yarr/images/warning.png" %}" alt="Problem" title="Problem"></td>
+                    <td class="status--problem">Problem></td>
                 {% else %}
-                    <td><img src="{% static "yarr/images/success.png" %}" alt="Active" title="Active"></td>
+                    <td class="status--active">Active</td>
                 {% endif %}
             {% else %}
-                <td><img src="{% static "yarr/images/error.png" %}" alt="Inactive" title="Inactive"></td>
+                <td class="status--inactive">Inactive</td>
             {% endif %}
 
             {% if feed.is_active %}
