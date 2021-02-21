@@ -56,7 +56,7 @@ class Command(BaseCommand):
             feeds = feeds.filter(feed_url=options["url"])
             if feeds.count() == 0:
                 raise ValueError("Specified URL must be a known feed")
-            entries = entries.filter(feed=feeds)
+            entries = entries.filter(feed__in=feeds)
 
         # Purge current entries
         if options["purge"]:
