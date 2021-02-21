@@ -32,6 +32,9 @@ $colour-read-header-border: lighten($colour-read, 40%) !default;
 $colour-read-h2: $colour-read !default;
 $colour-read-header-link: $colour-read !default;
 
+$colour-read-active-h2: $colour-grey-dark !default;
+$colour-read-active-header-link: $colour-grey-dark !default;
+
 $colour-saved: $colour-green !default;
 $colour-saved-border: $colour-saved !default;
 $colour-saved-header-bg: lighten($colour-saved, 50%) !default;
@@ -196,6 +199,17 @@ $colour-content-a-hover: lighten($colour-blue, 15%) !default;
 
                 .header {
                     background: $colour-read-header-bg;
+                    h2 {
+                        a {
+                            color: $colour-read-active-h2;
+                        }
+                    }
+
+                    .meta {
+                        a {
+                            color: $colour-read-active-header-link;
+                        }
+                    }
                 }
             }
         }
