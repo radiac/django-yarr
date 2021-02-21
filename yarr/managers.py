@@ -2,6 +2,7 @@
 Yarr model managers
 """
 import datetime
+import html
 import time
 
 from django.apps import apps
@@ -243,20 +244,24 @@ class EntryManager(models.Manager):
         # Create a new entry
         entry = self.model()
 
-        # Get the title and content
-        entry.title = raw.get("title", "")
+        # Get the title and sanitise completely
+        title = raw.get("title", "")
+        title = bleach.clean(title, tags=[], strip=True)
+        title = html.unescape(title)
+        entry.title = title
+
+        # Get the content and sanitise according to settings
         content = raw.get("content", [{"value": ""}])[0]["value"]
         if not content:
             content = raw.get("description", "")
-
-        # Sanitise the content
-        entry.content = bleach.clean(
+        content = bleach.clean(
             content,
             tags=settings.ALLOWED_TAGS,
             attributes=settings.ALLOWED_ATTRIBUTES,
             styles=settings.ALLOWED_STYLES,
             strip=True,
         )
+        entry.content = content
 
         # Order: updated, published, created
         # If not provided, needs to be None for update comparison
