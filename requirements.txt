@@ -93,7 +93,7 @@ pluggy==0.13.1
     # via
     #   pytest
     #   tox
-py==1.9.0
+py==1.10.0
     # via
     #   pytest
     #   tox
