@@ -16,7 +16,7 @@ attrs==20.3.0
     # via
     #   pytest
     #   pytest-mypy
-babel==2.9.0
+babel==2.9.1
     # via sphinx
 black==20.8b1
     # via
@@ -36,10 +36,10 @@ coverage==5.3
     # via pytest-cov
 distlib==0.3.1
     # via virtualenv
-django-yaa-settings==1.1.0
-    # via -r requirements.in
 django==3.1.6
     # via model-bakery
+django-yaa-settings==1.1.0
+    # via -r requirements.in
 docutils==0.16
     # via sphinx
 feedparser==6.0.2
@@ -73,12 +73,12 @@ mccabe==0.6.1
     # via flake8
 model-bakery==1.2.1
     # via -r requirements.in
+mypy==0.790
+    # via pytest-mypy
 mypy-extensions==0.4.3
     # via
     #   black
     #   mypy
-mypy==0.790
-    # via pytest-mypy
 packaging==20.4
     # via
     #   bleach
@@ -105,6 +105,14 @@ pygments==2.7.2
     # via sphinx
 pyparsing==2.4.7
     # via packaging
+pytest==6.1.2
+    # via
+    #   -r requirements.in
+    #   pytest-black
+    #   pytest-cov
+    #   pytest-django
+    #   pytest-flake8
+    #   pytest-mypy
 pytest-black==0.3.12
     # via -r requirements.in
 pytest-cov==2.10.1
@@ -117,14 +125,6 @@ pytest-isort==1.2.0
     # via -r requirements.in
 pytest-mypy==0.8.0
     # via -r requirements.in
-pytest==6.1.2
-    # via
-    #   -r requirements.in
-    #   pytest-black
-    #   pytest-cov
-    #   pytest-django
-    #   pytest-flake8
-    #   pytest-mypy
 pytz==2020.4
     # via
     #   babel
@@ -145,12 +145,12 @@ six==1.15.0
     #   virtualenv
 snowballstemmer==2.0.0
     # via sphinx
-sphinx-autobuild==2020.9.1
-    # via -r requirements.in
 sphinx==3.3.1
     # via
     #   -r requirements.in
     #   sphinx-autobuild
+sphinx-autobuild==2020.9.1
+    # via -r requirements.in
 sphinxcontrib-applehelp==1.0.2
     # via sphinx
 sphinxcontrib-devhelp==1.0.2
