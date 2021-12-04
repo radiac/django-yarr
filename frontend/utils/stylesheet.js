@@ -21,11 +21,11 @@ export class Sheet {
         this.el = document.createElement('style');
         this.el.appendChild(document.createTextNode(''));  // for webkit
         document.head.appendChild(this.el);
-        this.pending.forEach(
-            ([rule, index]) => {
-                this._insertRule(rule, index);
-            }
-        );
+        for (var i=0; i < this.pending.length; i++) {
+            var rule = this.pending[i][0];
+            var index = this.pending[i][1];
+            this._insertRule(rule, index);
+        }
     }
 
     insertRule(rule, index=null) {
