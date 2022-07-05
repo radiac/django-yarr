@@ -1,4 +1,5 @@
 import bleach
+from bleach.css_sanitizer import ALLOWED_CSS_PROPERTIES
 from yaa_settings import AppSettings
 
 
@@ -140,4 +141,4 @@ class Settings(AppSettings):
         "time": ["datetime"],
     }
 
-    ALLOWED_STYLES = bleach.ALLOWED_STYLES
+    ALLOWED_STYLES = ALLOWED_CSS_PROPERTIES

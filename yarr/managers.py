@@ -10,6 +10,7 @@ from django.db import connection, models
 from django.utils import timezone
 
 import bleach
+from bleach.css_sanitizer import CSSSanitizer
 
 from . import settings
 from .constants import ENTRY_READ, ENTRY_SAVED, ENTRY_UNREAD
@@ -254,11 +255,12 @@ class EntryManager(models.Manager):
         content = raw.get("content", [{"value": ""}])[0]["value"]
         if not content:
             content = raw.get("description", "")
+        css_sanitizer = CSSSanitizer(settings.ALLOWED_STYLES)
         content = bleach.clean(
             content,
             tags=settings.ALLOWED_TAGS,
             attributes=settings.ALLOWED_ATTRIBUTES,
-            styles=settings.ALLOWED_STYLES,
+            css_sanitizer=css_sanitizer,
             strip=True,
         )
         entry.content = content
