@@ -85,7 +85,7 @@ class FeedTest(TestCase):
         six.assertRegex(
             self,
             self.feed_missing_server.error,
-            r"^URL error: .+?Name or service not known",
+            r"^Feed error: .+?Name or service not known",
         )
 
     def test_feed_with_img(self):
