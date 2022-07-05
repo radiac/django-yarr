@@ -28,7 +28,7 @@ class ExportTests(TestCase):
 
     def test_single_feed(self):
         self.user.feed_set.create(
-            title=u"Feed 1", feed_url="http://example.com/feed.xml"
+            title="Feed 1", feed_url="http://example.com/feed.xml"
         )
         expected = (
             '<opml version="1.0">'
@@ -45,16 +45,16 @@ class ExportTests(TestCase):
 
     def test_unicode_title(self):
         self.user.feed_set.create(
-            title=u"\u2042", feed_url="http://example.com/feed.xml"
+            title="\u2042", feed_url="http://example.com/feed.xml"
         )
         expected = (
-            u'<opml version="1.0">'
+            '<opml version="1.0">'
             "<head>"
             "<title>test subscriptions</title>"
             "</head>"
             "<body>"
             '<outline type="rss" xmlUrl="http://example.com/feed.xml"'
-            u' title="\u2042" text="\u2042" />'
+            ' title="\u2042" text="\u2042" />'
             "</body>"
             "</opml>"
         ).encode("utf-8")
@@ -62,7 +62,7 @@ class ExportTests(TestCase):
 
     def test_site_url(self):
         self.user.feed_set.create(
-            title=u"Example",
+            title="Example",
             feed_url="http://example.com/feed.xml",
             site_url="http://example.com/",
         )
@@ -90,7 +90,7 @@ class ExportTests(TestCase):
             a_str = pretty_etree(a_el).splitlines()
             b_str = pretty_etree(b_el).splitlines()
             diff = difflib.unified_diff(a_str, b_str, fromfile="a", tofile="b")
-            full_diff = u"\n".join(diff).encode("utf-8")
+            full_diff = "\n".join(diff).encode("utf-8")
             self.fail("XML not equivalent:\n\n{}".format(full_diff))
 
 

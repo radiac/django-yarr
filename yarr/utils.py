@@ -142,7 +142,7 @@ def export_opml(user):
 
     head = SubElement(root, "head")
     title = SubElement(head, "title")
-    title.text = u"{0} subscriptions".format(user.username)
+    title.text = "{0} subscriptions".format(user.username)
 
     body = SubElement(root, "body")
 

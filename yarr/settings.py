@@ -1,4 +1,3 @@
-import bleach
 from bleach.css_sanitizer import ALLOWED_CSS_PROPERTIES
 from yaa_settings import AppSettings
 
