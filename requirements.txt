@@ -14,8 +14,6 @@ attrs==21.4.0
     #   pytest-mypy
 babel==2.10.3
     # via sphinx
-backports-zoneinfo==0.2.1
-    # via django
 black==22.6.0
     # via
     #   -r requirements.in
@@ -38,8 +36,10 @@ coverage[toml]==6.4.1
     # via pytest-cov
 distlib==0.3.4
     # via virtualenv
-django==4.0.6
-    # via model-bakery
+django==3.2.14
+    # via
+    #   -r requirements.in
+    #   model-bakery
 django-yaa-settings==1.1.0
     # via -r requirements.in
 docutils==0.18.1
@@ -137,7 +137,9 @@ pytest-isort==3.0.0
 pytest-mypy==0.9.1
     # via -r requirements.in
 pytz==2022.1
-    # via babel
+    # via
+    #   babel
+    #   django
 requests==2.28.1
     # via sphinx
 sgmllib3k==1.0.0
