@@ -189,6 +189,14 @@ Changes:
 * Add support for Django 3.2 - 4.0
 * Dependency upgrades (backwards incompatible)
 
+Bugfix:
+
+* Fix JS compatibility issue (#79)
+
+Thanks to:
+
+* bichanna for #79
+
 
 0.6.2, 2021-02-21
 -----------------
