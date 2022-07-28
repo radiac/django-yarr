@@ -4,7 +4,7 @@ Django Yarr - Yet Another RSS Reader
 
 A lightweight customisable RSS reader for Django.
 
-* Project site: http://radiac.net/projects/django-yarr/
+* Project site: https://radiac.net/projects/django-yarr/
 * Source code: https://github.com/radiac/django-yarr
 
 .. image:: https://github.com/radiac/django-yarr/actions/workflows/ci.yml/badge.svg

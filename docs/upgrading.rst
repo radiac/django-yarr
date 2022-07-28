@@ -181,7 +181,7 @@ Change the following settings, if you have overridden the defaults:
 Changelog
 =========
 
-0.7.0, 2022-??-??
+0.7.0, 2022-07-28
 -----------------
 
 Changes:
