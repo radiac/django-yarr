@@ -8,7 +8,7 @@ For an overview of what has changed between versions, see the :ref:`changelog`.
 Instructions
 ============
 
-1. Check which version of Tagulous you are upgrading from::
+1. Check which version of Yarr you are upgrading from::
 
       python
       >>> import yarr
@@ -180,6 +180,15 @@ Change the following settings, if you have overridden the defaults:
 
 Changelog
 =========
+
+0.7.0, 2022-??-??
+-----------------
+
+Changes:
+
+* Add support for Django 3.2 - 4.0
+* Dependency upgrades (backwards incompatible)
+
 
 0.6.2, 2021-02-21
 -----------------
