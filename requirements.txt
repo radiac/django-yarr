@@ -36,7 +36,7 @@ coverage[toml]==6.4.1
     # via pytest-cov
 distlib==0.3.4
     # via virtualenv
-django==3.2.14
+django==3.2.18
     # via
     #   -r requirements.in
     #   model-bakery
@@ -58,8 +58,6 @@ flake8==4.0.1
 idna==3.3
     # via requests
 imagesize==1.4.1
-    # via sphinx
-importlib-metadata==4.12.0
     # via sphinx
 iniconfig==1.1.1
     # via pytest
@@ -180,19 +178,14 @@ toml==0.10.2
     #   tox
 tomli==2.0.1
     # via
-    #   black
-    #   build
-    #   coverage
-    #   mypy
+    #   pep517
     #   pytest
 tornado==6.2
     # via livereload
 tox==3.25.1
     # via -r requirements.in
 typing-extensions==4.3.0
-    # via
-    #   black
-    #   mypy
+    # via mypy
 urllib3==1.26.9
     # via requests
 virtualenv==20.15.1
@@ -203,8 +196,6 @@ webencodings==0.5.1
     #   tinycss2
 wheel==0.37.1
     # via pip-tools
-zipp==3.8.0
-    # via importlib-metadata
 
 # The following packages are considered to be unsafe in a requirements file:
 # pip
