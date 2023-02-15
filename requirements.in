@@ -26,7 +26,7 @@ sphinx
 sphinx-autobuild
 
 # Project (setup.cfg)
-django~=3.2.0
+django~=3.2.18
 django-yaa-settings
 bleach[css]>=5.0.0
 feedparser>=6.0.0
